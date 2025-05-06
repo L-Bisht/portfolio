@@ -2,7 +2,10 @@ import Button from "../Styled/Button";
 
 const ContactMe = () => {
   return (
-    <section className="flex flex-col items-center justify-center space-y-8 w-full">
+    <section
+      id="contact"
+      className="flex flex-col items-center justify-center space-y-8 w-full"
+    >
       <h1 className="text-4xl font-bold ">Reach out to me</h1>
       <p>
         Let's connect and discuss how we can work together to create amazing web

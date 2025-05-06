@@ -9,7 +9,7 @@ function App() {
   return (
     <>
       <Header />
-      <main className="mt-[72px] px-64 py-16 flex flex-col space-y-24">
+      <main className="mt-[72px] sm:px-12 md:px-64 py-16 flex flex-col space-y-24">
         <About />
         <Skills />
         <MyProjects />

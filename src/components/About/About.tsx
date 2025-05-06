@@ -3,7 +3,10 @@ import luffy from "../../assets/luffy.png";
 
 const About = () => {
   return (
-    <section className="flex flex-row w-full space-x-12">
+    <section
+      id="home"
+      className="flex flex-row w-full justify-between space-x-12"
+    >
       <div className="flex flex-col space-y-4 w-1/2">
         <div>
           <h6 className="text-lg font-bold">Hi I am</h6>
@@ -19,12 +22,14 @@ const About = () => {
           JavaScript, and React. I am always eager to learn new technologies and
           improve my skills.
         </p>
-        <div className="w-1/4">
+        <div className="md:w-1/4">
           <Button>Hire Me</Button>
         </div>
       </div>
-      <div className="flex flex-center justify-center rounded-full border-4 border-orange-300 w-96 h-96">
-        <img src={luffy} alt="main image" />
+      <div className="flex items-center justify-center ">
+        <div className="rounded-full border-4 border-orange-300 md:w-96 md:h-96 sm:w-48 sm:h-48">
+          <img src={luffy} alt="main image" />
+        </div>
       </div>
     </section>
   );

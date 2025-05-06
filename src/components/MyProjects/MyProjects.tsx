@@ -23,7 +23,10 @@ const projects = [
 
 const MyProjects = () => {
   return (
-    <section className="flex flex-col items-center justify-center space-y-8 w-full">
+    <section
+      id="projects"
+      className="flex flex-col items-center justify-center space-y-8 w-full"
+    >
       <h1 className="text-4xl font-bold ">My Projects</h1>
       <p>
         I have acquired a diverse set of skills in web development, including
@@ -33,7 +36,7 @@ const MyProjects = () => {
         integrating third-party services. I am comfortable using version
         control.
       </p>
-      <div className="flex flex-row justify-between space-x-8 w-full">
+      <div className="flex flex-row flex-wrap justify-between space-x-8 w-full">
         {projects.map((project) => (
           <ProjectCard {...project} />
         ))}

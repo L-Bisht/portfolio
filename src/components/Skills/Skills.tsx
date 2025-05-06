@@ -17,9 +17,14 @@ const skillsData: TSkillsData[] = [
 
 const Skills = () => {
   return (
-    <section className="flex flex-row space-x-12 w-full">
-      <div className="flex flex-center justify-center items-center rounded-full border-4 border-orange-300 w-96 h-96 relative">
-        <img src={luffy} alt="main image" />
+    <section
+      id="skills"
+      className="flex flex-row justify-between flex-row space-x-12 w-full"
+    >
+      <div className="flex items-center ">
+        <div className="rounded-full border-4 border-orange-300 md:w-96 md:h-96 sm:w-48 sm:h-48 relative">
+          <img src={luffy} alt="main image" />
+        </div>
       </div>
       <div className="flex flex-col space-y-4 w-1/2">
         <h1 className="text-3xl font-bold ">Skills</h1>
