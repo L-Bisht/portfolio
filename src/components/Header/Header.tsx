@@ -9,6 +9,7 @@ const navList = [
   { name: "Projects", href: "#projects" },
   { name: "Contact Me", href: "#contact" },
 ];
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
@@ -16,8 +17,8 @@ const Header = () => {
       <h1 className="text-2xl font-bold text-orange-400 text-shadow-lg">
         Lalit Bisht
       </h1>
-      <nav className="flex flex-row items-center space-x-8">
-        <ul className="space-x-8 sm:hidden lg:flex">
+      <nav className="flex flex-row items-center gap-x-8">
+        <ul className="gap-x-8 hidden md:flex">
           {navList.map((item) => (
             <li key={item.name}>
               <a
@@ -43,7 +44,7 @@ const Header = () => {
                 <a
                   href={item.href}
                   className="hover:text-gray-400 dark:text-white"
-                  onClick={() => setIsMenuOpen(false)} // Close menu on click
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
                 </a>
