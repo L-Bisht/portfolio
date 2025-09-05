@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
-import ThemeToggle from "../ThemeToggle";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,7 +45,6 @@ const Navbar = () => {
                   {item.name}
                 </motion.a>
               ))}
-              <ThemeToggle />
             </div>
           </div>
 
@@ -61,7 +59,6 @@ const Navbar = () => {
                 <MenuIcon className="block h-6 w-6" />
               )}
             </button>
-            <ThemeToggle />
           </div>
         </div>
       </div>
