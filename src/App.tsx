@@ -1,22 +1,30 @@
+import { AnimatePresence } from "framer-motion";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
 import About from "./components/About";
-import ContactMe from "./components/ContactMe";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
-import MyProjects from "./components/MyProjects";
 import Skills from "./components/Skills";
+import Projects from "./components/Projects";
+import Contact from "./components/Contact";
+import Footer from "./components/Footer";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 function App() {
   return (
-    <>
-      <Header />
-      <main className="mt-[72px] px-24 md:px-36 lg:px-48 py-16 flex flex-col gap-y-8 md:gap-y-24">
-        <About />
-        <Skills />
-        <MyProjects />
-        <ContactMe />
-      </main>
-      <Footer />
-    </>
+    <ThemeProvider>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <Navbar />
+        <main className="flex flex-col">
+          <AnimatePresence mode="wait">
+            <Hero />
+            <About />
+            <Skills />
+            <Projects />
+            <Contact />
+          </AnimatePresence>
+        </main>
+        <Footer />
+      </div>
+    </ThemeProvider>
   );
 }
 
