@@ -13,12 +13,13 @@ export interface ContactData {
 
 export const contactData: ContactData = {
   title: "Get In Touch",
-  description: "Have a question or want to work together? Feel free to reach out!",
+  description:
+    "Have a question or want to work together? Feel free to reach out!",
   socialLinks: [
-    { name: "GitHub", url: "https://github.com/yourusername" },
-    { name: "LinkedIn", url: "https://linkedin.com/in/yourusername" },
-    { name: "Twitter", url: "https://twitter.com/yourusername" },
+    { name: "GitHub", url: "https://github.com/l-bisht" },
+    { name: "LinkedIn", url: "https://linkedin.com/in/lalit-bisht-8b4b82152/" },
+    { name: "Twitter", url: "https://x.com/lbisht1996" },
   ],
-  email: "your.email@example.com",
-  location: "Your City, Country",
+  email: "lbisht1996@gmail.com",
+  location: "New Delhi, India",
 };
