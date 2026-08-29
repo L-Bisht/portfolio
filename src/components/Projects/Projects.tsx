@@ -144,7 +144,7 @@ const Projects = ({ data }: ProjectsProps) => {
         <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-sky-400/10 dark:bg-sky-500/8 blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto">
+      <div className="relative max-w-5xl mx-auto">
         {/* Section label */}
         <motion.div
           ref={ref}

@@ -43,7 +43,7 @@ const Experience = ({ data }: ExperienceProps) => {
         <div className="absolute bottom-1/4 left-1/4 w-80 h-80 rounded-full bg-blue-400/10 dark:bg-blue-500/8 blur-3xl" />
       </div>
 
-      <div className="relative max-w-4xl mx-auto">
+      <div className="relative max-w-5xl mx-auto">
         {/* Section label */}
         <motion.div
           ref={sectionRef}

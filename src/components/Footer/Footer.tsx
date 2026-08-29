@@ -8,7 +8,7 @@ const Footer = () => {
       {/* Subtle background */}
       <div className="absolute inset-0 bg-white/40 dark:bg-white/[0.02] backdrop-blur-sm" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-10">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-8 lg:px-16 py-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}

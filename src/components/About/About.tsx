@@ -80,7 +80,7 @@ const About = ({ data }: AboutProps) => {
         <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-violet-400/10 dark:bg-violet-500/8 blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto">
+      <div className="relative max-w-5xl mx-auto">
         {/* Section label */}
         <motion.div
           ref={sectionRef}
