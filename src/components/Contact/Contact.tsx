@@ -58,7 +58,7 @@ interface ContactProps {
 }
 
 const Contact = ({ data }: ContactProps) => {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.1 });
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -125,7 +125,7 @@ const Contact = ({ data }: ContactProps) => {
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
@@ -137,7 +137,7 @@ const Contact = ({ data }: ContactProps) => {
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.55, delay: 0.1 }}
           className="mb-16"
         >

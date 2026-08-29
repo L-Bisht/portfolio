@@ -124,7 +124,7 @@ interface ProjectsProps {
 }
 
 const Projects = ({ data }: ProjectsProps) => {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.1 });
   const [filter, setFilter] = useState("all");
 
   const projects = data.projects;
@@ -149,7 +149,7 @@ const Projects = ({ data }: ProjectsProps) => {
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
@@ -161,7 +161,7 @@ const Projects = ({ data }: ProjectsProps) => {
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.55, delay: 0.1 }}
           className="mb-12"
         >
@@ -176,7 +176,7 @@ const Projects = ({ data }: ProjectsProps) => {
         {/* Filter pills */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex justify-center gap-2 mb-12 flex-wrap"
         >

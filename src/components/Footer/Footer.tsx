@@ -12,7 +12,7 @@ const Footer = () => {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
           transition={{ duration: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-between gap-4"
         >

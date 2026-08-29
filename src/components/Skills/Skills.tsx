@@ -7,7 +7,7 @@ interface SkillsProps {
 }
 
 const Skills = ({ data }: SkillsProps) => {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.1 });
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -42,7 +42,7 @@ const Skills = ({ data }: SkillsProps) => {
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
@@ -54,7 +54,7 @@ const Skills = ({ data }: SkillsProps) => {
 
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.55, delay: 0.1 }}
           className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-16"
         >

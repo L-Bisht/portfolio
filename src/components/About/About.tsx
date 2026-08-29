@@ -31,7 +31,7 @@ const About = ({ data }: AboutProps) => {
   };
 
   const [sectionRef, sectionInView] = useInView({
-    triggerOnce: true,
+    triggerOnce: false,
     threshold: 0.1,
   });
 
@@ -85,7 +85,7 @@ const About = ({ data }: AboutProps) => {
         <motion.div
           ref={sectionRef}
           initial={{ opacity: 0, y: 16 }}
-          animate={sectionInView ? { opacity: 1, y: 0 } : {}}
+          animate={sectionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >

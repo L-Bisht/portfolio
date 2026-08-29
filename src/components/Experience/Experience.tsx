@@ -8,7 +8,7 @@ interface ExperienceProps {
 
 const Experience = ({ data }: ExperienceProps) => {
   const [sectionRef, sectionInView] = useInView({
-    triggerOnce: true,
+    triggerOnce: false,
     threshold: 0.1,
   });
 
@@ -48,7 +48,7 @@ const Experience = ({ data }: ExperienceProps) => {
         <motion.div
           ref={sectionRef}
           initial={{ opacity: 0, y: 16 }}
-          animate={sectionInView ? { opacity: 1, y: 0 } : {}}
+          animate={sectionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-12"
         >
