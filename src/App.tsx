@@ -7,17 +7,23 @@ import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 
+import { navData } from "./data/nav";
+import { heroData } from "./data/hero";
+import { aboutData } from "./data/about";
+import { skillsData } from "./data/skills";
+import { projectsData } from "./data/projects";
+import { contactData } from "./data/contact";
 function App() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <Navbar />
+      <Navbar data={navData} />
       <main className="flex flex-col">
         <AnimatePresence mode="wait">
-          <Hero />
-          <About />
-          <Skills />
-          <Projects />
-          <Contact />
+          <Hero data={heroData} />
+          <About data={aboutData} />
+          <Skills data={skillsData} />
+          <Projects data={projectsData} />
+          <Contact data={contactData} />
         </AnimatePresence>
       </main>
       <Footer />

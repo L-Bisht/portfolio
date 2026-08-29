@@ -1,41 +1,18 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import type { SkillsData } from "../../data/skills";
 
-const Skills = () => {
+interface SkillsProps {
+  data: SkillsData;
+}
+
+const Skills = ({ data }: SkillsProps) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
-  const skillCategories = [
-    {
-      title: "Frontend",
-      skills: [
-        { name: "React", level: 90 },
-        { name: "TypeScript", level: 85 },
-        { name: "Next.js", level: 80 },
-        { name: "CSS/SCSS", level: 85 },
-      ],
-    },
-    {
-      title: "Backend",
-      skills: [
-        { name: "Node.js", level: 85 },
-        { name: "Python", level: 80 },
-        { name: "PostgreSQL", level: 75 },
-        { name: "MongoDB", level: 80 },
-      ],
-    },
-    {
-      title: "Tools & Others",
-      skills: [
-        { name: "Git", level: 90 },
-        { name: "Docker", level: 75 },
-        { name: "AWS", level: 70 },
-        { name: "CI/CD", level: 75 },
-      ],
-    },
-  ];
+  const skillCategories = data.categories;
 
   const container = {
     hidden: { opacity: 0 },
@@ -61,7 +38,7 @@ const Skills = () => {
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           className="text-3xl md:text-4xl font-bold text-center mb-12"
         >
-          Skills & Technologies
+          {data.title}
         </motion.h2>
 
         <motion.div

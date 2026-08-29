@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
+import type { NavData } from "../../data/nav";
 
-const Navbar = () => {
+interface NavbarProps {
+  data: NavData;
+}
+
+const Navbar = ({ data }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const navItems = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Skills", href: "#skills" },
-    { name: "Projects", href: "#projects" },
-    { name: "Contact", href: "#contact" },
-  ];
+  const navItems = data.items;
 
   return (
     <nav className="fixed w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm z-50">

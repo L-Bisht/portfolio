@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import type { ContactData } from "../../data/contact";
 
 interface FormData {
   name: string;
@@ -8,7 +9,11 @@ interface FormData {
   message: string;
 }
 
-const Contact = () => {
+interface ContactProps {
+  data: ContactData;
+}
+
+const Contact = ({ data }: ContactProps) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -51,11 +56,7 @@ const Contact = () => {
     }
   };
 
-  const socialLinks = [
-    { name: "GitHub", url: "https://github.com/yourusername" },
-    { name: "LinkedIn", url: "https://linkedin.com/in/yourusername" },
-    { name: "Twitter", url: "https://twitter.com/yourusername" },
-  ];
+  const socialLinks = data.socialLinks;
 
   return (
     <section id="contact" className="py-20 px-4 sm:px-8 lg:px-16">
@@ -66,9 +67,9 @@ const Contact = () => {
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Get In Touch</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{data.title}</h2>
           <p className="text-textSecondary">
-            Have a question or want to work together? Feel free to reach out!
+            {data.description}
           </p>
         </motion.div>
 
@@ -139,11 +140,10 @@ const Contact = () => {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`text-center p-3 rounded ${
-                  submitStatus === "success"
+                className={`text-center p-3 rounded ${submitStatus === "success"
                     ? "bg-green-500/20 text-green-500"
                     : "bg-red-500/20 text-red-500"
-                }`}
+                  }`}
               >
                 {submitStatus === "success"
                   ? "Message sent successfully!"
@@ -177,16 +177,16 @@ const Contact = () => {
             <div>
               <h3 className="text-xl font-semibold mb-4">Email</h3>
               <a
-                href="mailto:your.email@example.com"
+                href={`mailto:${data.email}`}
                 className="text-textSecondary hover:text-secondary transition-colors"
               >
-                your.email@example.com
+                {data.email}
               </a>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold mb-4">Location</h3>
-              <p className="text-textSecondary">Your City, Country</p>
+              <p className="text-textSecondary">{data.location}</p>
             </div>
           </motion.div>
         </div>

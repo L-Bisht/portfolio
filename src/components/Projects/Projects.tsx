@@ -1,23 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import type { ProjectsData, Project } from "../../data/projects";
 
-const projects = [
-  {
-    id: 1,
-    title: "Project 1",
-    description:
-      "Description of project 1. Add details about the project, its features, and your role.",
-    technologies: ["React", "TypeScript", "Node.js"],
-    image: "/project1.jpg",
-    demoUrl: "https://demo1.com",
-    sourceUrl: "https://github.com/yourusername/project1",
-    category: "frontend",
-  },
-  // Add more projects here
-];
+interface ProjectCardProps {
+  project: Project;
+}
 
-const ProjectCard = ({ project }) => {
+const ProjectCard = ({ project }: ProjectCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -79,13 +69,18 @@ const ProjectCard = ({ project }) => {
   );
 };
 
-const Projects = () => {
+interface ProjectsProps {
+  data: ProjectsData;
+}
+
+const Projects = ({ data }: ProjectsProps) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
   const [filter, setFilter] = useState("all");
+  const projects = data.projects;
 
   const filteredProjects =
     filter === "all"
@@ -105,24 +100,22 @@ const Projects = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Featured Projects
+            {data.title}
           </h2>
           <p className="text-textSecondary">
-            Here are some of my recent works. Hover over the cards to learn
-            more.
+            {data.description}
           </p>
         </motion.div>
 
         <div className="flex justify-center gap-4 mb-8">
-          {["all", "frontend", "backend", "fullstack"].map((category) => (
+          {data.categories.map((category) => (
             <button
               key={category}
               onClick={() => setFilter(category)}
-              className={`px-4 py-2 rounded-full transition-colors duration-300 ${
-                filter === category
-                  ? "bg-secondary text-primary"
-                  : "text-secondary hover:bg-secondary/10"
-              }`}
+              className={`px-4 py-2 rounded-full transition-colors duration-300 ${filter === category
+                ? "bg-secondary text-primary"
+                : "text-secondary hover:bg-secondary/10"
+                }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>

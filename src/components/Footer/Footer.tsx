@@ -12,7 +12,7 @@ const Footer = () => {
           transition={{ duration: 0.5 }}
         >
           <p className="text-textSecondary">
-            © {currentYear} Your Name. All rights reserved.
+            © {currentYear} Lalit Singh Bisht. All rights reserved.
           </p>
           <p className="text-textSecondary mt-2">
             Built with React, TypeScript, and Framer Motion
