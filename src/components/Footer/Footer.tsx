@@ -4,18 +4,37 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-slate-800/50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 text-center">
+    <footer className="relative overflow-hidden border-t border-slate-200/60 dark:border-white/10">
+      {/* Subtle background */}
+      <div className="absolute inset-0 bg-white/40 dark:bg-white/[0.02] backdrop-blur-sm" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.5 }}
+          className="flex flex-col sm:flex-row items-center justify-between gap-4"
         >
-          <p className="text-textSecondary">
+          {/* Brand */}
+          <a
+            href="#home"
+            className="text-base font-bold text-slate-900 dark:text-white hover:text-sky-500 dark:hover:text-sky-400 transition-colors duration-200"
+          >
+            Portfolio
+          </a>
+
+          {/* Copy */}
+          <p className="text-xs text-slate-400 dark:text-slate-600 text-center">
             © {currentYear} Lalit Singh Bisht. All rights reserved.
           </p>
-          <p className="text-textSecondary mt-2">
-            Built with React, TypeScript, and Framer Motion
+
+          {/* Built with */}
+          <p className="text-xs text-slate-400 dark:text-slate-600">
+            Built with{" "}
+            <span className="text-sky-400">React</span>
+            {" & "}
+            <span className="text-violet-400">Framer Motion</span>
           </p>
         </motion.div>
       </div>
