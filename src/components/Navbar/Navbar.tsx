@@ -1,49 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MenuIcon, XIcon } from "@heroicons/react/outline";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import type { NavData } from "../../data/nav";
 import { useTheme } from "../../context/ThemeContext";
 
 interface NavbarProps {
   data: NavData;
-}
-
-function SunIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className={className}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 3v2.25m0 13.5V21m8.25-9H18.75M5.25 12H3m15.364-6.364-1.591 1.591M6.227 17.773l-1.59 1.59M18.364 17.773l-1.59-1.59M6.227 6.227 4.636 4.636M12 7.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"
-      />
-    </svg>
-  );
-}
-
-function MoonIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className={className}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 12c0 5.385 4.365 9.75 9.75 9.75 4.744 0 8.715-3.372 9.75-7.998Z"
-      />
-    </svg>
-  );
 }
 
 const Navbar = ({ data }: NavbarProps) => {
@@ -106,7 +68,7 @@ const Navbar = ({ data }: NavbarProps) => {
                     exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <SunIcon className="w-5 h-5" />
+                    <Sun size={20} strokeWidth={1.5} />
                   </motion.span>
                 ) : (
                   <motion.span
@@ -116,7 +78,7 @@ const Navbar = ({ data }: NavbarProps) => {
                     exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <MoonIcon className="w-5 h-5" />
+                    <Moon size={20} strokeWidth={1.5} />
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -141,7 +103,7 @@ const Navbar = ({ data }: NavbarProps) => {
                     transition={{ duration: 0.2 }}
                     className="block"
                   >
-                    <SunIcon className="w-5 h-5" />
+                    <Sun size={20} strokeWidth={1.5} />
                   </motion.span>
                 ) : (
                   <motion.span
@@ -152,7 +114,7 @@ const Navbar = ({ data }: NavbarProps) => {
                     transition={{ duration: 0.2 }}
                     className="block"
                   >
-                    <MoonIcon className="w-5 h-5" />
+                    <Moon size={20} strokeWidth={1.5} />
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -163,9 +125,9 @@ const Navbar = ({ data }: NavbarProps) => {
               className="inline-flex items-center justify-center p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
             >
               {isOpen ? (
-                <XIcon className="block h-6 w-6" />
+                <X size={24} strokeWidth={1.75} />
               ) : (
-                <MenuIcon className="block h-6 w-6" />
+                <Menu size={24} strokeWidth={1.75} />
               )}
             </button>
           </div>
