@@ -124,7 +124,7 @@ interface ProjectsProps {
 }
 
 const Projects = ({ data }: ProjectsProps) => {
-  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.1 });
+  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0 });
   const [filter, setFilter] = useState("all");
 
   const projects = data.projects;

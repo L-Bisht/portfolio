@@ -7,7 +7,7 @@ interface SkillsProps {
 }
 
 const Skills = ({ data }: SkillsProps) => {
-  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.1 });
+  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0 });
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },

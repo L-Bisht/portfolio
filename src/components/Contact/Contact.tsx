@@ -58,7 +58,7 @@ interface ContactProps {
 }
 
 const Contact = ({ data }: ContactProps) => {
-  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.1 });
+  const [ref, inView] = useInView({ triggerOnce: false, threshold: 0 });
 
   const [formData, setFormData] = useState<FormData>({
     name: "",

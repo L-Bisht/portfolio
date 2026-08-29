@@ -32,7 +32,7 @@ const About = ({ data }: AboutProps) => {
 
   const [sectionRef, sectionInView] = useInView({
     triggerOnce: false,
-    threshold: 0.1,
+    threshold: 0,
   });
 
   const stats = data.stats.map((stat) => ({

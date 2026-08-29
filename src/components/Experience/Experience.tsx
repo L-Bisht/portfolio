@@ -9,7 +9,7 @@ interface ExperienceProps {
 const Experience = ({ data }: ExperienceProps) => {
   const [sectionRef, sectionInView] = useInView({
     triggerOnce: false,
-    threshold: 0.1,
+    threshold: 0,
   });
 
   const containerVariants: Variants = {
