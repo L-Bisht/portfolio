@@ -83,27 +83,14 @@ const Skills = ({ data }: SkillsProps) => {
                   {category.title}
                 </h3>
 
-                <div className="space-y-5">
+                <div className="flex flex-wrap gap-2.5">
                   {category.skills.map((skill) => (
-                    <div key={skill.name}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          {skill.name}
-                        </span>
-                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 tabular-nums">
-                          {skill.level}%
-                        </span>
-                      </div>
-                      {/* Track */}
-                      <div className="h-1.5 rounded-full bg-slate-200/80 dark:bg-white/10 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={inView ? { width: `${skill.level}%` } : { width: 0 }}
-                          transition={{ duration: 1.1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                          className="h-full rounded-full bg-gradient-to-r from-sky-400 to-fuchsia-400"
-                        />
-                      </div>
-                    </div>
+                    <span
+                      key={skill.name}
+                      className="px-3.5 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-full hover:border-fuchsia-400/30 dark:hover:border-fuchsia-400/30 hover:bg-fuchsia-50/50 dark:hover:bg-fuchsia-400/10 transition-colors cursor-default"
+                    >
+                      {skill.name}
+                    </span>
                   ))}
                 </div>
               </div>
