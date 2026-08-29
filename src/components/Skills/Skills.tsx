@@ -34,8 +34,8 @@ const Skills = ({ data }: SkillsProps) => {
     >
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 right-0 w-80 h-80 rounded-full bg-fuchsia-400/10 dark:bg-fuchsia-500/8 blur-3xl" />
-        <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-sky-400/10 dark:bg-sky-500/8 blur-3xl" />
+        <div className="absolute top-1/4 right-0 w-80 h-80 rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-3xl" />
+        <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-indigo-400/8 dark:bg-indigo-600/6 blur-3xl" />
       </div>
 
       <div className="relative max-w-5xl mx-auto">
@@ -46,8 +46,8 @@ const Skills = ({ data }: SkillsProps) => {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
-          <span className="h-px flex-1 max-w-8 bg-fuchsia-400/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-fuchsia-400">
+          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-500">
             Expertise
           </span>
         </motion.div>
@@ -73,13 +73,13 @@ const Skills = ({ data }: SkillsProps) => {
               variants={cardVariants}
               whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 22 }}
-              className="group relative overflow-hidden rounded-2xl p-7 bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-xl dark:hover:shadow-fuchsia-500/10 transition-shadow duration-300"
+              className="group relative overflow-hidden rounded-2xl p-7 bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
             >
               {/* inner glow */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-fuchsia-400/5 to-sky-400/5" />
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5" />
 
               <div className="relative">
-                <h3 className="text-xs font-bold tracking-[0.18em] uppercase text-fuchsia-400 mb-6">
+                <h3 className="text-xs font-bold tracking-[0.18em] uppercase text-indigo-500 mb-6">
                   {category.title}
                 </h3>
 
@@ -87,7 +87,7 @@ const Skills = ({ data }: SkillsProps) => {
                   {category.skills.map((skill) => (
                     <span
                       key={skill.name}
-                      className="px-3.5 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-full hover:border-fuchsia-400/30 dark:hover:border-fuchsia-400/30 hover:bg-fuchsia-50/50 dark:hover:bg-fuchsia-400/10 transition-colors cursor-default"
+                      className="px-3.5 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-full hover:border-indigo-500/30 dark:hover:border-indigo-400/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-400/10 transition-colors cursor-default"
                     >
                       {skill.name}
                     </span>

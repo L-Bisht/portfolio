@@ -126,7 +126,7 @@ const Hero = ({ data }: HeroProps) => {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 50% 40%, rgba(56,189,248,0.08) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 50% at 50% 40%, rgba(99,102,241,0.10) 0%, transparent 70%)",
         }}
       />
 
@@ -140,7 +140,7 @@ const Hero = ({ data }: HeroProps) => {
         {/* Greeting */}
         <motion.p
           variants={fadeUpVariants}
-          className="text-sky-500 dark:text-sky-400 text-base sm:text-lg font-medium tracking-widest uppercase mb-6"
+          className="text-indigo-500 dark:text-indigo-400 text-base sm:text-lg font-medium tracking-widest uppercase mb-6"
         >
           {data.greeting}
         </motion.p>
@@ -184,7 +184,7 @@ const Hero = ({ data }: HeroProps) => {
             id="hero-cta-secondary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
-            className="px-8 py-4 text-base font-semibold rounded-xl text-slate-600 dark:text-slate-300 border-2 border-slate-300 dark:border-slate-600 hover:border-sky-400 dark:hover:border-sky-400 hover:text-sky-500 dark:hover:text-sky-400 transition-all duration-300"
+            className="px-8 py-4 text-base font-semibold rounded-xl text-slate-600 dark:text-slate-300 border-2 border-slate-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-all duration-300"
           >
             {data.secondaryCta.text}
           </motion.a>

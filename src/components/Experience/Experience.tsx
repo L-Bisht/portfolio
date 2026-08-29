@@ -52,8 +52,8 @@ const Experience = ({ data }: ExperienceProps) => {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-12"
         >
-          <span className="h-px flex-1 max-w-8 bg-sky-400/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-sky-400 dark:text-sky-400">
+          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-500 dark:text-indigo-400">
             Experience
           </span>
           <span className="h-px flex-1 bg-slate-200/60 dark:bg-white/10" />
@@ -81,18 +81,18 @@ const Experience = ({ data }: ExperienceProps) => {
                 className="mb-10 ml-8 relative group"
               >
                 {/* Timeline Dot */}
-                <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-sky-400 z-10 transition-transform duration-300 group-hover:scale-125" />
+                <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-500 z-10 transition-transform duration-300 group-hover:scale-125" />
 
                 <div className={`
                   relative overflow-hidden rounded-2xl p-6 sm:p-8
                   bg-white/60 dark:bg-white/5
                   border border-slate-200/60 dark:border-white/10
                   backdrop-blur-xl
-                  shadow-sm hover:shadow-lg dark:hover:shadow-sky-500/10
+                  shadow-sm hover:shadow-lg dark:hover:shadow-indigo-500/10
                   transition-all duration-300
                 `}>
                   {/* subtle inner glow on hover */}
-                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-sky-400/5 to-emerald-400/5" />
+                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5" />
 
                   <div className="relative">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
@@ -100,7 +100,7 @@ const Experience = ({ data }: ExperienceProps) => {
                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
                           {item.role}
                         </h3>
-                        <p className="text-lg font-medium text-sky-500 dark:text-sky-400">
+                        <p className="text-lg font-medium text-indigo-600 dark:text-indigo-400">
                           {item.company}
                         </p>
                       </div>
@@ -112,7 +112,7 @@ const Experience = ({ data }: ExperienceProps) => {
                     <ul className="space-y-3 mt-6">
                       {item.impact.map((point, i) => (
                         <li key={i} className="flex text-base leading-relaxed text-slate-600 dark:text-slate-400">
-                          <span className="mr-3 text-sky-400 mt-1.5 opacity-60">▹</span>
+                          <span className="mr-3 text-indigo-400 mt-1.5 opacity-60">▹</span>
                           <span>{point}</span>
                         </li>
                       ))}

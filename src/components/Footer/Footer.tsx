@@ -19,7 +19,7 @@ const Footer = () => {
           {/* Brand */}
           <a
             href="#home"
-            className="text-base font-bold text-slate-900 dark:text-white hover:text-sky-500 dark:hover:text-sky-400 transition-colors duration-200"
+            className="text-base font-bold text-slate-900 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-200"
           >
             Portfolio
           </a>
@@ -32,9 +32,9 @@ const Footer = () => {
           {/* Built with */}
           <p className="text-xs text-slate-400 dark:text-slate-600">
             Built with{" "}
-            <span className="text-sky-400">React</span>
+            <span className="text-indigo-500">React</span>
             {" & "}
-            <span className="text-violet-400">Framer Motion</span>
+            <span className="text-indigo-500">Framer Motion</span>
           </p>
         </motion.div>
       </div>

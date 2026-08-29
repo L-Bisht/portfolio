@@ -17,11 +17,11 @@
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 border-2 border-sky-400 text-sky-400 rounded-lg hover:bg-sky-400/10 transition-all duration-300;
+    @apply px-6 py-3 border-2 border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-500/10 transition-all duration-300;
   }
 
   .nav-link {
-    @apply text-slate-700 dark:text-slate-300 hover:text-sky-500 dark:hover:text-sky-400 transition-colors duration-300;
+    @apply text-slate-700 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-300;
   }
 
   /* Hero word-clip: overflow hidden wrapper for per-word reveal */
@@ -31,14 +31,14 @@
     vertical-align: bottom;
   }
 
-  /* Animated gradient text */
+  /* Animated gradient text — slate to indigo, premium monochrome feel */
   .hero-name-gradient {
     background: linear-gradient(
       120deg,
-      #38bdf8 0%,
-      #818cf8 30%,
-      #e879f9 60%,
-      #38bdf8 100%
+      #e2e8f0 0%,
+      #a5b4fc 35%,
+      #818cf8 65%,
+      #e2e8f0 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -56,7 +56,7 @@
     position: absolute;
     inset: -2px;
     border-radius: inherit;
-    background: linear-gradient(120deg, #38bdf8, #818cf8, #e879f9);
+    background: linear-gradient(120deg, #6366f1, #818cf8, #a5b4fc);
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;

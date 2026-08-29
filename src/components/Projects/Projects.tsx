@@ -34,7 +34,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
       exit="exit"
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 280, damping: 22 }}
-      className="group relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-2xl dark:hover:shadow-sky-500/10 transition-shadow duration-300"
+      className="group relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-2xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
@@ -86,7 +86,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
               href={project.demoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 text-center px-4 py-2 text-sm font-medium rounded-xl bg-sky-500 hover:bg-sky-400 text-white transition-colors duration-200"
+              className="flex-1 text-center px-4 py-2 text-sm font-medium rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors duration-200"
             >
               Live Demo
             </a>
@@ -141,8 +141,8 @@ const Projects = ({ data }: ProjectsProps) => {
     >
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-violet-400/10 dark:bg-violet-500/8 blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-sky-400/10 dark:bg-sky-500/8 blur-3xl" />
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-indigo-400/8 dark:bg-indigo-600/6 blur-3xl" />
       </div>
 
       <div className="relative max-w-5xl mx-auto">
@@ -153,8 +153,8 @@ const Projects = ({ data }: ProjectsProps) => {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
-          <span className="h-px flex-1 max-w-8 bg-violet-400/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-400">
+          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-500">
             Work
           </span>
         </motion.div>
@@ -185,7 +185,7 @@ const Projects = ({ data }: ProjectsProps) => {
               key={category}
               onClick={() => setFilter(category)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${filter === category
-                ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25"
+                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
                 : "bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10 backdrop-blur-sm"
                 }`}
             >

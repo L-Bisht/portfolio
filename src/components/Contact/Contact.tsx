@@ -107,7 +107,7 @@ const Contact = ({ data }: ContactProps) => {
   };
 
   const inputClass =
-    "w-full px-4 py-3 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400/50 transition-all duration-200";
+    "w-full px-4 py-3 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200";
 
   return (
     <section
@@ -117,8 +117,8 @@ const Contact = ({ data }: ContactProps) => {
     >
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-sky-400/10 dark:bg-sky-500/8 blur-3xl" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-fuchsia-400/10 dark:bg-fuchsia-500/8 blur-3xl" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-indigo-400/8 dark:bg-indigo-600/6 blur-3xl" />
       </div>
 
       <div className="relative max-w-5xl mx-auto">
@@ -129,8 +129,8 @@ const Contact = ({ data }: ContactProps) => {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
-          <span className="h-px flex-1 max-w-8 bg-sky-400/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-sky-400">
+          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-500">
             Contact
           </span>
         </motion.div>
@@ -224,7 +224,7 @@ const Contact = ({ data }: ContactProps) => {
               disabled={isSubmitting}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3 px-6 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-violet-500 hover:from-sky-400 hover:to-violet-400 shadow-lg shadow-sky-500/25 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-3 px-6 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 shadow-lg shadow-indigo-500/25 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Sending…" : "Send Message"}
             </motion.button>
@@ -253,19 +253,19 @@ const Contact = ({ data }: ContactProps) => {
             {/* Email card */}
             <a
               href={`mailto:${data.email}`}
-              className="group p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg dark:hover:shadow-sky-500/10 hover:border-sky-400/30 transition-all duration-300"
+              className="group p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg dark:hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-300"
             >
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-sky-400 mb-2">
+              <div className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-500 mb-2">
                 Email
               </div>
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors duration-200 break-all">
+              <div className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 break-all">
                 {data.email}
               </div>
             </a>
 
             {/* Location card */}
             <div className="p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm">
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-fuchsia-400 mb-2">
+              <div className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-400 mb-2">
                 Location
               </div>
               <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -275,7 +275,7 @@ const Contact = ({ data }: ContactProps) => {
 
             {/* Social links */}
             <div className="p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm">
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-violet-400 mb-4">
+              <div className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-500 mb-4">
                 Connect
               </div>
               <div className="space-y-3">
@@ -287,10 +287,10 @@ const Contact = ({ data }: ContactProps) => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 group"
                   >
-                    <span className="flex-shrink-0 text-slate-400 dark:text-slate-500 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-200">
+                    <span className="flex-shrink-0 text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-200">
                       <BrandIcon icon={link.icon} />
                     </span>
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-200">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-200">
                       {link.name}
                     </span>
                   </a>

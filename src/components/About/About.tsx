@@ -77,8 +77,8 @@ const About = ({ data }: AboutProps) => {
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"
       >
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-sky-400/10 dark:bg-sky-500/8 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-violet-400/10 dark:bg-violet-500/8 blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-indigo-400/8 dark:bg-indigo-600/6 blur-3xl" />
       </div>
 
       <div className="relative max-w-5xl mx-auto">
@@ -89,8 +89,8 @@ const About = ({ data }: AboutProps) => {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 mb-4"
         >
-          <span className="h-px flex-1 max-w-8 bg-sky-400/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-sky-400 dark:text-sky-400">
+          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-500 dark:text-indigo-400">
             About
           </span>
         </motion.div>
@@ -139,13 +139,13 @@ const About = ({ data }: AboutProps) => {
                   bg-white/60 dark:bg-white/5
                   border border-slate-200/60 dark:border-white/10
                   backdrop-blur-xl
-                  shadow-sm hover:shadow-lg dark:hover:shadow-sky-500/10
+                  shadow-sm hover:shadow-lg dark:hover:shadow-indigo-500/10
                   transition-shadow duration-300
                   ${index === stats.length - 1 ? "col-span-2" : ""}
                 `}
               >
                 {/* subtle inner glow on hover */}
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-sky-400/5 to-violet-400/5" />
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5" />
 
                 <div className="relative">
                   <div className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">
