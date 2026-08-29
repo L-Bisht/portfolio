@@ -10,6 +10,7 @@ const Experience = ({ data }: ExperienceProps) => {
   const [sectionRef, sectionInView] = useInView({
     triggerOnce: false,
     threshold: 0,
+    rootMargin: "-20% 0px -20% 0px",
   });
 
   const containerVariants: Variants = {
@@ -25,7 +26,7 @@ const Experience = ({ data }: ExperienceProps) => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
+      transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
     },
   };
 
