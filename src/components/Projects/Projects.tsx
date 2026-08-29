@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ProjectsData, Project } from "../../data/projects";
 
@@ -11,7 +11,7 @@ interface ProjectCardProps {
 const ProjectCard = ({ project, index }: ProjectCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
@@ -182,11 +182,10 @@ const Projects = ({ data }: ProjectsProps) => {
             <button
               key={category}
               onClick={() => setFilter(category)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                filter === category
-                  ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25"
-                  : "bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10 backdrop-blur-sm"
-              }`}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${filter === category
+                ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25"
+                : "bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10 backdrop-blur-sm"
+                }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>

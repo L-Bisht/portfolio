@@ -1,3 +1,5 @@
+import beastUiImg from "../assets/projectImages/beast-ui.png";
+
 export interface Project {
   id: number;
   title: string;
@@ -28,7 +30,7 @@ export const projectsData: ProjectsData = {
       description:
         "A UI component library for React. Provides a set of reusable UI components for building web applications.",
       technologies: ["React", "TypeScript", "shadcn/ui", "tailwindcss"],
-      image: "/project1.jpg",
+      image: beastUiImg,
       demoUrl: "https://l-bisht.github.io/beast-ui/",
       sourceUrl: "https://github.com/L-Bisht/beast-ui",
       category: "frontend",

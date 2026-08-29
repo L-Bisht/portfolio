@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ContactData } from "../../data/contact";
 
@@ -45,7 +45,7 @@ const Contact = ({ data }: ContactProps) => {
     }
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -53,7 +53,7 @@ const Contact = ({ data }: ContactProps) => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 28 },
     visible: {
       opacity: 1,
@@ -189,11 +189,10 @@ const Contact = ({ data }: ContactProps) => {
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`text-center p-3 rounded-xl text-sm font-medium ${
-                  submitStatus === "success"
-                    ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                    : "bg-red-500/10 text-red-500 border border-red-500/20"
-                }`}
+                className={`text-center p-3 rounded-xl text-sm font-medium ${submitStatus === "success"
+                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                  : "bg-red-500/10 text-red-500 border border-red-500/20"
+                  }`}
               >
                 {submitStatus === "success"
                   ? "Message sent successfully! I'll be in touch soon."

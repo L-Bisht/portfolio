@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { AboutData } from "../../data/about";
 
@@ -40,7 +40,7 @@ const About = ({ data }: AboutProps) => {
     value: stat.valueTemplate.replace("{years}", calculateYearsOnly()),
   }));
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -48,7 +48,7 @@ const About = ({ data }: AboutProps) => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 32 },
     visible: {
       opacity: 1,
@@ -57,7 +57,7 @@ const About = ({ data }: AboutProps) => {
     },
   };
 
-  const statVariants = {
+  const statVariants: Variants = {
     hidden: { opacity: 0, scale: 0.85 },
     visible: {
       opacity: 1,

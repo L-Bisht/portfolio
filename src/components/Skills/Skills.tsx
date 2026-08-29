@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { SkillsData } from "../../data/skills";
 
@@ -9,7 +9,7 @@ interface SkillsProps {
 const Skills = ({ data }: SkillsProps) => {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -17,7 +17,7 @@ const Skills = ({ data }: SkillsProps) => {
     },
   };
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
