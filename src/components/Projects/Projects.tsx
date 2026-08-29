@@ -135,6 +135,7 @@ const Projects = ({ data }: ProjectsProps) => {
 
   return (
     <section
+      ref={ref}
       id="projects"
       className="relative py-28 px-4 sm:px-8 lg:px-16 overflow-hidden"
     >
@@ -147,7 +148,6 @@ const Projects = ({ data }: ProjectsProps) => {
       <div className="relative max-w-5xl mx-auto">
         {/* Section label */}
         <motion.div
-          ref={ref}
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}

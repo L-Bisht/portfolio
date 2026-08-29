@@ -31,6 +31,7 @@ const Experience = ({ data }: ExperienceProps) => {
 
   return (
     <section
+      ref={sectionRef}
       id="experience"
       className="relative py-28 px-4 sm:px-8 lg:px-16 overflow-hidden"
     >
@@ -46,7 +47,6 @@ const Experience = ({ data }: ExperienceProps) => {
       <div className="relative max-w-5xl mx-auto">
         {/* Section label */}
         <motion.div
-          ref={sectionRef}
           initial={{ opacity: 0, y: 16 }}
           animate={sectionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5 }}
