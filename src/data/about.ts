@@ -13,9 +13,9 @@ export interface AboutData {
 export const aboutData: AboutData = {
   title: "About Me",
   paragraphs: [
-    "Hello! I'm Lalit Singh Bisht, a passionate full-stack developer with a keen interest in building exceptional digital experiences. With a background in computer science and years of hands-on experience, I specialize in creating efficient, scalable, and user-friendly applications.",
-    "My journey in web development started {experience} ago, and since then, I've had the privilege of working with various technologies and frameworks. I love tackling complex problems and turning them into simple, beautiful solutions.",
-    "When I'm not coding, you can find me playing Video Games. I believe in continuous learning and staying updated with the latest tech trends.",
+    "Hello! I'm Lalit Singh Bisht, a versatile and AI-augmented developer. Over the past {experience}, I have focused on building robust architectures, deeply integrating Domain-Driven Design (DDD), and crafting exceptional Developer Experiences (DX).",
+    "I leverage modern AI tools to accelerate development, improve code quality, and solve complex architectural challenges. By combining strong engineering principles with AI capabilities, I deliver scalable and maintainable solutions rapidly.",
+    "When I'm not architecting systems, you can find me exploring the latest advancements in AI and software engineering. I believe in continuous learning and adapting to the ever-evolving tech landscape.",
   ],
   stats: [
     { label: "Years Experience", valueTemplate: "{years}+" },

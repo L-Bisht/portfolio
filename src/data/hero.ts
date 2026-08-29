@@ -9,7 +9,7 @@ export interface HeroData {
 export const heroData: HeroData = {
   greeting: "Hi, my name is",
   name: "Lalit Singh Bisht",
-  title: "I build things for the web",
+  title: "Versatile & AI-Augmented Developer",
   primaryCta: { text: "View Projects", href: "#projects" },
   secondaryCta: { text: "Contact Me", href: "#contact" },
 };
