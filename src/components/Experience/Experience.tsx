@@ -75,7 +75,7 @@ const Experience = ({ data }: ExperienceProps) => {
 
           {/* Timeline Items */}
           <div className="relative border-l border-slate-200 dark:border-white/10 ml-3 sm:ml-0">
-            {data.items.map((item, index) => (
+            {data.items.map((item) => (
               <motion.div
                 key={item.id}
                 variants={itemVariants}
