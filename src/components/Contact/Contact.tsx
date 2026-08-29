@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import type { ContactData } from "../../data/contact";
+import { Github, Linkedin, Twitter } from "lucide-react";
+import type { ContactData, SocialIcon } from "../../data/contact";
 
 interface FormData {
   name: string;
   email: string;
   message: string;
+}
+
+const SOCIAL_ICONS: Record<SocialIcon, React.ReactNode> = {
+  github: <Github size={16} strokeWidth={1.75} />,
+  linkedin: <Linkedin size={16} strokeWidth={1.75} />,
+  twitter: <Twitter size={16} strokeWidth={1.75} />,
+};
+
+function SocialIconComponent({ icon }: { icon: SocialIcon }) {
+  return <>{SOCIAL_ICONS[icon]}</>;
 }
 
 interface ContactProps {
@@ -241,25 +252,14 @@ const Contact = ({ data }: ContactProps) => {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between group"
+                    className="flex items-center gap-3 group"
                   >
+                    <span className="flex-shrink-0 text-slate-400 dark:text-slate-500 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-200">
+                      <SocialIconComponent icon={link.icon} />
+                    </span>
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-violet-500 dark:group-hover:text-violet-400 transition-colors duration-200">
                       {link.name}
                     </span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-slate-300 dark:text-slate-600 group-hover:text-violet-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200"
-                    >
-                      <path d="M7 17L17 7M7 7h10v10" />
-                    </svg>
                   </a>
                 ))}
               </div>

@@ -51,7 +51,9 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
 
       {/* hover overlay — glass panel */}
       <motion.div
-        className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-transparent backdrop-blur-sm"
+        className={`absolute inset-0 z-10 flex flex-col justify-end p-6 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-transparent backdrop-blur-sm ${
+          isHovered ? "pointer-events-auto" : "pointer-events-none"
+        }`}
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
         transition={{ duration: 0.3 }}
