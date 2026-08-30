@@ -4,10 +4,12 @@ export interface NavItem {
 }
 
 export interface NavData {
+  name: string;
   items: NavItem[];
 }
 
 export const navData: NavData = {
+  name: "Lalit Singh Bisht",
   items: [
     { name: "Home", href: "#home" },
     { name: "About", href: "#about" },
