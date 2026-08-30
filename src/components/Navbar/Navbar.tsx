@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sun, Moon, Sparkles } from "lucide-react";
+import { Menu, X, Sun, Moon, Search } from "lucide-react";
 import type { NavData } from "../../data/nav";
 import { useTheme } from "../../context/ThemeContext";
 import { useCommandPalette } from "../../context/CommandPaletteContext";
@@ -50,10 +50,10 @@ const Navbar = ({ data }: NavbarProps) => {
               </motion.a>
             ))}
 
-            {/* AI Co-pilot trigger */}
+            {/* Navigate / Command Palette trigger */}
             <motion.button
-              id="ai-copilot-trigger"
-              aria-label="Open AI Co-pilot command palette (⌘K)"
+              id="command-palette-trigger"
+              aria-label="Open navigation command palette (⌘K)"
               onClick={openPalette}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -77,8 +77,8 @@ const Navbar = ({ data }: NavbarProps) => {
                 aria-hidden="true"
               />
 
-              <Sparkles size={13} className="flex-shrink-0 animate-pulse" />
-              <span>AI Co-pilot</span>
+              <Search size={13} className="flex-shrink-0" />
+              <span>Navigate</span>
               <kbd className="ml-1 hidden sm:inline-flex items-center gap-0.5 rounded border border-indigo-300/50 dark:border-indigo-600/50 bg-white/60 dark:bg-slate-800/60 px-1.5 text-[10px] text-indigo-500 dark:text-indigo-400 font-sans">
                 ⌘K
               </kbd>
@@ -124,14 +124,14 @@ const Navbar = ({ data }: NavbarProps) => {
 
           {/* Mobile: theme toggle + hamburger */}
           <div className="flex items-center space-x-2 md:hidden">
-            {/* Mobile AI trigger (icon-only) */}
+            {/* Mobile Navigate trigger (icon-only) */}
             <button
-              id="ai-copilot-trigger-mobile"
-              aria-label="Open AI Co-pilot command palette"
+              id="command-palette-trigger-mobile"
+              aria-label="Open navigation command palette"
               onClick={openPalette}
               className="p-2 rounded-md text-indigo-500 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors duration-200"
             >
-              <Sparkles size={20} strokeWidth={1.5} className="animate-pulse" />
+              <Search size={20} strokeWidth={1.5} />
             </button>
 
             <button
