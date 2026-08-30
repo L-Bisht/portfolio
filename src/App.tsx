@@ -7,6 +7,7 @@ import Experience from "./components/Experience";
 import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import CommandPalette from "./components/CommandPalette/CommandPalette";
 
 import { navData } from "./data/nav";
 import { heroData } from "./data/hero";
@@ -30,6 +31,7 @@ function App() {
         </AnimatePresence>
       </main>
       <Footer />
+      <CommandPalette />
     </div>
   );
 }
