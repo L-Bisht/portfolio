@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ProjectsData, Project } from "../../data/projects";
+import GlowCard from "../GlowCard";
 
 interface ProjectCardProps {
   project: Project;
@@ -33,10 +34,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
       animate="visible"
       exit="exit"
     >
-      <div
-        aria-label={project.title}
-        className="group h-full overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
-      >
+      <GlowCard aria-label={project.title}>
         <div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -120,7 +118,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
             {project.technologies.slice(0, 3).join(" · ")}
           </p>
         </motion.div>
-      </div>
+      </GlowCard>
     </motion.div>
   );
 };

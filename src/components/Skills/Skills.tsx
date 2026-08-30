@@ -1,6 +1,7 @@
 import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { SkillsData } from "../../data/skills";
+import GlowCard from "../GlowCard";
 
 interface SkillsProps {
   data: SkillsData;
@@ -76,32 +77,24 @@ const Skills = ({ data }: SkillsProps) => {
               key={category.title}
               variants={cardVariants}
             >
-              <div
-                aria-label={`${category.title} skills`}
-                className="group h-full overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
-              >
+              <GlowCard aria-label={`${category.title} skills`}>
                 <div className="p-7">
-                  {/* inner glow */}
-                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5" />
+                  <h3 className="text-xs font-bold tracking-[0.18em] uppercase text-indigo-500 mb-6">
+                    {category.title}
+                  </h3>
 
-                  <div className="relative">
-                    <h3 className="text-xs font-bold tracking-[0.18em] uppercase text-indigo-500 mb-6">
-                      {category.title}
-                    </h3>
-
-                    <div className="flex flex-wrap gap-2.5">
-                      {category.skills.map((skill) => (
-                        <span
-                          key={skill.name}
-                          className="px-3.5 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-full hover:border-indigo-500/30 dark:hover:border-indigo-400/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-400/10 transition-colors cursor-default"
-                        >
-                          {skill.name}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {category.skills.map((skill) => (
+                      <span
+                        key={skill.name}
+                        className="px-3.5 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-full hover:border-indigo-500/30 dark:hover:border-indigo-400/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-400/10 transition-colors cursor-default"
+                      >
+                        {skill.name}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </div>
+              </GlowCard>
             </motion.div>
           ))}
         </motion.div>
