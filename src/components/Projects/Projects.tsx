@@ -32,89 +32,95 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
       initial="hidden"
       animate="visible"
       exit="exit"
-      whileHover={{ y: -6 }}
-      transition={{ type: "spring", stiffness: 280, damping: 22 }}
-      className="group relative overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-2xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
     >
-      {/* image */}
-      <div className="aspect-video overflow-hidden">
-        <motion.img
-          src={project.image}
-          alt={project.title}
-          animate={{ scale: isHovered ? 1.08 : 1 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* hover overlay — glass panel */}
-      <motion.div
-        className={`absolute inset-0 z-10 flex flex-col justify-end p-6 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-transparent backdrop-blur-sm ${
-          isHovered ? "pointer-events-auto" : "pointer-events-none"
-        }`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
+      <div
+        aria-label={project.title}
+        className="group h-full overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
       >
-        <motion.div
-          initial={{ y: 12, opacity: 0 }}
-          animate={{ y: isHovered ? 0 : 12, opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="relative"
         >
-          <h3 className="text-lg font-semibold text-white mb-1">
+          {/* image */}
+          <div className="aspect-video overflow-hidden">
+            <motion.img
+              src={project.image}
+              alt={project.title}
+              animate={{ scale: isHovered ? 1.08 : 1 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* hover overlay — glass panel */}
+          <motion.div
+            className={`absolute inset-0 z-10 flex flex-col justify-end p-6 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-transparent backdrop-blur-sm ${
+              isHovered ? "pointer-events-auto" : "pointer-events-none"
+            }`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: isHovered ? 0 : 12, opacity: isHovered ? 1 : 0 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+            >
+              <h3 className="text-lg font-semibold text-white mb-1">
+                {project.title}
+              </h3>
+              <p className="text-sm text-slate-300 mb-4 line-clamp-2">
+                {project.description}
+              </p>
+
+              <div className="flex flex-wrap gap-1.5 mb-5">
+                {project.technologies.map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-2.5 py-0.5 text-xs font-medium bg-white/15 text-white/90 rounded-full border border-white/20"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 text-center px-4 py-2 text-sm font-medium rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors duration-200"
+                >
+                  Live Demo
+                </a>
+                <a
+                  href={project.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 text-center px-4 py-2 text-sm font-medium rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-colors duration-200"
+                >
+                  Source
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* bottom info bar (always visible) */}
+        <motion.div
+          className="p-4 border-t border-slate-200/60 dark:border-white/10"
+          animate={{ opacity: isHovered ? 0 : 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
             {project.title}
           </h3>
-          <p className="text-sm text-slate-300 mb-4 line-clamp-2">
-            {project.description}
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+            {project.technologies.slice(0, 3).join(" · ")}
           </p>
-
-          <div className="flex flex-wrap gap-1.5 mb-5">
-            {project.technologies.map((tech) => (
-              <span
-                key={tech}
-                className="px-2.5 py-0.5 text-xs font-medium bg-white/15 text-white/90 rounded-full border border-white/20"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex gap-3">
-            <a
-              href={project.demoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 text-center px-4 py-2 text-sm font-medium rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors duration-200"
-            >
-              Live Demo
-            </a>
-            <a
-              href={project.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 text-center px-4 py-2 text-sm font-medium rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-colors duration-200"
-            >
-              Source
-            </a>
-          </div>
         </motion.div>
-      </motion.div>
-
-      {/* bottom info bar (always visible) */}
-      <motion.div
-        className="p-4 border-t border-slate-200/60 dark:border-white/10"
-        animate={{ opacity: isHovered ? 0 : 1 }}
-        transition={{ duration: 0.2 }}
-      >
-        <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
-          {project.title}
-        </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-          {project.technologies.slice(0, 3).join(" · ")}
-        </p>
-      </motion.div>
+      </div>
     </motion.div>
   );
 };

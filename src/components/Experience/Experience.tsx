@@ -84,40 +84,38 @@ const Experience = ({ data }: ExperienceProps) => {
                 {/* Timeline Dot */}
                 <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-500 z-10 transition-transform duration-300 group-hover:scale-125" />
 
-                <div className={`
-                  relative overflow-hidden rounded-2xl p-6 sm:p-8
-                  bg-white/60 dark:bg-white/5
-                  border border-slate-200/60 dark:border-white/10
-                  backdrop-blur-xl
-                  shadow-sm hover:shadow-lg dark:hover:shadow-indigo-500/10
-                  transition-all duration-300
-                `}>
-                  {/* subtle inner glow on hover */}
-                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5" />
+                <div
+                  aria-label={`${item.role} at ${item.company}`}
+                  className="group overflow-hidden rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/10 transition-shadow duration-300"
+                >
+                  <div className="p-6 sm:p-8">
+                    {/* subtle inner glow on hover */}
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5" />
 
-                  <div className="relative">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                          {item.role}
-                        </h3>
-                        <p className="text-lg font-medium text-indigo-600 dark:text-indigo-400">
-                          {item.company}
-                        </p>
+                    <div className="relative">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {item.role}
+                          </h3>
+                          <p className="text-lg font-medium text-indigo-600 dark:text-indigo-400">
+                            {item.company}
+                          </p>
+                        </div>
+                        <span className="mt-2 sm:mt-0 inline-block px-3 py-1 text-sm font-semibold rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                          {item.duration}
+                        </span>
                       </div>
-                      <span className="mt-2 sm:mt-0 inline-block px-3 py-1 text-sm font-semibold rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5">
-                        {item.duration}
-                      </span>
-                    </div>
 
-                    <ul className="space-y-3 mt-6">
-                      {item.impact.map((point, i) => (
-                        <li key={i} className="flex text-base leading-relaxed text-slate-600 dark:text-slate-400">
-                          <span className="mr-3 text-indigo-400 mt-1.5 opacity-60">▹</span>
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
+                      <ul className="space-y-3 mt-6">
+                        {item.impact.map((point, i) => (
+                          <li key={i} className="flex text-base leading-relaxed text-slate-600 dark:text-slate-400">
+                            <span className="mr-3 text-indigo-400 mt-1.5 opacity-60">▹</span>
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </motion.div>
