@@ -35,6 +35,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
       exit="exit"
     >
       <GlowCard aria-label={project.title}>
+        {/* Outer wrapper is `relative` so the overlay can cover the full card height */}
         <div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -51,7 +52,21 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
             />
           </div>
 
-          {/* hover overlay — glass panel */}
+          {/* bottom info bar (always visible, fades out on hover) */}
+          <motion.div
+            className="p-4 border-t border-slate-200/60 dark:border-white/10"
+            animate={{ opacity: isHovered ? 0 : 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
+              {project.title}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+              {project.technologies.slice(0, 3).join(" · ")}
+            </p>
+          </motion.div>
+
+          {/* hover overlay — glass panel covering the full card */}
           <motion.div
             className={`absolute inset-0 z-10 flex flex-col justify-end p-6 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-transparent backdrop-blur-sm ${
               isHovered ? "pointer-events-auto" : "pointer-events-none"
@@ -68,7 +83,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
               <h3 className="text-lg font-semibold text-white mb-1">
                 {project.title}
               </h3>
-              <p className="text-sm text-slate-300 mb-4 line-clamp-2">
+              <p className="text-sm text-slate-300 mb-4 line-clamp-3">
                 {project.description}
               </p>
 
@@ -104,20 +119,6 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
             </motion.div>
           </motion.div>
         </div>
-
-        {/* bottom info bar (always visible) */}
-        <motion.div
-          className="p-4 border-t border-slate-200/60 dark:border-white/10"
-          animate={{ opacity: isHovered ? 0 : 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
-            {project.title}
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-            {project.technologies.slice(0, 3).join(" · ")}
-          </p>
-        </motion.div>
       </GlowCard>
     </motion.div>
   );
