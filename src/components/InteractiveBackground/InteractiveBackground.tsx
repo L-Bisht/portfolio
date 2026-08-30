@@ -5,10 +5,12 @@ import { useEffect, useRef, useCallback } from "react";
 interface Particle {
   x: number;
   y: number;
+  /** Velocity accumulated from mouse repulsion (decays each frame) */
   vx: number;
   vy: number;
-  baseX: number;
-  baseY: number;
+  /** Ambient drift speed components — constant, unaffected by repulsion */
+  driftVx: number;
+  driftVy: number;
   radius: number;
   opacity: number;
 }
@@ -25,29 +27,52 @@ interface Ripple {
 
 const PARTICLE_COUNT = 80;
 const CONNECT_DISTANCE = 120;
-const MOUSE_REPEL_RADIUS = 90;
-const MOUSE_REPEL_FORCE = 0.04;
-const RETURN_FORCE = 0.03;
-const DAMPING = 0.88;
-const RIPPLE_MAX_RADIUS = 140;
+
+// Drift — each particle autonomously drifts upward + slightly sideways
+const DRIFT_SPEED_MIN = 0.12; // px/frame upward
+const DRIFT_SPEED_MAX = 0.38;
+const DRIFT_LATERAL_MAX = 0.15; // px/frame left/right wobble
+
+// Mouse repulsion
+const MOUSE_REPEL_RADIUS = 100;
+const MOUSE_REPEL_FORCE = 0.05;
+const REPEL_DAMPING = 0.90; // velocity decay per frame
+
+// Click burst
+const RIPPLE_MAX_RADIUS = 160;
 const RIPPLE_EXPAND_SPEED = 3.5;
-const RIPPLE_FADE_SPEED = 0.018;
+const RIPPLE_FADE_SPEED = 0.016;
+const BURST_RADIUS = 180; // particles within this dist get kicked outward
+const BURST_FORCE = 4.0;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function makeParticle(width: number, height: number): Particle {
-  const x = Math.random() * width;
-  const y = Math.random() * height;
   return {
-    x,
-    y,
+    x: Math.random() * width,
+    // Spread particles across the full height; some start below so they
+    // drift in from the bottom on load — randomise y uniformly.
+    y: Math.random() * height,
     vx: 0,
     vy: 0,
-    baseX: x,
-    baseY: y,
+    // Upward drift: negative vy (canvas y increases downward)
+    driftVy: -(Math.random() * (DRIFT_SPEED_MAX - DRIFT_SPEED_MIN) + DRIFT_SPEED_MIN),
+    driftVx: (Math.random() * 2 - 1) * DRIFT_LATERAL_MAX,
     radius: Math.random() * 1.5 + 0.5,
-    opacity: Math.random() * 0.4 + 0.15,
+    opacity: Math.random() * 0.4 + 0.2,
   };
+}
+
+/** Wrap a particle that has drifted off-screen back to the opposite edge. */
+function wrapParticle(p: Particle, w: number, h: number) {
+  const margin = 10;
+  if (p.y < -margin) {
+    // Went off the top — reappear at the bottom with a fresh x position
+    p.y = h + margin;
+    p.x = Math.random() * w;
+  }
+  if (p.x < -margin) p.x = w + margin;
+  if (p.x > w + margin) p.x = -margin;
 }
 
 // ─── component ────────────────────────────────────────────────────────────────
@@ -58,7 +83,6 @@ export default function InteractiveBackground() {
   const particlesRef = useRef<Particle[]>([]);
   const ripplesRef = useRef<Ripple[]>([]);
   const rafRef = useRef<number>(0);
-  const isDarkRef = useRef<boolean>(false);
 
   // ── init particles ──────────────────────────────────────────────────────────
   const initParticles = useCallback((width: number, height: number) => {
@@ -67,15 +91,27 @@ export default function InteractiveBackground() {
     );
   }, []);
 
-  // ── handle click → spawn ripple ─────────────────────────────────────────────
+  // ── handle click → spawn ripple + burst nearby particles ───────────────────
   const handleClick = useCallback((e: MouseEvent) => {
     ripplesRef.current.push({
       x: e.clientX,
       y: e.clientY,
       radius: 0,
       maxRadius: RIPPLE_MAX_RADIUS,
-      opacity: 0.6,
+      opacity: 0.65,
     });
+
+    // Kick particles outward from the click point
+    for (const p of particlesRef.current) {
+      const dx = p.x - e.clientX;
+      const dy = p.y - e.clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < BURST_RADIUS && dist > 0) {
+        const strength = (1 - dist / BURST_RADIUS) * BURST_FORCE;
+        p.vx += (dx / dist) * strength;
+        p.vy += (dy / dist) * strength;
+      }
+    }
   }, []);
 
   // ── main effect ─────────────────────────────────────────────────────────────
@@ -112,7 +148,6 @@ export default function InteractiveBackground() {
       const h = canvas.height;
       const mouse = mouseRef.current;
       const isDark = document.documentElement.classList.contains("dark");
-      isDarkRef.current = isDark;
 
       ctx.clearRect(0, 0, w, h);
 
@@ -142,34 +177,34 @@ export default function InteractiveBackground() {
       // ── update + draw particles ───────────────────────────────────────────
       const particles = particlesRef.current;
       for (const p of particles) {
-        // mouse repulsion
+        // ── 1. Mouse repulsion (adds to transient velocity vx/vy) ─────────
         const dx = p.x - mouse.x;
         const dy = p.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < MOUSE_REPEL_RADIUS && dist > 0) {
           const force = (MOUSE_REPEL_RADIUS - dist) / MOUSE_REPEL_RADIUS;
-          p.vx += (dx / dist) * force * MOUSE_REPEL_FORCE * 10;
-          p.vy += (dy / dist) * force * MOUSE_REPEL_FORCE * 10;
+          p.vx += (dx / dist) * force * MOUSE_REPEL_FORCE * 12;
+          p.vy += (dy / dist) * force * MOUSE_REPEL_FORCE * 12;
         }
 
-        // return to base
-        p.vx += (p.baseX - p.x) * RETURN_FORCE;
-        p.vy += (p.baseY - p.y) * RETURN_FORCE;
+        // ── 2. Decay transient velocity ────────────────────────────────────
+        p.vx *= REPEL_DAMPING;
+        p.vy *= REPEL_DAMPING;
 
-        // damping
-        p.vx *= DAMPING;
-        p.vy *= DAMPING;
+        // ── 3. Apply drift + transient velocity ────────────────────────────
+        p.x += p.driftVx + p.vx;
+        p.y += p.driftVy + p.vy;
 
-        p.x += p.vx;
-        p.y += p.vy;
+        // ── 4. Wrap around canvas edges ────────────────────────────────────
+        wrapParticle(p, w, h);
 
-        // draw dot
+        // ── 5. Draw dot ────────────────────────────────────────────────────
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = isDark
-          ? `rgba(148, 163, 184, ${p.opacity})`
-          : `rgba(100, 116, 139, ${p.opacity * 0.7})`;
+          ? `rgba(148, 163, 184, ${p.opacity})`           // slate-400
+          : `rgba(67, 56, 202, ${p.opacity * 0.75})`;     // indigo-700 — deeper + visible
         ctx.fill();
       }
 
@@ -178,17 +213,17 @@ export default function InteractiveBackground() {
         for (let j = i + 1; j < particles.length; j++) {
           const a = particles[i];
           const b = particles[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < CONNECT_DISTANCE) {
-            const alpha = (1 - dist / CONNECT_DISTANCE) * 0.18;
+          const cdx = a.x - b.x;
+          const cdy = a.y - b.y;
+          const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+          if (cdist < CONNECT_DISTANCE) {
+            const alpha = (1 - cdist / CONNECT_DISTANCE) * 0.18;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
             ctx.strokeStyle = isDark
               ? `rgba(148, 163, 184, ${alpha})`
-              : `rgba(100, 116, 139, ${alpha * 0.6})`;
+              : `rgba(67, 56, 202, ${alpha * 0.65})`; // indigo-700 connections
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -202,7 +237,7 @@ export default function InteractiveBackground() {
         ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
         ctx.strokeStyle = isDark
           ? `rgba(129, 140, 248, ${r.opacity})`
-          : `rgba(99, 102, 241, ${r.opacity})`;
+          : `rgba(67, 56, 202, ${r.opacity})`;
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
