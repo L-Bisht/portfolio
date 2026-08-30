@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sun, Moon, Search } from "lucide-react";
+import { Sun, Moon, Search } from "lucide-react";
 import type { NavData } from "../../data/nav";
 import { useTheme } from "../../context/ThemeContext";
 import { useCommandPalette } from "../../context/CommandPaletteContext";
@@ -10,22 +9,21 @@ interface NavbarProps {
 }
 
 const Navbar = ({ data }: NavbarProps) => {
-  const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { openPalette } = useCommandPalette();
-
-  const navItems = data.items;
 
   return (
     <nav className="fixed w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm z-50 border-b border-slate-200/50 dark:border-slate-700/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Developer name / logo */}
+        {/* Three-column grid: logo | search | theme-toggle */}
+        <div className="grid grid-cols-3 items-center h-16">
+
+          {/* ── Left: Logo ── */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex-shrink-0"
+            className="flex items-center"
           >
             <a
               href="#home"
@@ -35,29 +33,15 @@ const Navbar = ({ data }: NavbarProps) => {
             </a>
           </motion.div>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item, i) => (
-              <motion.a
-                key={item.name}
-                href={item.href}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-slate-700 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-300"
-              >
-                {item.name}
-              </motion.a>
-            ))}
-
-            {/* Navigate / Command Palette trigger */}
+          {/* ── Center: Command Palette trigger ── */}
+          <div className="flex justify-center">
             <motion.button
               id="command-palette-trigger"
               aria-label="Open navigation command palette (⌘K)"
               onClick={openPalette}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: navItems.length * 0.1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="group relative flex items-center gap-2 px-3 py-1.5 rounded-lg
@@ -83,15 +67,17 @@ const Navbar = ({ data }: NavbarProps) => {
                 ⌘K
               </kbd>
             </motion.button>
+          </div>
 
-            {/* Theme toggle — desktop */}
+          {/* ── Right: Theme Toggle ── */}
+          <div className="flex justify-end">
             <motion.button
               id="theme-toggle-desktop"
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               onClick={toggleTheme}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: (navItems.length + 1) * 0.1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="relative w-9 h-9 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
@@ -122,84 +108,8 @@ const Navbar = ({ data }: NavbarProps) => {
             </motion.button>
           </div>
 
-          {/* Mobile: theme toggle + hamburger */}
-          <div className="flex items-center space-x-2 md:hidden">
-            {/* Mobile Navigate trigger (icon-only) */}
-            <button
-              id="command-palette-trigger-mobile"
-              aria-label="Open navigation command palette"
-              onClick={openPalette}
-              className="p-2 rounded-md text-indigo-500 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors duration-200"
-            >
-              <Search size={20} strokeWidth={1.5} />
-            </button>
-
-            <button
-              id="theme-toggle-mobile"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              onClick={toggleTheme}
-              className="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {theme === "dark" ? (
-                  <motion.span
-                    key="sun-mobile"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="block"
-                  >
-                    <Sun size={20} strokeWidth={1.5} />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="moon-mobile"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="block"
-                  >
-                    <Moon size={20} strokeWidth={1.5} />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
-            >
-              {isOpen ? (
-                <X size={24} strokeWidth={1.75} />
-              ) : (
-                <Menu size={24} strokeWidth={1.75} />
-              )}
-            </button>
-          </div>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      <motion.div
-        initial={false}
-        animate={{ height: isOpen ? "auto" : 0 }}
-        className="md:hidden overflow-hidden"
-      >
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          {navItems.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="nav-link block px-3 py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </a>
-          ))}
-        </div>
-      </motion.div>
     </nav>
   );
 };
