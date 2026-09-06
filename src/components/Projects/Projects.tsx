@@ -72,7 +72,7 @@ function TechChip({ label }: { label: string }) {
       whileHover={{ y: -2, scale: 1.05 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide border
-        bg-indigo-500/8 border-indigo-500/20 text-indigo-400
+        bg-indigo-500/8 border-indigo-500/20 text-indigo-700 dark:text-indigo-400
         hover:bg-indigo-500/14 hover:border-indigo-400/40 hover:shadow-indigo-500/20
         transition-all duration-200 cursor-default"
       style={{
@@ -248,23 +248,23 @@ function CaseStudyRow({
         className="inline-flex items-center gap-2 mb-5 self-start"
       >
         <span className="h-px w-6 bg-indigo-500/60" />
-        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-indigo-400">
+        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-indigo-600 dark:text-indigo-400">
           {project.category}
         </span>
       </motion.span>
 
       {/* Title */}
-      <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-6 leading-tight">
+      <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
         {project.title}
       </h3>
 
       {/* Problem / Solution narrative */}
       <div className="space-y-4 mb-8">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-rose-400/80 mb-1.5">
+          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-rose-600 dark:text-rose-400/80 mb-1.5">
             The Problem
           </p>
-          <p className="text-sm leading-relaxed text-slate-400">{project.problem}</p>
+          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{project.problem}</p>
         </div>
         <div
           className="w-full h-px opacity-20"
@@ -274,10 +274,10 @@ function CaseStudyRow({
           aria-hidden="true"
         />
         <div>
-          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-emerald-400/80 mb-1.5">
+          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-emerald-700 dark:text-emerald-400/80 mb-1.5">
             The Solution
           </p>
-          <p className="text-sm leading-relaxed text-slate-400">{project.solution}</p>
+          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{project.solution}</p>
         </div>
       </div>
 
@@ -317,7 +317,7 @@ function CaseStudyRow({
           href={project.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white text-sm font-semibold border border-white/10 hover:border-white/20 transition-all duration-200 hover:-translate-y-0.5"
+          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 hover:text-slate-900 dark:text-white/80 dark:hover:text-white text-sm font-semibold border border-slate-200 hover:border-slate-300 dark:border-white/10 dark:hover:border-white/20 transition-all duration-200 hover:-translate-y-0.5"
         >
           <svg
             className="w-4 h-4"
@@ -356,7 +356,7 @@ function CaseStudyRow({
           grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center
           py-16 px-10 lg:px-14
           bg-white/[0.03] dark:bg-white/[0.02]
-          border border-white/[0.07]
+          border border-slate-200/80 dark:border-white/[0.07]
           backdrop-blur-sm
           transition-all duration-500
           ${index > 0 ? "mt-6" : ""}
@@ -474,7 +474,7 @@ const Projects = ({ data }: ProjectsProps) => {
             className="flex items-center gap-3 mb-4"
           >
             <span className="h-px w-8 bg-indigo-500/60" />
-            <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-400">
+            <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400">
               Work
             </span>
           </motion.div>
@@ -487,7 +487,7 @@ const Projects = ({ data }: ProjectsProps) => {
               animate={inView ? "visible" : "hidden"}
               className="flex flex-wrap gap-x-4 gap-y-1
                 text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
-                text-white"
+                text-slate-900 dark:text-white"
             >
               {titleWords.map((word, i) => (
                 <span key={i} className="overflow-hidden inline-block">
@@ -495,7 +495,7 @@ const Projects = ({ data }: ProjectsProps) => {
                     variants={wordVariant}
                     className={`inline-block ${
                       i === lastWordIdx
-                        ? "bg-gradient-to-r from-indigo-400 via-violet-500 to-indigo-400 bg-clip-text text-transparent"
+                        ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 dark:from-indigo-400 dark:via-violet-500 dark:to-indigo-400 bg-clip-text text-transparent"
                         : ""
                     }`}
                   >
@@ -510,7 +510,7 @@ const Projects = ({ data }: ProjectsProps) => {
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
             transition={{ duration: 0.5, delay: 0.35 }}
-            className="text-slate-400 text-base"
+            className="text-slate-600 dark:text-slate-400 text-base"
           >
             {data.subtitle}
           </motion.p>

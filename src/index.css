@@ -56,14 +56,14 @@
     vertical-align: bottom;
   }
 
-  /* Animated gradient text — slate to indigo, premium monochrome feel */
+  /* Animated gradient text — slate to indigo in light mode, crisp white to indigo in dark mode */
   .hero-name-gradient {
-    background: linear-gradient(
+    background-image: linear-gradient(
       120deg,
-      #e2e8f0 0%,
-      #a5b4fc 35%,
-      #818cf8 65%,
-      #e2e8f0 100%
+      #0f172a 0%,
+      #4338ca 35%,
+      #6366f1 65%,
+      #0f172a 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -71,6 +71,21 @@
     -webkit-text-fill-color: transparent;
     animation: gradient-shift 6s linear infinite;
   }
+
+  .dark .hero-name-gradient,
+  :is(.dark *) .hero-name-gradient {
+    background-image: linear-gradient(
+      120deg,
+      #ffffff 0%,
+      #c7d2fe 35%,
+      #818cf8 65%,
+      #ffffff 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
 
   /* Glow pulse for CTA buttons */
   .btn-glow {

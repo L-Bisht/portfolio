@@ -10,39 +10,39 @@ const ACCENT = {
     glowHex: "#6366f1",
     glowSoft: "rgba(99,102,241,0.12)",
     border: "rgba(99,102,241,0.35)",
-    badge: "text-indigo-400 bg-indigo-500/10 border-indigo-500/25",
-    chip: "hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-indigo-300",
-    chipDescriptor: "text-indigo-400/80",
+    badge: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/25",
+    chip: "hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-300",
+    chipDescriptor: "text-indigo-600 dark:text-indigo-400/80",
     connector: "from-indigo-500/40 to-transparent",
     ambientTop: "bg-indigo-500/8",
     ambientBot: "bg-indigo-600/6",
-    gradientKeyword: "from-indigo-400 via-violet-400 to-cyan-400",
+    gradientKeyword: "from-indigo-600 via-violet-600 to-cyan-600 dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-400",
   },
   violet: {
     glow: "rgba(139,92,246,0.55)",
     glowHex: "#8b5cf6",
     glowSoft: "rgba(139,92,246,0.12)",
     border: "rgba(139,92,246,0.35)",
-    badge: "text-violet-400 bg-violet-500/10 border-violet-500/25",
-    chip: "hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-violet-300",
-    chipDescriptor: "text-violet-400/80",
+    badge: "text-violet-600 dark:text-violet-400 bg-violet-500/10 border-violet-500/25",
+    chip: "hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-300",
+    chipDescriptor: "text-violet-600 dark:text-violet-400/80",
     connector: "from-violet-500/40 to-transparent",
     ambientTop: "bg-violet-500/8",
     ambientBot: "bg-violet-600/6",
-    gradientKeyword: "from-violet-400 via-indigo-400 to-purple-400",
+    gradientKeyword: "from-violet-600 via-indigo-600 to-purple-600 dark:from-violet-400 dark:via-indigo-400 dark:to-purple-400",
   },
   cyan: {
     glow: "rgba(6,182,212,0.55)",
     glowHex: "#06b6d4",
     glowSoft: "rgba(6,182,212,0.12)",
     border: "rgba(6,182,212,0.35)",
-    badge: "text-cyan-400 bg-cyan-500/10 border-cyan-500/25",
-    chip: "hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-300",
-    chipDescriptor: "text-cyan-400/80",
+    badge: "text-cyan-700 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/25",
+    chip: "hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-700 dark:hover:text-cyan-300",
+    chipDescriptor: "text-cyan-700 dark:text-cyan-400/80",
     connector: "from-cyan-500/40 to-transparent",
     ambientTop: "bg-cyan-500/8",
     ambientBot: "bg-cyan-600/6",
-    gradientKeyword: "from-cyan-400 via-sky-400 to-indigo-400",
+    gradientKeyword: "from-cyan-600 via-sky-600 to-indigo-600 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400",
   },
 } as const;
 
@@ -135,9 +135,9 @@ function CapabilityChip({
       className={[
         "relative inline-flex flex-col items-start gap-0.5",
         "px-3.5 py-2 rounded-xl cursor-default select-none",
-        "border border-white/10 dark:border-white/8",
-        "bg-white/5 dark:bg-white/3",
-        "text-slate-300 dark:text-slate-300",
+        "border border-slate-200 dark:border-white/8",
+        "bg-slate-50 dark:bg-white/3",
+        "text-slate-700 dark:text-slate-300",
         "text-sm font-medium leading-tight",
         "transition-all duration-200",
         a.chip,
@@ -263,10 +263,10 @@ function StratumCard({
               >
                 {tier.badge}
               </span>
-              <h3 className="text-lg md:text-xl font-bold text-white leading-tight mb-1.5">
+              <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white leading-tight mb-1.5">
                 {tier.title}
               </h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {tier.subtitle}
               </p>
             </div>
@@ -381,7 +381,7 @@ const Skills = ({ data }: SkillsProps) => {
           className="flex items-center gap-3 mb-4"
         >
           <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-400">
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400">
             {data.sectionLabel}
           </span>
         </motion.div>
@@ -394,7 +394,7 @@ const Skills = ({ data }: SkillsProps) => {
             animate={inView ? "visible" : "hidden"}
             className="flex flex-wrap gap-x-4 gap-y-1
               text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
-              text-white"
+              text-slate-900 dark:text-white"
           >
             {titleWords.map((word, i) => (
               <span key={i} className="overflow-hidden inline-block">
@@ -402,7 +402,7 @@ const Skills = ({ data }: SkillsProps) => {
                   variants={wordVariant}
                   className={`inline-block ${
                     i === lastWordIdx
-                      ? "bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
+                      ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-600 dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-400 bg-clip-text text-transparent"
                       : ""
                   }`}
                 >
@@ -418,7 +418,7 @@ const Skills = ({ data }: SkillsProps) => {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5, delay: 0.35 }}
-          className="text-slate-400 text-base mb-16 max-w-xl"
+          className="text-slate-600 dark:text-slate-400 text-base mb-16 max-w-xl"
         >
           Three layers of craft — from pixel to model.
         </motion.p>

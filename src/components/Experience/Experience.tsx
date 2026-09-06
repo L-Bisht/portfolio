@@ -6,34 +6,34 @@ import type { ExperienceData, ExperienceMetric } from "../../data/experience";
 // ─── Accent palette ────────────────────────────────────────────────────────────
 const METRIC_ACCENT = {
   emerald: {
-    tag: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+    tag: "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400",
     glow: "rgba(16,185,129,0.45)",
     glowSoft: "rgba(16,185,129,0.12)",
-    dot: "bg-emerald-400",
+    dot: "bg-emerald-500 dark:bg-emerald-400",
   },
   indigo: {
-    tag: "bg-indigo-500/10 border-indigo-500/30 text-indigo-400",
+    tag: "bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-400",
     glow: "rgba(99,102,241,0.45)",
     glowSoft: "rgba(99,102,241,0.12)",
-    dot: "bg-indigo-400",
+    dot: "bg-indigo-500 dark:bg-indigo-400",
   },
   violet: {
-    tag: "bg-violet-500/10 border-violet-500/30 text-violet-400",
+    tag: "bg-violet-500/10 border-violet-500/30 text-violet-700 dark:text-violet-400",
     glow: "rgba(139,92,246,0.45)",
     glowSoft: "rgba(139,92,246,0.12)",
-    dot: "bg-violet-400",
+    dot: "bg-violet-500 dark:bg-violet-400",
   },
   amber: {
-    tag: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+    tag: "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400",
     glow: "rgba(245,158,11,0.45)",
     glowSoft: "rgba(245,158,11,0.12)",
-    dot: "bg-amber-400",
+    dot: "bg-amber-500 dark:bg-amber-400",
   },
   cyan: {
-    tag: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
+    tag: "bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-400",
     glow: "rgba(6,182,212,0.45)",
     glowSoft: "rgba(6,182,212,0.12)",
-    dot: "bg-cyan-400",
+    dot: "bg-cyan-500 dark:bg-cyan-400",
   },
 } as const;
 
@@ -126,11 +126,11 @@ function MetricTag({
         boxShadow: `0 0 10px ${a.glow}`,
         transition: "box-shadow 0.25s ease",
       }}
-      onHoverStart={(e, info) => {
+      onHoverStart={(e) => {
         const el = (e.target as HTMLElement);
         el.style.boxShadow = `0 0 18px ${a.glow}, 0 0 6px ${a.glowSoft}`;
       }}
-      onHoverEnd={(e, info) => {
+      onHoverEnd={(e) => {
         const el = (e.target as HTMLElement);
         el.style.boxShadow = `0 0 10px ${a.glow}`;
       }}
@@ -181,8 +181,8 @@ function LedgerRow({
         "grid grid-cols-1 md:grid-cols-[220px_1fr] gap-0",
         "rounded-2xl overflow-hidden",
         /* Adaptive dual-mode glass */
-        "bg-white/[0.06] dark:bg-white/[0.03]",
-        "border border-white/10 dark:border-white/8",
+        "bg-slate-50/60 dark:bg-white/[0.03]",
+        "border border-slate-200/80 dark:border-white/8",
         "backdrop-blur-xl",
         "transition-all duration-400",
         !isLast ? "mb-5" : "",
@@ -241,7 +241,7 @@ function LedgerRow({
         className={[
           "relative flex flex-col gap-2",
           /* Vertical divider on md+ */
-          "md:border-r border-b md:border-b-0 border-white/8",
+          "md:border-r border-b md:border-b-0 border-slate-200/60 dark:border-white/8",
           /* Soft left-accent gradient */
           "bg-white/[0.02] dark:bg-white/[0.02]",
           "p-6 md:p-7 md:pr-6",
@@ -252,7 +252,7 @@ function LedgerRow({
           initial={{ opacity: 0, x: -12 }}
           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
           transition={{ duration: 0.5, delay: rowDelay + 0.05 }}
-          className="text-[11px] font-bold tracking-[0.22em] uppercase text-indigo-400/80 mb-1"
+          className="text-[11px] font-bold tracking-[0.22em] uppercase text-indigo-600 dark:text-indigo-400/80 mb-1"
         >
           {item.period}
         </motion.span>
@@ -262,7 +262,7 @@ function LedgerRow({
           initial={{ opacity: 0, x: -12 }}
           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
           transition={{ duration: 0.5, delay: rowDelay + 0.1 }}
-          className="text-lg font-bold text-white leading-tight"
+          className="text-lg font-bold text-slate-900 dark:text-white leading-tight"
         >
           {item.company}
         </motion.p>
@@ -272,7 +272,7 @@ function LedgerRow({
           initial={{ opacity: 0, x: -12 }}
           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
           transition={{ duration: 0.5, delay: rowDelay + 0.15 }}
-          className="text-sm font-medium text-slate-400 leading-snug"
+          className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-snug"
         >
           {item.role}
         </motion.p>
@@ -282,7 +282,7 @@ function LedgerRow({
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.45, delay: rowDelay + 0.22 }}
-          className="mt-auto inline-block text-[11px] font-mono text-slate-500 dark:text-slate-600 tracking-wide pt-3"
+          className="mt-auto inline-block text-[11px] font-mono text-slate-500 dark:text-slate-400 tracking-wide pt-3"
         >
           {item.duration}
         </motion.span>
@@ -324,7 +324,7 @@ function LedgerRow({
                 delay: rowDelay + 0.35 + i * 0.07,
                 ease: "easeOut",
               }}
-              className="flex items-start gap-3 text-sm leading-relaxed text-slate-400 dark:text-slate-400"
+              className="flex items-start gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400"
             >
               {/* Bullet chevron */}
               <span
@@ -408,7 +408,7 @@ const Experience = ({ data }: ExperienceProps) => {
           className="flex items-center gap-3 mb-4"
         >
           <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-400">
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400">
             {data.title}
           </span>
         </motion.div>
@@ -421,7 +421,7 @@ const Experience = ({ data }: ExperienceProps) => {
             animate={inView ? "visible" : "hidden"}
             className="flex flex-wrap gap-x-4 gap-y-1
               text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
-              text-white"
+              text-slate-900 dark:text-white"
           >
             {titleWords.map((word, i) => (
               <span key={i} className="overflow-hidden inline-block">
@@ -429,7 +429,7 @@ const Experience = ({ data }: ExperienceProps) => {
                   variants={wordVariant}
                   className={`inline-block ${
                     i === lastWordIdx
-                      ? "bg-gradient-to-r from-emerald-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent"
+                      ? "bg-gradient-to-r from-emerald-600 via-indigo-600 to-violet-600 dark:from-emerald-400 dark:via-indigo-400 dark:to-violet-400 bg-clip-text text-transparent"
                       : ""
                   }`}
                 >
@@ -445,7 +445,7 @@ const Experience = ({ data }: ExperienceProps) => {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.5, delay: 0.35 }}
-          className="text-slate-400 text-base mb-16 max-w-xl"
+          className="text-slate-600 dark:text-slate-400 text-base mb-16 max-w-xl"
         >
           Seven years building at scale — measured in metrics that moved the needle.
         </motion.p>

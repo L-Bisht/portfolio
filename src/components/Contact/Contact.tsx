@@ -198,7 +198,7 @@ function ActionCard({
 
       {/* Text */}
       <div className="relative flex-1">
-        <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500 mb-1.5">
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 mb-1.5">
           {label}
         </div>
         <div
@@ -366,7 +366,7 @@ const Contact = ({ data }: ContactProps) => {
                   variants={wordVariant}
                   className={`inline-block ${
                     word === "extraordinary."
-                      ? "bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-400 bg-clip-text text-transparent"
+                      ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 dark:from-indigo-500 dark:via-violet-500 dark:to-indigo-400 bg-clip-text text-transparent"
                       : ""
                   }`}
                 >
@@ -380,7 +380,7 @@ const Contact = ({ data }: ContactProps) => {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.7, delay: 0.5 }}
-            className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed"
+            className="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed"
           >
             {data.description} Reach out through any of the channels below — I
             typically respond within 24 hours.
