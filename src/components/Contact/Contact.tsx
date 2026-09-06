@@ -1,44 +1,84 @@
 import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import type { ContactData, SocialIcon } from "../../data/contact";
+import type { ContactData } from "../../data/contact";
 
-interface FormData {
-  name: string;
-  email: string;
-  message: string;
+/* ─────────────────────────── SVG Icons ─────────────────────────── */
+
+function EmailIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
 }
 
-function BrandIcon({ icon }: { icon: SocialIcon }) {
-  if (icon === "github") {
-    return (
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-      </svg>
-    );
-  }
-  if (icon === "linkedin") {
-    return (
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-      </svg>
-    );
-  }
-  // twitter / X
+function LinkedInIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
+function GitHubIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+    </svg>
+  );
+}
+
+function ResumeIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function ArrowUpRightIcon() {
   return (
     <svg
       aria-hidden="true"
@@ -46,262 +86,336 @@ function BrandIcon({ icon }: { icon: SocialIcon }) {
       width="16"
       height="16"
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
     </svg>
   );
 }
+
+/* ───────────────────────── Action Card ─────────────────────────── */
+
+interface ActionCardProps {
+  label: string;
+  sublabel: string;
+  href: string;
+  icon: React.ReactNode;
+  accent: string;
+  accentDark: string;
+  external?: boolean;
+  index: number;
+}
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      delay: i * 0.1,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
+
+function ActionCard({
+  label,
+  sublabel,
+  href,
+  icon,
+  accent,
+  accentDark,
+  external = false,
+  index,
+}: ActionCardProps) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <motion.a
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      variants={cardVariants}
+      custom={index}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group relative flex flex-col gap-5 p-7 rounded-2xl overflow-hidden
+        bg-white/70 dark:bg-white/[0.04]
+        border border-slate-200/80 dark:border-white/[0.08]
+        backdrop-blur-xl shadow-sm
+        hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10
+        hover:border-indigo-400/50 dark:hover:border-indigo-500/40
+        transition-all duration-500 cursor-pointer"
+      style={{ textDecoration: "none" }}
+      aria-label={`${label} — ${sublabel}`}
+    >
+      {/* Animated glow fill on hover */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        animate={{
+          opacity: hovered ? 1 : 0,
+          background: hovered
+            ? `radial-gradient(ellipse at 30% 50%, ${accent}14 0%, transparent 70%)`
+            : "none",
+        }}
+        transition={{ duration: 0.4 }}
+      />
+
+      {/* Accent top-line */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-px"
+        animate={{
+          opacity: hovered ? 1 : 0,
+          background: `linear-gradient(90deg, transparent, ${accent}80, transparent)`,
+        }}
+        transition={{ duration: 0.4 }}
+      />
+
+      {/* Icon */}
+      <div
+        className="relative flex items-center justify-center w-14 h-14 rounded-xl
+          bg-slate-100 dark:bg-white/[0.06]
+          group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10
+          transition-colors duration-300"
+        style={{
+          color: hovered ? accent : undefined,
+        }}
+      >
+        <motion.div
+          animate={{ color: hovered ? accent : accentDark }}
+          transition={{ duration: 0.3 }}
+          className="dark:[--icon-color:var(--tw-text-opacity)]"
+        >
+          {icon}
+        </motion.div>
+      </div>
+
+      {/* Text */}
+      <div className="relative flex-1">
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500 mb-1.5">
+          {label}
+        </div>
+        <div
+          className="text-base font-semibold text-slate-700 dark:text-slate-300 
+            group-hover:text-slate-900 dark:group-hover:text-white
+            transition-colors duration-300 break-all leading-snug"
+        >
+          {sublabel}
+        </div>
+      </div>
+
+      {/* Arrow indicator */}
+      <motion.div
+        className="relative self-end text-slate-300 dark:text-slate-600"
+        animate={{
+          color: hovered ? accent : undefined,
+          x: hovered ? 2 : 0,
+          y: hovered ? -2 : 0,
+        }}
+        transition={{ duration: 0.25 }}
+      >
+        <ArrowUpRightIcon />
+      </motion.div>
+    </motion.a>
+  );
+}
+
+/* ─────────────────────────── Contact ───────────────────────────── */
 
 interface ContactProps {
   data: ContactData;
 }
 
+const headlineVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+  },
+};
+
+const wordVariant: Variants = {
+  hidden: { opacity: 0, y: 60, rotateX: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const HEADLINE_WORDS = ["Let's", "build", "something", "extraordinary."];
+
 const Contact = ({ data }: ContactProps) => {
-  const [ref, inView] = useInView({ 
-    triggerOnce: false, 
-    threshold: 0,
-    rootMargin: "-20% 0px -20% 0px"
+  const [ref, inView] = useInView({
+    triggerOnce: false,
+    threshold: 0.05,
+    rootMargin: "-5% 0px -5% 0px",
   });
 
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(null);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSubmitStatus("success");
-      setFormData({ name: "", email: "", message: "" });
-    } catch {
-      setSubmitStatus("error");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.12, delayChildren: 0.15 },
+  const cards: ActionCardProps[] = [
+    {
+      label: "Email",
+      sublabel: data.email,
+      href: `mailto:${data.email}`,
+      icon: <EmailIcon />,
+      accent: "#6366f1",
+      accentDark: "#818cf8",
+      external: false,
+      index: 0,
     },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 28 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
+    {
+      label: "LinkedIn",
+      sublabel: "lalit-bisht-8b4b82152",
+      href:
+        data.socialLinks.find((l) => l.icon === "linkedin")?.url ??
+        "https://linkedin.com/in/lalit-bisht-8b4b82152/",
+      icon: <LinkedInIcon />,
+      accent: "#0ea5e9",
+      accentDark: "#38bdf8",
+      external: true,
+      index: 1,
     },
-  };
-
-  const inputClass =
-    "w-full px-4 py-3 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200";
+    {
+      label: "GitHub",
+      sublabel: "github.com/l-bisht",
+      href:
+        data.socialLinks.find((l) => l.icon === "github")?.url ??
+        "https://github.com/l-bisht",
+      icon: <GitHubIcon />,
+      accent: "#a78bfa",
+      accentDark: "#c4b5fd",
+      external: true,
+      index: 2,
+    },
+    {
+      label: "Resume",
+      sublabel: "Download PDF",
+      href: "/resume.pdf",
+      icon: <ResumeIcon />,
+      accent: "#10b981",
+      accentDark: "#34d399",
+      external: true,
+      index: 3,
+    },
+  ];
 
   return (
     <section
       ref={ref}
       id="contact"
-      className="relative py-28 px-4 sm:px-8 lg:px-16 overflow-hidden"
+      className="relative w-full overflow-hidden"
     >
-      {/* Ambient blobs */}
-      <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-3xl" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full bg-indigo-400/8 dark:bg-indigo-600/6 blur-3xl" />
+      {/* ── Cinematic ambient backdrop ───────────────────────────── */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Deep base wash */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100/60 to-slate-200/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900" />
+
+        {/* Left aurora */}
+        <div className="absolute -left-32 top-1/4 w-[600px] h-[600px] rounded-full
+          bg-indigo-400/10 dark:bg-indigo-600/8 blur-[120px]" />
+
+        {/* Right aurora */}
+        <div className="absolute -right-32 bottom-1/4 w-[500px] h-[500px] rounded-full
+          bg-violet-400/8 dark:bg-violet-600/6 blur-[100px]" />
+
+        {/* Center vertical spotlight (dark mode only) */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-40
+          bg-gradient-to-b from-transparent via-indigo-500/30 dark:via-indigo-400/20 to-transparent" />
+
+        {/* Horizontal rule at top — editorial separator */}
+        <div className="absolute top-0 left-0 right-0 h-px
+          bg-gradient-to-r from-transparent via-indigo-400/30 dark:via-indigo-500/20 to-transparent" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto">
-        {/* Section label */}
+      {/* ── Inner content ──────────────────────────────────────── */}
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-32 lg:py-44">
+
+        {/* Section eyebrow */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          initial={{ opacity: 0, x: -16 }}
+          animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-3 mb-4"
+          className="flex items-center gap-3 mb-10"
         >
-          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-500">
+          <span className="h-px w-8 bg-indigo-500/60" />
+          <span className="text-xs font-bold tracking-[0.25em] uppercase text-indigo-500">
             Contact
           </span>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.55, delay: 0.1 }}
-          className="mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">
-            {data.title}
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-base max-w-xl">
-            {data.description}
-          </p>
-        </motion.div>
+        {/* Commanding headline */}
+        <div className="mb-20 lg:mb-24 perspective-[1200px]">
+          <motion.h2
+            variants={headlineVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="flex flex-wrap gap-x-5 gap-y-2
+              text-[clamp(2.8rem,7vw,7rem)] font-extrabold tracking-tight leading-[1.05]
+              text-slate-900 dark:text-white"
+          >
+            {HEADLINE_WORDS.map((word) => (
+              <span key={word} className="overflow-hidden inline-block">
+                <motion.span
+                  variants={wordVariant}
+                  className={`inline-block ${
+                    word === "extraordinary."
+                      ? "bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-400 bg-clip-text text-transparent"
+                      : ""
+                  }`}
+                >
+                  {word}
+                </motion.span>
+              </span>
+            ))}
+          </motion.h2>
 
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+            className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed"
+          >
+            {data.description} Reach out through any of the channels below — I
+            typically respond within 24 hours.
+          </motion.p>
+        </div>
+
+        {/* Communication cards grid */}
         <motion.div
-          variants={containerVariants}
+          variants={{ visible: { transition: { staggerChildren: 0 } } }}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="grid md:grid-cols-5 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         >
-          {/* Form — 3 cols */}
-          <motion.form
-            variants={itemVariants}
-            onSubmit={handleSubmit}
-            className="md:col-span-3 space-y-5 p-8 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm"
-          >
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Your name"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="you@example.com"
-                  className={inputClass}
-                />
-              </div>
-            </div>
+          {cards.map((card) => (
+            <ActionCard key={card.label} {...card} />
+          ))}
+        </motion.div>
 
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2"
-              >
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                required
-                rows={6}
-                placeholder="Tell me about your project..."
-                className={`${inputClass} resize-none`}
-              />
-            </div>
-
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-3 px-6 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 shadow-lg shadow-indigo-500/25 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Sending…" : "Send Message"}
-            </motion.button>
-
-            {submitStatus && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`text-center p-3 rounded-xl text-sm font-medium ${submitStatus === "success"
-                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                  : "bg-red-500/10 text-red-500 border border-red-500/20"
-                  }`}
-              >
-                {submitStatus === "success"
-                  ? "Message sent successfully! I'll be in touch soon."
-                  : "Something went wrong. Please try again."}
-              </motion.div>
-            )}
-          </motion.form>
-
-          {/* Info — 2 cols */}
-          <motion.div
-            variants={itemVariants}
-            className="md:col-span-2 flex flex-col gap-5"
-          >
-            {/* Email card */}
-            <a
-              href={`mailto:${data.email}`}
-              className="group p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg dark:hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-300"
-            >
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-500 mb-2">
-                Email
-              </div>
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 break-all">
-                {data.email}
-              </div>
-            </a>
-
-            {/* Location card */}
-            <div className="p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm">
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-400 mb-2">
-                Location
-              </div>
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                {data.location}
-              </div>
-            </div>
-
-            {/* Social links */}
-            <div className="p-6 rounded-2xl bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 backdrop-blur-xl shadow-sm">
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-500 mb-4">
-                Connect
-              </div>
-              <div className="space-y-3">
-                {data.socialLinks.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 group"
-                  >
-                    <span className="flex-shrink-0 text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                      <BrandIcon icon={link.icon} />
-                    </span>
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                      {link.name}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+        {/* Availability signal */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="mt-12 flex items-center gap-3"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-pulse-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <span className="text-sm text-slate-400 dark:text-slate-500">
+            Available for new opportunities ·{" "}
+            <span className="text-slate-600 dark:text-slate-400 font-medium">
+              {data.location}
+            </span>
+          </span>
         </motion.div>
       </div>
     </section>

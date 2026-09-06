@@ -23,16 +23,22 @@ function App() {
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900">
       <InteractiveBackground />
 
-      <DossierShell data={navData}>
+      <DossierShell
+        data={navData}
+        finale={
+          <>
+            <Contact data={contactData} />
+            <Footer />
+          </>
+        }
+      >
         <AnimatePresence mode="wait">
           <Hero data={heroData} />
           <About data={aboutData} />
           <Skills data={skillsData} />
           <Experience data={experienceData} />
           <Projects data={projectsData} />
-          <Contact data={contactData} />
         </AnimatePresence>
-        <Footer />
       </DossierShell>
 
       <CommandPalette />
