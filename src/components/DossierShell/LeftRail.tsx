@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Pin, PinOff } from "lucide-react";
+import { Sun, Moon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { NavData, NavItem } from "../../data/nav";
 import { navSocialProfiles } from "../../data/social";
 import { useTheme } from "../../context/ThemeContext";
@@ -77,30 +77,6 @@ function ProfileMonogram({ shortName }: { shortName: string }) {
   );
 }
 
-// ─── Availability Beacon ─────────────────────────────────────────────────────
-
-function AvailabilityBeacon({ available, label }: { available: boolean; label: string }) {
-  return (
-    <div
-      aria-label={label}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold
-        ${available
-          ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60"
-          : "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/60"
-        }`}
-    >
-      <span
-        className={`relative w-2 h-2 rounded-full shrink-0 ${available ? "bg-emerald-500" : "bg-amber-500"}`}
-      >
-        {available && (
-          <span className="absolute inset-0 rounded-full bg-emerald-500 animate-pulse-beacon" />
-        )}
-      </span>
-      {label}
-    </div>
-  );
-}
-
 // ─── Tooltip wrapper ─────────────────────────────────────────────────────────
 
 function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
@@ -167,11 +143,11 @@ function ExpandedNavItem({ item, isActive }: { item: NavItem; isActive: boolean 
       aria-label={`Jump to ${item.name}`}
       aria-current={isActive ? "location" : undefined}
       onClick={() => scrollTo(item.id)}
-      className={`toc-item group relative flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium
+      className={`toc-item group relative flex items-center h-10 w-full rounded-xl text-sm font-medium
         text-left transition-all duration-200 cursor-pointer
         ${isActive
-          ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50"
-          : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-slate-800/50"
+          ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 shadow-sm"
+          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/70 dark:hover:bg-slate-800/50"
         }`}
     >
       {/* Active left border pill */}
@@ -181,12 +157,14 @@ function ExpandedNavItem({ item, isActive }: { item: NavItem; isActive: boolean 
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         aria-hidden="true"
       />
-      {/* Dot */}
+      {/* Section Icon: 40px bounding box matching compact nav item */}
       <span
-        className={`shrink-0 w-1.5 h-1.5 rounded-full transition-colors duration-200
-          ${isActive ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-600 group-hover:bg-slate-400"}`}
-      />
-      {item.name}
+        className={`shrink-0 w-10 h-10 flex items-center justify-center transition-colors duration-200
+          ${isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"}`}
+      >
+        {ICON_MAP[item.id] ?? null}
+      </span>
+      <span className="truncate pr-3 font-medium">{item.name}</span>
     </button>
   );
 }
@@ -230,44 +208,49 @@ export function SocialLinks({ data }: { data: NavData }) {
 interface LeftRailProps {
   data: NavData;
   activeSectionId: string;
-  isPinned: boolean;
-  togglePin: () => void;
+  isExpanded?: boolean;
+  onToggleExpanded?: () => void;
 }
 
 // Framer Motion spring for the width animation
 const RAIL_SPRING = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.8 };
 
-export default function LeftRail({ data, activeSectionId, isPinned, togglePin }: LeftRailProps) {
+export default function LeftRail({
+  data,
+  activeSectionId,
+  isExpanded: isExpandedProp,
+  onToggleExpanded,
+}: LeftRailProps) {
   const { theme, toggleTheme } = useTheme();
-  const [isHovered, setIsHovered] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
 
-  const isExpanded = isPinned || isHovered;
+  const isExpanded = isExpandedProp !== undefined ? isExpandedProp : internalExpanded;
+  const handleToggle = () => {
+    if (onToggleExpanded) {
+      onToggleExpanded();
+    } else {
+      setInternalExpanded((prev) => !prev);
+    }
+  };
+
   const railWidth = isExpanded ? 280 : 72;
 
   return (
     <motion.aside
       aria-label="Dossier navigation rail"
-      /* When pinned the aside participates in flow (position static via layout);
-         when unpinned it's absolutely positioned against the host div so it
-         floats over content without causing reflow. */
       style={{ width: railWidth }}
       animate={{ width: railWidth }}
       transition={RAIL_SPRING}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       className={`
-        hidden lg:flex flex-col h-screen sticky top-0
+        hidden lg:flex flex-col h-screen fixed left-0 top-0 z-50
         overflow-hidden
-        border-r border-slate-200/60 dark:border-slate-700/50
+        bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl
+        border-r border-slate-200/40 dark:border-white/10
         py-6 gap-6
-        ${isPinned
-          ? /* static column — no extra shadow */
-            "bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl"
-          : /* floating overlay — elevated glass with shadow */
-            `absolute left-0 top-0 z-50
-             bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl
-             shadow-[4px_0_32px_rgba(0,0,0,0.10),1px_0_0_rgba(99,102,241,0.08)]
-             dark:shadow-[4px_0_32px_rgba(0,0,0,0.5),1px_0_0_rgba(99,102,241,0.12)]`
+        transition-shadow duration-300
+        ${isExpanded
+          ? "shadow-[4px_0_32px_rgba(0,0,0,0.10),1px_0_0_rgba(99,102,241,0.08)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.5),1px_0_0_rgba(99,102,241,0.12)]"
+          : "shadow-none"
         }
       `}
     >
@@ -298,25 +281,6 @@ export default function LeftRail({ data, activeSectionId, isPinned, togglePin }:
         </AnimatePresence>
       </div>
 
-      {/* Availability beacon — only in expanded state */}
-      <AnimatePresence initial={false}>
-        {isExpanded && (
-          <motion.div
-            key="beacon"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.16 }}
-            className="px-5 shrink-0"
-          >
-            <AvailabilityBeacon
-              available={data.availability.available}
-              label={data.availability.label}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── Divider ─────────────────────────────────────────────── */}
       <div className={`shrink-0 ${isExpanded ? "px-5" : "px-3.5"}`}>
         <hr className="border-slate-200/70 dark:border-slate-700/50" />
@@ -325,24 +289,9 @@ export default function LeftRail({ data, activeSectionId, isPinned, togglePin }:
       {/* ── Navigation ──────────────────────────────────────────── */}
       <nav
         aria-label="Page sections"
-        className={`flex flex-col shrink-0 ${isExpanded ? "px-3 gap-0.5" : "px-3.5 gap-1 items-center"}`}
+        className={`flex flex-col shrink-0 px-3.5 gap-1 ${isExpanded ? "w-full" : "items-center"}`}
       >
-        <AnimatePresence initial={false}>
-          {isExpanded && (
-            <motion.p
-              key="nav-label"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.14 }}
-              className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 px-3"
-            >
-              Sections
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-        <ul className={`flex flex-col ${isExpanded ? "gap-0.5 w-full" : "gap-1"}`} role="list">
+        <ul className={`flex flex-col gap-1 ${isExpanded ? "w-full" : ""}`} role="list">
           {data.items.map((item) =>
             isExpanded ? (
               <li key={item.id}>
@@ -364,19 +313,20 @@ export default function LeftRail({ data, activeSectionId, isPinned, togglePin }:
       <div
         className={`flex flex-col shrink-0 gap-3 ${isExpanded ? "px-5" : "px-3.5 items-center"}`}
       >
-        {/* Social links — expanded only */}
+        {/* Social links & theme toggle — expanded */}
         <AnimatePresence initial={false}>
           {isExpanded && (
             <motion.div
-              key="social"
+              key="social-expanded-bar"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
               transition={{ duration: 0.16 }}
+              className="flex items-center justify-between w-full"
             >
-              <div className="flex items-center justify-between">
-                <SocialLinks data={data} />
+              <SocialLinks data={data} />
 
+              <div className="flex items-center gap-1.5">
                 {/* Theme toggle — expanded */}
                 <motion.button
                   id="rail-theme-toggle"
@@ -387,8 +337,8 @@ export default function LeftRail({ data, activeSectionId, isPinned, togglePin }:
                   className="w-8 h-8 flex items-center justify-center rounded-lg
                              text-slate-500 dark:text-slate-400
                              hover:text-slate-800 dark:hover:text-slate-200
-                             hover:bg-slate-100 dark:hover:bg-slate-800
-                             transition-colors duration-150"
+                             hover:bg-slate-100/80 dark:hover:bg-slate-800/60
+                             transition-colors duration-150 cursor-pointer"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {theme === "dark" ? (
@@ -414,95 +364,93 @@ export default function LeftRail({ data, activeSectionId, isPinned, togglePin }:
                     )}
                   </AnimatePresence>
                 </motion.button>
+
+                {/* Collapse toggle — expanded */}
+                <Tooltip label="Collapse rail">
+                  <motion.button
+                    id="rail-expand-toggle"
+                    aria-label="Collapse navigation rail"
+                    aria-expanded={true}
+                    onClick={handleToggle}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg
+                               text-slate-500 dark:text-slate-400
+                               hover:text-slate-800 dark:hover:text-slate-200
+                               hover:bg-slate-100/80 dark:hover:bg-slate-800/60
+                               transition-colors duration-150 cursor-pointer"
+                  >
+                    <PanelLeftClose size={18} strokeWidth={1.75} />
+                  </motion.button>
+                </Tooltip>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Theme toggle — compact only */}
+        {/* Compact utility items (when collapsed) */}
         {!isExpanded && (
-          <Tooltip label={theme === "dark" ? "Light mode" : "Dark mode"}>
-            <motion.button
-              id="rail-theme-toggle-compact"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              onClick={toggleTheme}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.9 }}
-              className="w-10 h-10 flex items-center justify-center rounded-xl
-                         text-slate-500 dark:text-slate-400
-                         hover:text-slate-800 dark:hover:text-slate-200
-                         hover:bg-slate-100/80 dark:hover:bg-slate-800/60
-                         transition-colors duration-150"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {theme === "dark" ? (
-                  <motion.span
-                    key="sun-compact"
-                    initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                    exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <Sun size={18} strokeWidth={1.5} />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="moon-compact"
-                    initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                    exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <Moon size={18} strokeWidth={1.5} />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          </Tooltip>
+          <>
+            {/* Theme toggle — compact */}
+            <Tooltip label={theme === "dark" ? "Light mode" : "Dark mode"}>
+              <motion.button
+                id="rail-theme-toggle-compact"
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                onClick={toggleTheme}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.9 }}
+                className="w-10 h-10 flex items-center justify-center rounded-xl
+                           text-slate-500 dark:text-slate-400
+                           hover:text-slate-800 dark:hover:text-slate-200
+                           hover:bg-slate-100/80 dark:hover:bg-slate-800/60
+                           transition-colors duration-150 cursor-pointer"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {theme === "dark" ? (
+                    <motion.span
+                      key="sun-compact"
+                      initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <Sun size={18} strokeWidth={1.5} />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="moon-compact"
+                      initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <Moon size={18} strokeWidth={1.5} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </Tooltip>
+
+            {/* Expand toggle — compact */}
+            <Tooltip label="Expand rail">
+              <motion.button
+                id="rail-expand-toggle"
+                aria-label="Expand navigation rail"
+                aria-expanded={false}
+                onClick={handleToggle}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.9 }}
+                className="w-10 h-10 flex items-center justify-center rounded-xl
+                           text-slate-500 dark:text-slate-400
+                           hover:text-slate-800 dark:hover:text-slate-200
+                           hover:bg-slate-100/80 dark:hover:bg-slate-800/60
+                           transition-colors duration-150 cursor-pointer"
+              >
+                <PanelLeftOpen size={18} strokeWidth={1.75} />
+              </motion.button>
+            </Tooltip>
+          </>
         )}
-
-
-        {/* ── Pin / Unpin toggle ─────────────────────────────────── */}
-        <Tooltip label={isPinned ? "Unpin rail" : "Pin rail open"}>
-          <motion.button
-            id="rail-pin-toggle"
-            aria-label={isPinned ? "Unpin navigation rail" : "Pin navigation rail open"}
-            aria-pressed={isPinned}
-            onClick={togglePin}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.9 }}
-            className={`flex items-center justify-center rounded-xl transition-all duration-200 cursor-pointer
-              ${isExpanded ? "w-10 h-10 self-end" : "w-10 h-10"}
-              ${isPinned
-                ? "text-indigo-500 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-100/80 dark:hover:bg-indigo-900/60"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60"
-              }`}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              {isPinned ? (
-                <motion.span
-                  key="pinned"
-                  initial={{ rotate: -45, opacity: 0, scale: 0.6 }}
-                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                  exit={{ rotate: 45, opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <PinOff size={18} strokeWidth={1.75} />
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="unpinned"
-                  initial={{ rotate: 45, opacity: 0, scale: 0.6 }}
-                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                  exit={{ rotate: -45, opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Pin size={18} strokeWidth={1.75} />
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        </Tooltip>
       </div>
     </motion.aside>
   );

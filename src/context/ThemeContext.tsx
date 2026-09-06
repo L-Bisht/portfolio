@@ -17,11 +17,18 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function getInitialTheme(): Theme {
-  const stored = localStorage.getItem("theme");
-  if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  if (typeof window === "undefined" || typeof localStorage === "undefined") {
+    return "dark";
+  }
+  try {
+    const stored = localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  } catch {
+    return "dark";
+  }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -29,13 +36,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Sync the `dark` class on <html> whenever theme changes
   useEffect(() => {
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
-    localStorage.setItem("theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // ignore
+    }
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

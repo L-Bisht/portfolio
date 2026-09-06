@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
 import type { NavData } from "../../data/nav";
 import LeftRail from "./LeftRail";
 import MobileHeader from "./MobileHeader";
 import FloatingDock from "./FloatingDock";
-import { useRailPin } from "./useRailPin";
 
 interface DossierShellProps {
   data: NavData;
@@ -18,21 +16,16 @@ interface DossierShellProps {
  * Macro layout controller for the Sticky Dossier Hybrid pattern.
  *
  * Desktop (≥ 1024px):
- *   [Rail host — 72px unpinned | 280px pinned] | [Editorial content column]
+ *   [Rail host — permanently 72px fixed placeholder] | [Editorial content column]
  *
- *   The rail host is a layout placeholder that reserves space in the flex row.
- *   When unpinned, LeftRail is `position: absolute` inside the host, so it
- *   can expand to 280px as a floating glass overlay without reflow.
- *   When pinned, LeftRail is static and the host grows to 280px together.
+ *   The rail host retains a permanent fixed width of 72px in the document flow,
+ *   guaranteeing zero Cumulative Layout Shift (CLS) on `#editorial-canvas`.
+ *   LeftRail floats above as a fixed overlay that animates between 72px and 280px.
  *
  * Mobile (< 1024px):
  *   [MobileHeader sticky top] → content → [FloatingDock fixed bottom]
  */
 export default function DossierShell({ data, activeSectionId, children }: DossierShellProps) {
-  const { isPinned, togglePin } = useRailPin();
-
-  const hostWidth = isPinned ? 280 : 72;
-
   return (
     <>
       {/* ── Mobile Header ────────────────────────────────────────── */}
@@ -41,22 +34,17 @@ export default function DossierShell({ data, activeSectionId, children }: Dossie
       {/* ── Shell: rail host + editorial canvas ──────────────────── */}
       <div className="flex">
         {/* Rail host — desktop only.
-            Acts as the layout placeholder; its width drives content offset.
-            LeftRail renders absolutely inside when unpinned (overlay),
-            or statically when pinned (column). */}
-        <motion.div
+            Permanently fixed at 72px placeholder width in the flex flow.
+            Guarantees zero CLS on the editorial content column. */}
+        <div
           aria-hidden="true"
-          className="hidden lg:block shrink-0 relative"
-          animate={{ width: hostWidth }}
-          transition={{ type: "spring", stiffness: 320, damping: 32, mass: 0.8 }}
+          className="hidden lg:block w-[72px] shrink-0 relative"
         >
           <LeftRail
             data={data}
             activeSectionId={activeSectionId}
-            isPinned={isPinned}
-            togglePin={togglePin}
           />
-        </motion.div>
+        </div>
 
         {/* Editorial content column — Contact + Footer live here too */}
         <main
@@ -72,3 +60,4 @@ export default function DossierShell({ data, activeSectionId, children }: Dossie
     </>
   );
 }
+
