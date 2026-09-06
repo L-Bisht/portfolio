@@ -8,3 +8,7 @@ This document defines the core domain concepts used in the portfolio's architect
 *   **Skill Category**: A logical grouping of technologies (e.g., "Core Engineering", "AI & Emerging Tech"). Replaces arbitrary percentage-based skill metrics.
 *   **Skill**: A strictly label-based entity under a Skill Category. It does not contain proficiency scores or context metadata, keeping the taxonomy flat and manageable.
 *   **Versatile / AI-Augmented Developer**: The overarching persona of the portfolio. Represents an engineer who leverages AI tools to bridge frontend and backend capabilities, driving rapid feature execution through methodologies like Domain Driven Design.
+*   **Sticky Dossier Hybrid**: The macro layout architecture pairing a persistent anchor rail (context, navigation, live status) with an independently flowing asymmetric editorial content canvas.
+*   **Magazine Case Study**: An editorial project presentation format that pairs technical problem-solving narrative, architectural metrics, and interactive previews side-by-side, replacing generic card grids.
+*   **Executive Ledger**: A two-column chronological record of tenure replacing decorative line-and-dot timelines, prioritizing quantified metrics and architectural leadership.
+*   **Architectural Toolkit**: A capability-oriented system representation replacing isolated skill badges, grouping technologies into operational layers (e.g., Interface Engine, Distributed Systems, AI Orchestration).

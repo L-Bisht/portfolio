@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import Navbar from "./components/Navbar";
+import DossierShell from "./components/DossierShell";
 import Hero from "./components/Hero";
 import About from "./components/About";
 import Skills from "./components/Skills";
@@ -17,12 +17,13 @@ import { skillsData } from "./data/skills";
 import { experienceData } from "./data/experience";
 import { projectsData } from "./data/projects";
 import { contactData } from "./data/contact";
+
 function App() {
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900">
       <InteractiveBackground />
-      <Navbar data={navData} />
-      <main className="flex flex-col">
+
+      <DossierShell data={navData}>
         <AnimatePresence mode="wait">
           <Hero data={heroData} />
           <About data={aboutData} />
@@ -31,8 +32,9 @@ function App() {
           <Projects data={projectsData} />
           <Contact data={contactData} />
         </AnimatePresence>
-      </main>
-      <Footer />
+        <Footer />
+      </DossierShell>
+
       <CommandPalette />
     </div>
   );

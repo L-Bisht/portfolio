@@ -8,6 +8,15 @@
 @layer base {
   :root {
     font-family: var(--font-sans);
+    /* Offset smooth-scroll targets so they aren't hidden behind the mobile sticky header */
+    scroll-padding-top: 3.5rem; /* 56px = mobile header height */
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      /* No header offset on desktop — the rail doesn't block scroll */
+      scroll-padding-top: 0;
+    }
   }
 
   body {
@@ -65,6 +74,22 @@
   .btn-glow:hover::after {
     opacity: 0.5;
   }
+
+  /* Floating dock glass pill — used in FloatingDock.tsx */
+  .floating-dock {
+    /* Subtle inner highlight on top edge */
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(99, 102, 241, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .dark .floating-dock {
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(99, 102, 241, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
 }
 
 @keyframes gradient-shift {
@@ -83,4 +108,24 @@
   50% {
     transform: translateY(8px);
   }
+}
+
+/* Availability beacon pulse — scales out and fades for a living-dot effect */
+@keyframes pulse-beacon {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-beacon {
+  animation: pulse-beacon 2s ease-out infinite;
 }
