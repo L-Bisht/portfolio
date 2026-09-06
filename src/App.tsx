@@ -25,7 +25,7 @@ function App() {
   const activeSectionId = useScrollSpy(SECTION_IDS);
 
   return (
-    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-[#050811]">
       <InteractiveBackground activeSectionId={activeSectionId} />
 
       <DossierShell

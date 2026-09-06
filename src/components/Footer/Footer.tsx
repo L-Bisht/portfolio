@@ -16,7 +16,7 @@ const Footer = () => {
         border-t border-slate-200/60 dark:border-white/[0.07]"
     >
       {/* Subtle backdrop */}
-      <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-white/50 dark:bg-[#050811]/60 backdrop-blur-sm" />
 
       {/* Top separator — editorial hairline */}
       <div
