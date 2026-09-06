@@ -7,38 +7,111 @@ import type { SkillsData, ArchitecturalTier } from "../../data/skills";
 const ACCENT = {
   indigo: {
     glow: "rgba(99,102,241,0.55)",
+    glowHex: "#6366f1",
     glowSoft: "rgba(99,102,241,0.12)",
     border: "rgba(99,102,241,0.35)",
     badge: "text-indigo-400 bg-indigo-500/10 border-indigo-500/25",
-    chip: "hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-indigo-300 hover:shadow-indigo-500/20",
+    chip: "hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-indigo-300",
     chipDescriptor: "text-indigo-400/80",
     connector: "from-indigo-500/40 to-transparent",
     ambientTop: "bg-indigo-500/8",
     ambientBot: "bg-indigo-600/6",
+    gradientKeyword: "from-indigo-400 via-violet-400 to-cyan-400",
   },
   violet: {
     glow: "rgba(139,92,246,0.55)",
+    glowHex: "#8b5cf6",
     glowSoft: "rgba(139,92,246,0.12)",
     border: "rgba(139,92,246,0.35)",
     badge: "text-violet-400 bg-violet-500/10 border-violet-500/25",
-    chip: "hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-violet-300 hover:shadow-violet-500/20",
+    chip: "hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-violet-300",
     chipDescriptor: "text-violet-400/80",
     connector: "from-violet-500/40 to-transparent",
     ambientTop: "bg-violet-500/8",
     ambientBot: "bg-violet-600/6",
+    gradientKeyword: "from-violet-400 via-indigo-400 to-purple-400",
   },
   cyan: {
     glow: "rgba(6,182,212,0.55)",
+    glowHex: "#06b6d4",
     glowSoft: "rgba(6,182,212,0.12)",
     border: "rgba(6,182,212,0.35)",
     badge: "text-cyan-400 bg-cyan-500/10 border-cyan-500/25",
-    chip: "hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-300 hover:shadow-cyan-500/20",
+    chip: "hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-300",
     chipDescriptor: "text-cyan-400/80",
     connector: "from-cyan-500/40 to-transparent",
     ambientTop: "bg-cyan-500/8",
     ambientBot: "bg-cyan-600/6",
+    gradientKeyword: "from-cyan-400 via-sky-400 to-indigo-400",
   },
 } as const;
+
+// ─── Quarter-circle arc motif ─────────────────────────────────────────────────
+function QuarterCircleArc({
+  corner = "tr",
+  color,
+  size = 88,
+  opacity = 0.18,
+}: {
+  corner?: "tl" | "tr" | "bl" | "br";
+  color: string;
+  size?: number;
+  opacity?: number;
+}) {
+  // Position map
+  const posStyle: Record<string, React.CSSProperties> = {
+    tr: { top: 0, right: 0 },
+    tl: { top: 0, left: 0 },
+    br: { bottom: 0, right: 0 },
+    bl: { bottom: 0, left: 0 },
+  };
+  // Rotation so the arc fills into the given corner
+  const rotationMap = { tr: 0, br: 90, bl: 180, tl: 270 };
+
+  return (
+    <svg
+      aria-hidden="true"
+      width={size}
+      height={size}
+      viewBox="0 0 88 88"
+      fill="none"
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        opacity,
+        transform: `rotate(${rotationMap[corner]}deg)`,
+        ...posStyle[corner],
+      }}
+    >
+      {/* Outer arc */}
+      <path
+        d="M88 0 A88 88 0 0 0 0 88"
+        stroke={color}
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Mid arc */}
+      <path
+        d="M88 18 A70 70 0 0 0 18 88"
+        stroke={color}
+        strokeWidth="1"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+      {/* Inner arc */}
+      <path
+        d="M88 36 A52 52 0 0 0 36 88"
+        stroke={color}
+        strokeWidth="0.75"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.3}
+      />
+    </svg>
+  );
+}
 
 // ─── Chip ─────────────────────────────────────────────────────────────────────
 function CapabilityChip({
@@ -57,7 +130,7 @@ function CapabilityChip({
     <motion.span
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={{ y: -2, scale: 1.02 }}
+      whileHover={{ y: -2, scale: 1.03 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       className={[
         "relative inline-flex flex-col items-start gap-0.5",
@@ -66,10 +139,12 @@ function CapabilityChip({
         "bg-white/5 dark:bg-white/3",
         "text-slate-300 dark:text-slate-300",
         "text-sm font-medium leading-tight",
-        "shadow-sm hover:shadow-md",
         "transition-all duration-200",
         a.chip,
       ].join(" ")}
+      style={{
+        boxShadow: hovered ? `0 4px 16px ${a.glowSoft}` : "none",
+      }}
       aria-label={descriptor ? `${name}: ${descriptor}` : name}
     >
       <span>{name}</span>
@@ -101,6 +176,7 @@ function StratumCard({
   inView: boolean;
   index: number;
 }) {
+  const [hovered, setHovered] = useState(false);
   const a = ACCENT[tier.accent];
 
   const cardVariants: Variants = {
@@ -120,6 +196,8 @@ function StratumCard({
     <motion.div
       variants={cardVariants}
       className="relative group"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Ambient glow behind card */}
       <div
@@ -130,21 +208,48 @@ function StratumCard({
 
       {/* Glass stratum surface */}
       <div
-        className="relative overflow-hidden rounded-2xl backdrop-blur-xl border transition-all duration-300 group-hover:shadow-xl"
+        className="relative overflow-hidden rounded-2xl backdrop-blur-xl border transition-all duration-400 group-hover:shadow-2xl"
         style={{
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)",
-          borderColor: a.border,
-          boxShadow: `0 0 0 1px ${a.border}, 0 1px 0 rgba(255,255,255,0.06) inset`,
+            "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)",
+          borderColor: hovered
+            ? a.border.replace("0.35", "0.55")
+            : a.border,
+          boxShadow: hovered
+            ? `0 0 0 1px ${a.border}, 0 1px 0 rgba(255,255,255,0.08) inset, 0 20px 60px ${a.glowSoft}`
+            : `0 0 0 1px ${a.border}, 0 1px 0 rgba(255,255,255,0.06) inset`,
         }}
       >
-        {/* Top edge glow line */}
-        <div
+        {/* Quarter-circle arc motif — top-right corner */}
+        <QuarterCircleArc
+          corner="tr"
+          color={a.glowHex}
+          size={96}
+          opacity={hovered ? 0.3 : 0.16}
+        />
+
+        {/* Top edge hairline glow */}
+        <motion.div
           aria-hidden="true"
-          className="absolute top-0 left-0 right-0 h-px opacity-60"
-          style={{
+          className="absolute top-0 left-0 right-0 h-px"
+          animate={{
+            opacity: hovered ? 1 : 0.5,
             background: `linear-gradient(90deg, transparent 0%, ${a.glow} 50%, transparent 100%)`,
           }}
+          transition={{ duration: 0.35 }}
+        />
+
+        {/* Radial hover spotlight */}
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          animate={{
+            opacity: hovered ? 1 : 0,
+            background: hovered
+              ? `radial-gradient(ellipse at 30% 30%, ${a.glowSoft} 0%, transparent 65%)`
+              : "none",
+          }}
+          transition={{ duration: 0.4 }}
         />
 
         {/* Content */}
@@ -169,7 +274,7 @@ function StratumCard({
             {/* Tier number watermark */}
             <div
               aria-hidden="true"
-              className="shrink-0 text-6xl font-black leading-none select-none opacity-[0.04] group-hover:opacity-[0.07] transition-opacity duration-500 mt-1"
+              className="shrink-0 text-6xl font-black leading-none select-none opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-500 mt-1"
               style={{ color: a.glow }}
             >
               {String(tier.tier).padStart(2, "0")}
@@ -211,6 +316,25 @@ function StratumCard({
   );
 }
 
+// ─── Word-entrance headline variants (mirrors Contact pattern) ────────────────
+const headlineVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+  },
+};
+
+const wordVariant: Variants = {
+  hidden: { opacity: 0, y: 60, rotateX: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 // ─── Skills section ───────────────────────────────────────────────────────────
 interface SkillsProps {
   data: SkillsData;
@@ -230,6 +354,10 @@ const Skills = ({ data }: SkillsProps) => {
       transition: { staggerChildren: 0.14, delayChildren: 0.05 },
     },
   };
+
+  // Split the section title into words for word-entrance animation
+  const titleWords = data.title.split(" ");
+  const lastWordIdx = titleWords.length - 1;
 
   return (
     <section
@@ -258,21 +386,38 @@ const Skills = ({ data }: SkillsProps) => {
           </span>
         </motion.div>
 
-        {/* Title */}
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.55, delay: 0.1 }}
-          className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4"
-        >
-          {data.title}
-        </motion.h2>
+        {/* Commanding clamp headline with word-entrance motion */}
+        <div className="mb-4 perspective-[1200px]">
+          <motion.h2
+            variants={headlineVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="flex flex-wrap gap-x-4 gap-y-1
+              text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
+              text-white"
+          >
+            {titleWords.map((word, i) => (
+              <span key={i} className="overflow-hidden inline-block">
+                <motion.span
+                  variants={wordVariant}
+                  className={`inline-block ${
+                    i === lastWordIdx
+                      ? "bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
+                      : ""
+                  }`}
+                >
+                  {word}
+                </motion.span>
+              </span>
+            ))}
+          </motion.h2>
+        </div>
 
         {/* Sub-heading */}
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.5, delay: 0.18 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
           className="text-slate-400 text-base mb-16 max-w-xl"
         >
           Three layers of craft — from pixel to model.

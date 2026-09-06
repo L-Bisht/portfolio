@@ -2,6 +2,68 @@ import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { AboutData } from "../../data/about";
 
+// ─── Quarter-circle arc motif ─────────────────────────────────────────────────
+function QuarterCircleArc({
+  corner = "tr",
+  color,
+  size = 80,
+  opacity = 0.18,
+}: {
+  corner?: "tl" | "tr" | "bl" | "br";
+  color: string;
+  size?: number;
+  opacity?: number;
+}) {
+  const posStyle: Record<string, React.CSSProperties> = {
+    tr: { top: 0, right: 0 },
+    tl: { top: 0, left: 0 },
+    br: { bottom: 0, right: 0 },
+    bl: { bottom: 0, left: 0 },
+  };
+  const rotationMap = { tr: 0, br: 90, bl: 180, tl: 270 };
+
+  return (
+    <svg
+      aria-hidden="true"
+      width={size}
+      height={size}
+      viewBox="0 0 88 88"
+      fill="none"
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        opacity,
+        transform: `rotate(${rotationMap[corner]}deg)`,
+        ...posStyle[corner],
+      }}
+    >
+      <path
+        d="M88 0 A88 88 0 0 0 0 88"
+        stroke={color}
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M88 18 A70 70 0 0 0 18 88"
+        stroke={color}
+        strokeWidth="1"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+      <path
+        d="M88 36 A52 52 0 0 0 36 88"
+        stroke={color}
+        strokeWidth="0.75"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.3}
+      />
+    </svg>
+  );
+}
+
 interface AboutProps {
   data: AboutData;
 }
@@ -116,11 +178,8 @@ const About = ({ data }: AboutProps) => {
               className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700
                 bg-gradient-to-br from-indigo-400/8 via-transparent to-violet-500/6"
             />
-            <div
-              aria-hidden="true"
-              className="absolute top-0 right-0 w-40 h-40 rounded-bl-full
-                bg-gradient-to-bl from-indigo-500/10 to-transparent pointer-events-none"
-            />
+            {/* Quarter-circle arc motif — top-right, indigo */}
+            <QuarterCircleArc corner="tr" color="#6366f1" size={100} opacity={0.2} />
 
             <div className="relative flex flex-col h-full gap-6">
               {/* Icon badge */}
@@ -173,6 +232,9 @@ const About = ({ data }: AboutProps) => {
               className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700
                 bg-gradient-to-br from-violet-400/6 via-transparent to-indigo-500/6"
             />
+
+            {/* Quarter-circle arc motif — bottom-left, violet */}
+            <QuarterCircleArc corner="bl" color="#8b5cf6" size={80} opacity={0.16} />
 
             <div className="relative">
               <div className="flex items-center gap-3 mb-6">
@@ -241,6 +303,14 @@ const About = ({ data }: AboutProps) => {
                     style={{
                       background: `radial-gradient(ellipse at 30% 0%, ${stat.glowColor}, transparent 70%)`,
                     }}
+                  />
+
+                  {/* Quarter-circle arc motif — top-right, tinted to stat accent */}
+                  <QuarterCircleArc
+                    corner="tr"
+                    color={stat.glowColor.replace(/,\s*[\d.]+\)$/, ", 1)")}
+                    size={56}
+                    opacity={0.2}
                   />
 
                   <div className="relative flex flex-col gap-3">

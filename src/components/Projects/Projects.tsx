@@ -3,12 +3,84 @@ import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ProjectsData, Project } from "../../data/projects";
 
+// ─── Quarter-circle arc motif ─────────────────────────────────────────────────
+function QuarterCircleArc({
+  corner = "tr",
+  color,
+  size = 80,
+  opacity = 0.16,
+}: {
+  corner?: "tl" | "tr" | "bl" | "br";
+  color: string;
+  size?: number;
+  opacity?: number;
+}) {
+  const posStyle: Record<string, React.CSSProperties> = {
+    tr: { top: 0, right: 0 },
+    tl: { top: 0, left: 0 },
+    br: { bottom: 0, right: 0 },
+    bl: { bottom: 0, left: 0 },
+  };
+  const rotationMap = { tr: 0, br: 90, bl: 180, tl: 270 };
+
+  return (
+    <svg
+      aria-hidden="true"
+      width={size}
+      height={size}
+      viewBox="0 0 88 88"
+      fill="none"
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        opacity,
+        transform: `rotate(${rotationMap[corner]}deg)`,
+        ...posStyle[corner],
+      }}
+    >
+      <path
+        d="M88 0 A88 88 0 0 0 0 88"
+        stroke={color}
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M88 18 A70 70 0 0 0 18 88"
+        stroke={color}
+        strokeWidth="1"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+      <path
+        d="M88 36 A52 52 0 0 0 36 88"
+        stroke={color}
+        strokeWidth="0.75"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.3}
+      />
+    </svg>
+  );
+}
+
 // ─── Tech Chip ────────────────────────────────────────────────────────────────
 function TechChip({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide border bg-indigo-500/8 border-indigo-500/20 text-indigo-400">
+    <motion.span
+      whileHover={{ y: -2, scale: 1.05 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide border
+        bg-indigo-500/8 border-indigo-500/20 text-indigo-400
+        hover:bg-indigo-500/14 hover:border-indigo-400/40 hover:shadow-indigo-500/20
+        transition-all duration-200 cursor-default"
+      style={{
+        willChange: "transform",
+      }}
+    >
       {label}
-    </span>
+    </motion.span>
   );
 }
 
@@ -143,9 +215,14 @@ function CaseStudyRow({
     threshold: 0.1,
     rootMargin: "-8% 0px -8% 0px",
   });
+  const [hovered, setHovered] = useState(false);
 
   const isEven = index % 2 === 0; // even = content left, preview right
   const baseDelay = 0.1;
+
+  // Accent color alternates per project for visual rhythm
+  const arcColor = isEven ? "#6366f1" : "#8b5cf6";
+  const arcCorner = isEven ? "tl" : "tr";
 
   const contentVariants: Variants = {
     hidden: { opacity: 0, x: isEven ? -32 : 32 },
@@ -269,17 +346,60 @@ function CaseStudyRow({
       id={`project-${project.id}`}
       aria-label={project.title}
       className="relative group"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {/* Subtle connector line between rows (not on last) */}
+      {/* Glass case-study surface wrapper */}
       <div
         className={`
+          relative overflow-hidden rounded-3xl
           grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center
-          py-20
-          ${index > 0
-            ? "border-t border-white/5"
-            : ""}
+          py-16 px-10 lg:px-14
+          bg-white/[0.03] dark:bg-white/[0.02]
+          border border-white/[0.07]
+          backdrop-blur-sm
+          transition-all duration-500
+          ${index > 0 ? "mt-6" : ""}
         `}
+        style={{
+          boxShadow: hovered
+            ? `0 24px 64px rgba(99,102,241,0.08), 0 0 0 1px ${arcColor}33`
+            : "none",
+          borderColor: hovered ? `${arcColor}22` : undefined,
+        }}
       >
+        {/* Quarter-circle arc motif */}
+        <QuarterCircleArc
+          corner={arcCorner}
+          color={arcColor}
+          size={96}
+          opacity={hovered ? 0.28 : 0.14}
+        />
+
+        {/* Top-edge hairline glow */}
+        <motion.div
+          aria-hidden="true"
+          className="absolute top-0 left-0 right-0 h-px pointer-events-none z-10"
+          animate={{
+            opacity: hovered ? 1 : 0,
+            background: `linear-gradient(90deg, transparent 0%, ${arcColor}99 50%, transparent 100%)`,
+          }}
+          transition={{ duration: 0.35 }}
+        />
+
+        {/* Radial hover spotlight */}
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          animate={{
+            opacity: hovered ? 1 : 0,
+            background: hovered
+              ? `radial-gradient(ellipse at ${isEven ? "20%" : "80%"} 30%, ${arcColor}0d 0%, transparent 60%)`
+              : "none",
+          }}
+          transition={{ duration: 0.4 }}
+        />
+
         {isEven ? (
           <>
             <div>{Content}</div>
@@ -297,6 +417,25 @@ function CaseStudyRow({
   );
 }
 
+// ─── Word-entrance headline variants ─────────────────────────────────────────
+const headlineVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+  },
+};
+
+const wordVariant: Variants = {
+  hidden: { opacity: 0, y: 60, rotateX: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 // ─── Projects section ─────────────────────────────────────────────────────────
 interface ProjectsProps {
   data: ProjectsData;
@@ -308,6 +447,9 @@ const Projects = ({ data }: ProjectsProps) => {
     threshold: 0,
     rootMargin: "-10% 0px -10% 0px",
   });
+
+  const titleWords = data.title.split(" ");
+  const lastWordIdx = titleWords.length - 1;
 
   return (
     <section
@@ -337,19 +479,37 @@ const Projects = ({ data }: ProjectsProps) => {
             </span>
           </motion.div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.55, delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3"
-          >
-            {data.title}
-          </motion.h2>
+          {/* Commanding clamp headline with word-entrance motion */}
+          <div className="mb-3 perspective-[1200px]">
+            <motion.h2
+              variants={headlineVariants}
+              initial="hidden"
+              animate={inView ? "visible" : "hidden"}
+              className="flex flex-wrap gap-x-4 gap-y-1
+                text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
+                text-white"
+            >
+              {titleWords.map((word, i) => (
+                <span key={i} className="overflow-hidden inline-block">
+                  <motion.span
+                    variants={wordVariant}
+                    className={`inline-block ${
+                      i === lastWordIdx
+                        ? "bg-gradient-to-r from-indigo-400 via-violet-500 to-indigo-400 bg-clip-text text-transparent"
+                        : ""
+                    }`}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
+            </motion.h2>
+          </div>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 0.5, delay: 0.18 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
             className="text-slate-400 text-base"
           >
             {data.subtitle}
@@ -357,7 +517,7 @@ const Projects = ({ data }: ProjectsProps) => {
         </div>
 
         {/* Case study rows */}
-        <div className="mt-8">
+        <div className="mt-10 flex flex-col gap-4">
           {data.projects.map((project, index) => (
             <CaseStudyRow key={project.id} project={project} index={index} />
           ))}

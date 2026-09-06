@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ExperienceData, ExperienceMetric } from "../../data/experience";
@@ -7,29 +8,96 @@ const METRIC_ACCENT = {
   emerald: {
     tag: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
     glow: "rgba(16,185,129,0.45)",
+    glowSoft: "rgba(16,185,129,0.12)",
     dot: "bg-emerald-400",
   },
   indigo: {
     tag: "bg-indigo-500/10 border-indigo-500/30 text-indigo-400",
     glow: "rgba(99,102,241,0.45)",
+    glowSoft: "rgba(99,102,241,0.12)",
     dot: "bg-indigo-400",
   },
   violet: {
     tag: "bg-violet-500/10 border-violet-500/30 text-violet-400",
     glow: "rgba(139,92,246,0.45)",
+    glowSoft: "rgba(139,92,246,0.12)",
     dot: "bg-violet-400",
   },
   amber: {
     tag: "bg-amber-500/10 border-amber-500/30 text-amber-400",
     glow: "rgba(245,158,11,0.45)",
+    glowSoft: "rgba(245,158,11,0.12)",
     dot: "bg-amber-400",
   },
   cyan: {
     tag: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
     glow: "rgba(6,182,212,0.45)",
+    glowSoft: "rgba(6,182,212,0.12)",
     dot: "bg-cyan-400",
   },
 } as const;
+
+// ─── Quarter-circle arc motif ─────────────────────────────────────────────────
+function QuarterCircleArc({
+  corner = "tr",
+  color,
+  size = 72,
+  opacity = 0.16,
+}: {
+  corner?: "tl" | "tr" | "bl" | "br";
+  color: string;
+  size?: number;
+  opacity?: number;
+}) {
+  const posStyle: Record<string, React.CSSProperties> = {
+    tr: { top: 0, right: 0 },
+    tl: { top: 0, left: 0 },
+    br: { bottom: 0, right: 0 },
+    bl: { bottom: 0, left: 0 },
+  };
+  const rotationMap = { tr: 0, br: 90, bl: 180, tl: 270 };
+
+  return (
+    <svg
+      aria-hidden="true"
+      width={size}
+      height={size}
+      viewBox="0 0 88 88"
+      fill="none"
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        opacity,
+        transform: `rotate(${rotationMap[corner]}deg)`,
+        ...posStyle[corner],
+      }}
+    >
+      <path
+        d="M88 0 A88 88 0 0 0 0 88"
+        stroke={color}
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M88 18 A70 70 0 0 0 18 88"
+        stroke={color}
+        strokeWidth="1"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+      <path
+        d="M88 36 A52 52 0 0 0 36 88"
+        stroke={color}
+        strokeWidth="0.75"
+        fill="none"
+        strokeLinecap="round"
+        opacity={0.3}
+      />
+    </svg>
+  );
+}
 
 // ─── Metric Tag ───────────────────────────────────────────────────────────────
 function MetricTag({
@@ -46,15 +114,25 @@ function MetricTag({
     <motion.span
       initial={{ opacity: 0, scale: 0.85, y: 6 }}
       animate={inView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.85, y: 6 }}
+      whileHover={{ y: -2, scale: 1.04 }}
       transition={{ duration: 0.4, delay, ease: "easeOut" }}
       className={[
         "inline-flex items-center gap-1.5 px-3 py-1 rounded-full",
         "border text-xs font-semibold tracking-wide whitespace-nowrap",
-        "shadow-sm",
+        "cursor-default",
         a.tag,
       ].join(" ")}
       style={{
         boxShadow: `0 0 10px ${a.glow}`,
+        transition: "box-shadow 0.25s ease",
+      }}
+      onHoverStart={(e, info) => {
+        const el = (e.target as HTMLElement);
+        el.style.boxShadow = `0 0 18px ${a.glow}, 0 0 6px ${a.glowSoft}`;
+      }}
+      onHoverEnd={(e, info) => {
+        const el = (e.target as HTMLElement);
+        el.style.boxShadow = `0 0 10px ${a.glow}`;
       }}
     >
       {/* Pulsing dot */}
@@ -79,6 +157,7 @@ function LedgerRow({
   inView: boolean;
   isLast: boolean;
 }) {
+  const [hovered, setHovered] = useState(false);
   const rowDelay = 0.1 + index * 0.18;
 
   const rowVariants: Variants = {
@@ -95,19 +174,58 @@ function LedgerRow({
       id={`exp-${item.id}`}
       variants={rowVariants}
       aria-label={`${item.role} at ${item.company}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={[
         "group relative",
         "grid grid-cols-1 md:grid-cols-[220px_1fr] gap-0",
         "rounded-2xl overflow-hidden",
-        /* Glass card surface */
-        "bg-white/[0.03] dark:bg-white/[0.03]",
+        /* Adaptive dual-mode glass */
+        "bg-white/[0.06] dark:bg-white/[0.03]",
         "border border-white/10 dark:border-white/8",
         "backdrop-blur-xl",
-        "transition-shadow duration-300",
-        "hover:shadow-xl hover:shadow-indigo-500/5",
+        "transition-all duration-400",
         !isLast ? "mb-5" : "",
       ].join(" ")}
+      style={{
+        boxShadow: hovered
+          ? "0 16px 48px rgba(99,102,241,0.10), 0 0 0 1px rgba(99,102,241,0.22)"
+          : "none",
+        borderColor: hovered ? "rgba(99,102,241,0.28)" : undefined,
+      }}
     >
+      {/* Quarter-circle arc motif — bottom-right */}
+      <QuarterCircleArc
+        corner="br"
+        color="#6366f1"
+        size={80}
+        opacity={hovered ? 0.28 : 0.14}
+      />
+
+      {/* Top-edge hairline glow */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute top-0 left-0 right-0 h-px pointer-events-none z-10"
+        animate={{
+          opacity: hovered ? 1 : 0,
+          background: "linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.7) 50%, transparent 100%)",
+        }}
+        transition={{ duration: 0.35 }}
+      />
+
+      {/* Radial hover spotlight */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        animate={{
+          opacity: hovered ? 1 : 0,
+          background: hovered
+            ? "radial-gradient(ellipse at 80% 30%, rgba(99,102,241,0.07) 0%, transparent 60%)"
+            : "none",
+        }}
+        transition={{ duration: 0.4 }}
+      />
+
       {/* Hover inner-glow overlay */}
       <div
         aria-hidden="true"
@@ -224,6 +342,25 @@ function LedgerRow({
   );
 }
 
+// ─── Word-entrance headline variants ─────────────────────────────────────────
+const headlineVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+  },
+};
+
+const wordVariant: Variants = {
+  hidden: { opacity: 0, y: 60, rotateX: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 // ─── Experience section ────────────────────────────────────────────────────────
 interface ExperienceProps {
   data: ExperienceData;
@@ -243,6 +380,11 @@ const Experience = ({ data }: ExperienceProps) => {
       transition: { staggerChildren: 0.18, delayChildren: 0.05 },
     },
   };
+
+  // Section title: use a fixed headline for word-split (data.title is the eyebrow label)
+  const SECTION_HEADLINE = "Career impact, measured.";
+  const titleWords = SECTION_HEADLINE.split(" ");
+  const lastWordIdx = titleWords.length - 1;
 
   return (
     <section
@@ -271,21 +413,38 @@ const Experience = ({ data }: ExperienceProps) => {
           </span>
         </motion.div>
 
-        {/* Section title */}
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.55, delay: 0.1 }}
-          className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4"
-        >
-          {data.title}
-        </motion.h2>
+        {/* Commanding clamp headline with word-entrance motion */}
+        <div className="mb-4 perspective-[1200px]">
+          <motion.h2
+            variants={headlineVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="flex flex-wrap gap-x-4 gap-y-1
+              text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
+              text-white"
+          >
+            {titleWords.map((word, i) => (
+              <span key={i} className="overflow-hidden inline-block">
+                <motion.span
+                  variants={wordVariant}
+                  className={`inline-block ${
+                    i === lastWordIdx
+                      ? "bg-gradient-to-r from-emerald-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent"
+                      : ""
+                  }`}
+                >
+                  {word}
+                </motion.span>
+              </span>
+            ))}
+          </motion.h2>
+        </div>
 
         {/* Sub-heading */}
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.5, delay: 0.18 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
           className="text-slate-400 text-base mb-16 max-w-xl"
         >
           Seven years building at scale — measured in metrics that moved the needle.
