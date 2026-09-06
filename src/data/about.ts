@@ -1,25 +1,64 @@
 export interface AboutStat {
   label: string;
-  valueTemplate: string; // e.g., "{years}+"
+  value: string;
+  /** Icon name to resolve inside the component */
+  icon: "layers" | "zap" | "box";
+  glowColor: string;
+}
+
+export interface FocusItem {
+  label: string;
+  tag: string;
 }
 
 export interface AboutData {
   title: string;
-  paragraphs: string[];
+  philosophyHeadline: string;
+  philosophyBody: string;
+  currentFocusHeadline: string;
+  currentFocusItems: FocusItem[];
   stats: AboutStat[];
   startDate: Date;
 }
 
 export const aboutData: AboutData = {
   title: "About Me",
-  paragraphs: [
-    "Hello! I'm Lalit Singh Bisht, a versatile and AI-augmented developer. Over the past {experience}, I have focused on building robust architectures, deeply integrating Domain-Driven Design (DDD), and crafting exceptional Developer Experiences (DX).",
-    "I leverage modern AI tools to accelerate development, improve code quality, and solve complex architectural challenges. By combining strong engineering principles with AI capabilities, I deliver scalable and maintainable solutions rapidly.",
-    "When I'm not architecting systems, you can find me exploring the latest advancements in AI and software engineering. I believe in continuous learning and adapting to the ever-evolving tech landscape.",
+
+  philosophyHeadline: "Engineering with Intention",
+  philosophyBody:
+    "I architect software around domain boundaries, not technical layers. " +
+    "Domain-Driven Design keeps complexity legible as systems scale, while AI-augmented " +
+    "tooling compresses the feedback loop between intent and working code. " +
+    "The result: teams that ship confident, maintainable products — fast.",
+
+  currentFocusHeadline: "What I'm Building",
+  currentFocusItems: [
+    { label: "AI-native developer tooling", tag: "LLM Agents" },
+    { label: "Event-sourced CQRS pipelines", tag: "System Design" },
+    { label: "Real-time collaborative UIs", tag: "React / WebSockets" },
+    { label: "Adaptive RAG retrieval systems", tag: "ML Infra" },
   ],
+
   stats: [
-    { label: "Years Experience", valueTemplate: "{years}+" },
-    { label: "Projects Completed", valueTemplate: "50+" },
+    {
+      label: "Years Experience",
+      value: "{years}+",
+      icon: "layers",
+      glowColor: "rgba(99,102,241,0.35)",
+    },
+    {
+      label: "Scaled Systems",
+      value: "12+",
+      icon: "zap",
+      glowColor: "rgba(139,92,246,0.35)",
+    },
+    {
+      label: "Projects Delivered",
+      value: "50+",
+      icon: "box",
+      glowColor: "rgba(168,85,247,0.30)",
+    },
   ],
+
   startDate: new Date(2019, 9), // October 2019
 };
