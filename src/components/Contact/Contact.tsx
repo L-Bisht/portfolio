@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ContactData } from "../../data/contact";
+import { socialRegistry } from "../../data/social";
 
 /* ─────────────────────────── SVG Icons ─────────────────────────── */
 
@@ -261,46 +262,46 @@ const Contact = ({ data }: ContactProps) => {
 
   const cards: ActionCardProps[] = [
     {
-      label: "Email",
-      sublabel: data.email,
-      href: `mailto:${data.email}`,
+      label: socialRegistry.email.label,
+      sublabel: data.email || socialRegistry.email.rawEmail || "",
+      href: `mailto:${data.email || socialRegistry.email.rawEmail}`,
       icon: <EmailIcon />,
-      accent: "#6366f1",
-      accentDark: "#818cf8",
+      accent: socialRegistry.email.accent,
+      accentDark: socialRegistry.email.accentDark,
       external: false,
       index: 0,
     },
     {
-      label: "LinkedIn",
-      sublabel: "lalit-bisht-8b4b82152",
+      label: socialRegistry.linkedin.label,
+      sublabel: socialRegistry.linkedin.sublabel,
       href:
         data.socialLinks.find((l) => l.icon === "linkedin")?.url ??
-        "https://linkedin.com/in/lalit-bisht-8b4b82152/",
+        socialRegistry.linkedin.url,
       icon: <LinkedInIcon />,
-      accent: "#0ea5e9",
-      accentDark: "#38bdf8",
+      accent: socialRegistry.linkedin.accent,
+      accentDark: socialRegistry.linkedin.accentDark,
       external: true,
       index: 1,
     },
     {
-      label: "GitHub",
-      sublabel: "github.com/l-bisht",
+      label: socialRegistry.github.label,
+      sublabel: socialRegistry.github.sublabel,
       href:
         data.socialLinks.find((l) => l.icon === "github")?.url ??
-        "https://github.com/l-bisht",
+        socialRegistry.github.url,
       icon: <GitHubIcon />,
-      accent: "#a78bfa",
-      accentDark: "#c4b5fd",
+      accent: socialRegistry.github.accent,
+      accentDark: socialRegistry.github.accentDark,
       external: true,
       index: 2,
     },
     {
-      label: "Resume",
-      sublabel: "Download PDF",
-      href: "/resume.pdf",
+      label: socialRegistry.resume.label,
+      sublabel: socialRegistry.resume.sublabel,
+      href: socialRegistry.resume.url,
       icon: <ResumeIcon />,
-      accent: "#10b981",
-      accentDark: "#34d399",
+      accent: socialRegistry.resume.accent,
+      accentDark: socialRegistry.resume.accentDark,
       external: true,
       index: 3,
     },
@@ -399,23 +400,42 @@ const Contact = ({ data }: ContactProps) => {
           ))}
         </motion.div>
 
-        {/* Availability signal */}
+        {/* Availability signal & Direct Social Channels */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
           transition={{ duration: 0.6, delay: 0.9 }}
-          className="mt-12 flex items-center gap-3"
+          className="mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-pulse-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-sm text-slate-400 dark:text-slate-500">
-            Available for new opportunities ·{" "}
-            <span className="text-slate-600 dark:text-slate-400 font-medium">
-              {data.location}
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-pulse-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-          </span>
+            <span className="text-sm text-slate-400 dark:text-slate-500">
+              Available for new opportunities ·{" "}
+              <span className="text-slate-600 dark:text-slate-400 font-medium">
+                {data.location}
+              </span>
+            </span>
+          </div>
+
+          {/* Social Channels Link Row */}
+          <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span className="text-slate-400 dark:text-slate-600">Connect:</span>
+            {data.socialLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Open ${link.name}`}
+                className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
+              >
+                {link.name}
+              </a>
+            ))}
+          </div>
         </motion.div>
       </div>
     </section>

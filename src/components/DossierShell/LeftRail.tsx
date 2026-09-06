@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon, Pin, PinOff } from "lucide-react";
 import type { NavData, NavItem } from "../../data/nav";
+import { navSocialProfiles } from "../../data/social";
 import { useTheme } from "../../context/ThemeContext";
 
 
@@ -192,10 +193,11 @@ function ExpandedNavItem({ item, isActive }: { item: NavItem; isActive: boolean 
 
 // ─── Social Links ─────────────────────────────────────────────────────────────
 
-function SocialLinks({ data }: { data: NavData }) {
+export function SocialLinks({ data }: { data: NavData }) {
+  const links = data.social?.length > 0 ? data.social : navSocialProfiles;
   return (
     <div className="flex items-center gap-2">
-      {data.social.map((link) => (
+      {links.map((link) => (
         <a
           key={link.id}
           id={`rail-social-${link.id}`}
