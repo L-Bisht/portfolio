@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { motion, type Variants, AnimatePresence } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { SkillsData, ArchitecturalTier } from "../../data/skills";
 import { QuarterCircleArc } from "../CornerBubble";
+import { SkillIcon } from "./SkillIcon";
 
 // ─── Accent palette ───────────────────────────────────────────────────────────
 const ACCENT = {
@@ -13,7 +14,7 @@ const ACCENT = {
     border: "rgba(99,102,241,0.35)",
     badge: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/25",
     chip: "hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-300",
-    chipDescriptor: "text-indigo-600 dark:text-indigo-400/80",
+    iconActive: "text-indigo-600 dark:text-indigo-400",
     connector: "from-indigo-500/40 to-transparent",
     ambientTop: "bg-indigo-500/8",
     ambientBot: "bg-indigo-600/6",
@@ -26,7 +27,7 @@ const ACCENT = {
     border: "rgba(139,92,246,0.35)",
     badge: "text-violet-600 dark:text-violet-400 bg-violet-500/10 border-violet-500/25",
     chip: "hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-300",
-    chipDescriptor: "text-violet-600 dark:text-violet-400/80",
+    iconActive: "text-violet-600 dark:text-violet-400",
     connector: "from-violet-500/40 to-transparent",
     ambientTop: "bg-violet-500/8",
     ambientBot: "bg-violet-600/6",
@@ -39,7 +40,7 @@ const ACCENT = {
     border: "rgba(6,182,212,0.35)",
     badge: "text-cyan-700 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/25",
     chip: "hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-700 dark:hover:text-cyan-300",
-    chipDescriptor: "text-cyan-700 dark:text-cyan-400/80",
+    iconActive: "text-cyan-600 dark:text-cyan-400",
     connector: "from-cyan-500/40 to-transparent",
     ambientTop: "bg-cyan-500/8",
     ambientBot: "bg-cyan-600/6",
@@ -47,16 +48,12 @@ const ACCENT = {
   },
 } as const;
 
-
-
 // ─── Chip ─────────────────────────────────────────────────────────────────────
 function CapabilityChip({
   name,
-  descriptor,
   accent,
 }: {
   name: string;
-  descriptor?: string;
   accent: keyof typeof ACCENT;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -66,38 +63,32 @@ function CapabilityChip({
     <motion.span
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={{ y: -2, scale: 1.03 }}
+      whileHover={{ scale: 1.04 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       className={[
-        "relative inline-flex flex-col items-start gap-0.5",
+        "relative inline-flex items-center gap-2",
         "px-3.5 py-2 rounded-xl cursor-default select-none",
         "border border-slate-200 dark:border-white/8",
         "bg-slate-50 dark:bg-white/3",
         "text-slate-700 dark:text-slate-300",
-        "text-sm font-medium leading-tight",
-        "transition-all duration-200",
+        "text-sm font-medium leading-none",
+        "transition-colors duration-200",
         a.chip,
       ].join(" ")}
       style={{
-        boxShadow: hovered ? `0 4px 16px ${a.glowSoft}` : "none",
+        boxShadow: hovered
+          ? `0 4px 16px ${a.glowSoft}, 0 0 0 1px ${a.border}`
+          : "none",
       }}
-      aria-label={descriptor ? `${name}: ${descriptor}` : name}
+      aria-label={name}
     >
+      <SkillIcon
+        name={name}
+        className={`w-4 h-4 shrink-0 transition-colors duration-200 ${
+          hovered ? a.iconActive : "text-slate-400 dark:text-slate-400"
+        }`}
+      />
       <span>{name}</span>
-      <AnimatePresence>
-        {hovered && descriptor && (
-          <motion.span
-            key="descriptor"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.15 }}
-            className={`text-[10px] font-normal leading-none overflow-hidden ${a.chipDescriptor}`}
-          >
-            {descriptor}
-          </motion.span>
-        )}
-      </AnimatePresence>
     </motion.span>
   );
 }
@@ -240,7 +231,6 @@ function StratumCard({
               >
                 <CapabilityChip
                   name={cap.name}
-                  descriptor={cap.descriptor}
                   accent={tier.accent}
                 />
               </motion.div>
