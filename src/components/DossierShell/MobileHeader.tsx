@@ -1,8 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Search } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import type { NavData } from "../../data/nav";
 import { useTheme } from "../../context/ThemeContext";
-import { useCommandPalette } from "../../context/CommandPaletteContext";
 
 interface MobileHeaderProps {
   data: NavData;
@@ -10,7 +9,6 @@ interface MobileHeaderProps {
 
 export default function MobileHeader({ data }: MobileHeaderProps) {
   const { theme, toggleTheme } = useTheme();
-  const { openPalette } = useCommandPalette();
 
   return (
     <header
@@ -47,22 +45,6 @@ export default function MobileHeader({ data }: MobileHeaderProps) {
 
       {/* Controls */}
       <div className="flex items-center gap-1.5">
-        {/* ⌘K trigger */}
-        <motion.button
-          id="mobile-header-cmd-trigger"
-          aria-label="Open command palette"
-          onClick={openPalette}
-          whileTap={{ scale: 0.93 }}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                     border border-indigo-300/60 dark:border-indigo-500/40
-                     bg-indigo-50/80 dark:bg-indigo-950/40
-                     text-indigo-600 dark:text-indigo-300
-                     hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors duration-150"
-        >
-          <Search size={12} />
-          <span className="hidden xs:inline">⌘K</span>
-        </motion.button>
-
         {/* Theme toggle */}
         <motion.button
           id="mobile-header-theme-toggle"

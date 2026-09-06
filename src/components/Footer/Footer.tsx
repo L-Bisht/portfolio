@@ -1,14 +1,5 @@
 import { motion } from "framer-motion";
 
-const NAV_LINKS = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Skills", href: "#skills" },
-  { label: "Experience", href: "#experience" },
-  { label: "Projects", href: "#projects" },
-  { label: "Contact", href: "#contact" },
-];
-
 const STACK_NOTES = [
   { label: "React 19", href: "https://react.dev" },
   { label: "TypeScript", href: "https://typescriptlang.org" },
@@ -42,7 +33,7 @@ const Footer = () => {
           transition={{ duration: 0.55 }}
           className="flex flex-col gap-8"
         >
-          {/* Top row: brand + nav links */}
+          {/* Top row: brand mark */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             {/* Brand mark */}
             <a
@@ -62,25 +53,6 @@ const Footer = () => {
               />
               <span>L. Bisht</span>
             </a>
-
-            {/* Nav quick-links */}
-            <nav
-              aria-label="Footer navigation"
-              className="flex flex-wrap gap-x-5 gap-y-2"
-            >
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-xs font-medium tracking-wide
-                    text-slate-400 dark:text-slate-500
-                    hover:text-slate-700 dark:hover:text-slate-300
-                    transition-colors duration-200"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </nav>
           </div>
 
           {/* Divider */}

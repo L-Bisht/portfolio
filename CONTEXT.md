@@ -12,3 +12,7 @@ This document defines the core domain concepts used in the portfolio's architect
 *   **Magazine Case Study**: An editorial project presentation format that pairs technical problem-solving narrative, architectural metrics, and interactive previews side-by-side, replacing generic card grids.
 *   **Executive Ledger**: A two-column chronological record of tenure replacing decorative line-and-dot timelines, prioritizing quantified metrics and architectural leadership.
 *   **Architectural Toolkit**: A capability-oriented system representation replacing isolated skill badges, grouping technologies into operational layers (e.g., Interface Engine, Distributed Systems, AI Orchestration).
+*   **Collapsible Anchor Rail**: An evolution of the Sticky Dossier anchor rail operating in a compact translucent mode (~72px) with hover expansion and an explicit pin/unpin lock mechanism, spanning the full vertical canvas continuously.
+*   **Editorial Glass Strata**: The unified card design system standardizing all section surfaces with dual-mode glass (`bg-white/70 dark:bg-white/[0.04]`), reactive top-edge hairline glow, and radial hover spotlight.
+*   **Quarter-Circle Corner Motif**: A signature architectural corner arc accent (`rounded-bl-full` / `rounded-br-full` with directional gradient) anchoring key cards.
+*   **Commanding Headline**: Large-scale responsive clamp typography featuring animated word reveals and gradient keyword highlighting.

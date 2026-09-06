@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon, Pin, PinOff } from "lucide-react";
 import type { NavData, NavItem } from "../../data/nav";
 import { useTheme } from "../../context/ThemeContext";
-import { useCommandPalette } from "../../context/CommandPaletteContext";
+
 
 // ─── Icon map (reused from FloatingDock) ─────────────────────────────────────
 
@@ -237,7 +237,6 @@ const RAIL_SPRING = { type: "spring", stiffness: 320, damping: 32, mass: 0.8 };
 
 export default function LeftRail({ data, activeSectionId, isPinned, togglePin }: LeftRailProps) {
   const { theme, toggleTheme } = useTheme();
-  const { openPalette } = useCommandPalette();
   const [isHovered, setIsHovered] = useState(false);
 
   const isExpanded = isPinned || isHovered;
@@ -460,60 +459,6 @@ export default function LeftRail({ data, activeSectionId, isPinned, togglePin }:
           </Tooltip>
         )}
 
-        {/* Command palette trigger — expanded only */}
-        <AnimatePresence initial={false}>
-          {isExpanded && (
-            <motion.div
-              key="cmd-palette"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              transition={{ duration: 0.15 }}
-              className="w-full"
-            >
-              <motion.button
-                id="rail-cmd-palette-trigger"
-                aria-label="Open navigation command palette (⌘K)"
-                onClick={openPalette}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="group relative flex items-center justify-between gap-2 w-full px-3 py-2.5 rounded-xl
-                           border border-slate-200/80 dark:border-slate-700/60
-                           bg-slate-50/80 dark:bg-slate-800/50
-                           text-slate-500 dark:text-slate-400
-                           hover:border-indigo-300/70 dark:hover:border-indigo-600/60
-                           hover:text-indigo-600 dark:hover:text-indigo-400
-                           hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30
-                           hover:shadow-[0_0_16px_rgba(99,102,241,0.18)]
-                           transition-all duration-200 cursor-pointer"
-              >
-                <div className="flex items-center gap-2 text-xs font-medium">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-3.5 h-3.5"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                  </svg>
-                  Navigate
-                </div>
-                <kbd
-                  className="inline-flex items-center gap-0.5 rounded border border-slate-200/80 dark:border-slate-600/60
-                             bg-white/70 dark:bg-slate-900/60 px-1.5 py-0.5
-                             text-[10px] text-slate-400 dark:text-slate-500 font-sans"
-                >
-                  ⌘K
-                </kbd>
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* ── Pin / Unpin toggle ─────────────────────────────────── */}
         <Tooltip label={isPinned ? "Unpin rail" : "Pin rail open"}>
