@@ -23,6 +23,24 @@ interface Ripple {
   opacity: number;
 }
 
+// ─── colors ──────────────────────────────────────────────────────────────────
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+const THEME_COLORS: Record<string, RGB> = {
+  home: { r: 99, g: 102, b: 241 },       // indigo-500
+  about: { r: 99, g: 102, b: 241 },      // indigo-500
+  skills: { r: 6, g: 182, b: 212 },      // cyan-500
+  experience: { r: 16, g: 185, b: 129 }, // emerald-500
+  projects: { r: 139, g: 92, b: 246 },   // violet-500
+  contact: { r: 99, g: 102, b: 241 },    // indigo-500
+};
+
+const DEFAULT_COLOR = THEME_COLORS.home;
+
 // ─── constants ────────────────────────────────────────────────────────────────
 
 const PARTICLE_COUNT = 80;
@@ -75,14 +93,23 @@ function wrapParticle(p: Particle, w: number, h: number) {
   if (p.x > w + margin) p.x = -margin;
 }
 
-// ─── component ────────────────────────────────────────────────────────────────
+interface InteractiveBackgroundProps {
+  activeSectionId?: string;
+}
 
-export default function InteractiveBackground() {
+export default function InteractiveBackground({ activeSectionId = "home" }: InteractiveBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -9999, y: -9999 });
   const particlesRef = useRef<Particle[]>([]);
   const ripplesRef = useRef<Ripple[]>([]);
   const rafRef = useRef<number>(0);
+  const currentColorRef = useRef<RGB>({ ...DEFAULT_COLOR });
+  
+  // Track activeSectionId in a ref to avoid stale closures in the draw loop
+  const activeSectionIdRef = useRef(activeSectionId);
+  useEffect(() => {
+    activeSectionIdRef.current = activeSectionId;
+  }, [activeSectionId]);
 
   // ── init particles ──────────────────────────────────────────────────────────
   const initParticles = useCallback((width: number, height: number) => {
@@ -149,6 +176,18 @@ export default function InteractiveBackground() {
       const mouse = mouseRef.current;
       const isDark = document.documentElement.classList.contains("dark");
 
+      // ── color lerping ─────────────────────────────────────────────────────
+      const targetColor = THEME_COLORS[activeSectionIdRef.current] || DEFAULT_COLOR;
+      const current = currentColorRef.current;
+      
+      current.r += (targetColor.r - current.r) * 0.05;
+      current.g += (targetColor.g - current.g) * 0.05;
+      current.b += (targetColor.b - current.b) * 0.05;
+
+      const currR = Math.round(current.r);
+      const currG = Math.round(current.g);
+      const currB = Math.round(current.b);
+
       ctx.clearRect(0, 0, w, h);
 
       // ── spotlight gradient ────────────────────────────────────────────────
@@ -162,12 +201,12 @@ export default function InteractiveBackground() {
           340
         );
         if (isDark) {
-          spotlight.addColorStop(0, "rgba(99, 102, 241, 0.10)");
-          spotlight.addColorStop(0.45, "rgba(99, 102, 241, 0.04)");
+          spotlight.addColorStop(0, `rgba(${currR}, ${currG}, ${currB}, 0.10)`);
+          spotlight.addColorStop(0.45, `rgba(${currR}, ${currG}, ${currB}, 0.04)`);
           spotlight.addColorStop(1, "rgba(0, 0, 0, 0)");
         } else {
-          spotlight.addColorStop(0, "rgba(99, 102, 241, 0.07)");
-          spotlight.addColorStop(0.45, "rgba(99, 102, 241, 0.025)");
+          spotlight.addColorStop(0, `rgba(${currR}, ${currG}, ${currB}, 0.07)`);
+          spotlight.addColorStop(0.45, `rgba(${currR}, ${currG}, ${currB}, 0.025)`);
           spotlight.addColorStop(1, "rgba(255, 255, 255, 0)");
         }
         ctx.fillStyle = spotlight;
@@ -204,7 +243,7 @@ export default function InteractiveBackground() {
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = isDark
           ? `rgba(148, 163, 184, ${p.opacity})`           // slate-400
-          : `rgba(67, 56, 202, ${p.opacity * 0.75})`;     // indigo-700 — deeper + visible
+          : `rgba(${currR}, ${currG}, ${currB}, ${p.opacity * 0.75})`;
         ctx.fill();
       }
 
@@ -223,7 +262,7 @@ export default function InteractiveBackground() {
             ctx.lineTo(b.x, b.y);
             ctx.strokeStyle = isDark
               ? `rgba(148, 163, 184, ${alpha})`
-              : `rgba(67, 56, 202, ${alpha * 0.65})`; // indigo-700 connections
+              : `rgba(${currR}, ${currG}, ${currB}, ${alpha * 0.65})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -231,19 +270,17 @@ export default function InteractiveBackground() {
       }
 
       // ── draw ripples ──────────────────────────────────────────────────────
-      ripplesRef.current = ripplesRef.current.filter((r) => r.opacity > 0);
-      for (const r of ripplesRef.current) {
+      ripplesRef.current = ripplesRef.current.filter((rpl) => rpl.opacity > 0);
+      for (const rpl of ripplesRef.current) {
         ctx.beginPath();
-        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = isDark
-          ? `rgba(129, 140, 248, ${r.opacity})`
-          : `rgba(67, 56, 202, ${r.opacity})`;
+        ctx.arc(rpl.x, rpl.y, rpl.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${currR}, ${currG}, ${currB}, ${rpl.opacity})`;
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        r.radius += RIPPLE_EXPAND_SPEED;
-        r.opacity -= RIPPLE_FADE_SPEED;
-        if (r.radius > r.maxRadius) r.opacity = 0;
+        rpl.radius += RIPPLE_EXPAND_SPEED;
+        rpl.opacity -= RIPPLE_FADE_SPEED;
+        if (rpl.radius > rpl.maxRadius) rpl.opacity = 0;
       }
 
       rafRef.current = requestAnimationFrame(draw);

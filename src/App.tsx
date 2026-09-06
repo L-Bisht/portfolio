@@ -17,14 +17,20 @@ import { skillsData } from "./data/skills";
 import { experienceData } from "./data/experience";
 import { projectsData } from "./data/projects";
 import { contactData } from "./data/contact";
+import { useScrollSpy } from "./components/DossierShell/useScrollSpy";
+
+const SECTION_IDS = ["home", "about", "skills", "experience", "projects", "contact"];
 
 function App() {
+  const activeSectionId = useScrollSpy(SECTION_IDS);
+
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900">
-      <InteractiveBackground />
+      <InteractiveBackground activeSectionId={activeSectionId} />
 
       <DossierShell
         data={navData}
+        activeSectionId={activeSectionId}
         finale={
           <>
             <Contact data={contactData} />

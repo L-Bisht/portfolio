@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import type { NavData } from "../../data/nav";
-import { useScrollSpy } from "./useScrollSpy";
 import LeftRail from "./LeftRail";
 import MobileHeader from "./MobileHeader";
 import FloatingDock from "./FloatingDock";
 
 interface DossierShellProps {
   data: NavData;
+  activeSectionId: string;
   children: ReactNode;
   /**
    * `finale` renders below the dual-pane rail+canvas, spanning the full
@@ -14,8 +14,6 @@ interface DossierShellProps {
    */
   finale?: ReactNode;
 }
-
-const SECTION_IDS = ["home", "about", "skills", "experience", "projects", "contact"];
 
 /**
  * DossierShell
@@ -30,8 +28,7 @@ const SECTION_IDS = ["home", "about", "skills", "experience", "projects", "conta
  * Mobile (< 1024px):
  *   [MobileHeader sticky top] → content → finale → [FloatingDock fixed bottom]
  */
-export default function DossierShell({ data, children, finale }: DossierShellProps) {
-  const activeSectionId = useScrollSpy(SECTION_IDS);
+export default function DossierShell({ data, activeSectionId, children, finale }: DossierShellProps) {
 
   return (
     <>
