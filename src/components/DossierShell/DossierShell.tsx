@@ -8,11 +8,6 @@ interface DossierShellProps {
   data: NavData;
   activeSectionId: string;
   children: ReactNode;
-  /**
-   * `finale` renders below the dual-pane rail+canvas, spanning the full
-   * viewport width — used for the cinematic Contact section and Footer.
-   */
-  finale?: ReactNode;
 }
 
 /**
@@ -21,14 +16,17 @@ interface DossierShellProps {
  * Macro layout controller for the Sticky Dossier Hybrid pattern.
  *
  * Desktop (≥ 1024px):
- *   [LeftRail 280px sticky] | [Editorial content column — scrolls freely]
- *   ──────────────────────────────────────────────────────────────────────
- *   [Finale — full-width, below dual-pane: Contact + Footer]
+ *   [LeftRail 280px sticky top-0] | [Editorial content column — scrolls freely]
+ *
+ *   The left rail uses `sticky top-0 self-start` so it remains anchored beside
+ *   ALL content — including Contact and Footer — at every scroll position.
+ *   Contact and Footer must be passed as children (not a separate "finale"
+ *   slot) to keep them inside the flex row alongside the rail.
  *
  * Mobile (< 1024px):
- *   [MobileHeader sticky top] → content → finale → [FloatingDock fixed bottom]
+ *   [MobileHeader sticky top] → content → [FloatingDock fixed bottom]
  */
-export default function DossierShell({ data, activeSectionId, children, finale }: DossierShellProps) {
+export default function DossierShell({ data, activeSectionId, children }: DossierShellProps) {
 
   return (
     <>
@@ -37,10 +35,10 @@ export default function DossierShell({ data, activeSectionId, children, finale }
 
       {/* ── Shell: rail + editorial canvas ───────────────────────── */}
       <div className="flex">
-        {/* Left Rail — desktop only */}
+        {/* Left Rail — desktop only, sticky through full page height */}
         <LeftRail data={data} activeSectionId={activeSectionId} />
 
-        {/* Editorial content column */}
+        {/* Editorial content column — Contact + Footer live here too */}
         <main
           id="editorial-canvas"
           className="flex-1 min-w-0 flex flex-col"
@@ -48,13 +46,6 @@ export default function DossierShell({ data, activeSectionId, children, finale }
           {children}
         </main>
       </div>
-
-      {/* ── Cinematic Finale — full-width breakout ────────────────── */}
-      {finale && (
-        <div id="contact-finale" className="w-full">
-          {finale}
-        </div>
-      )}
 
       {/* ── Floating Bottom Dock — mobile only ───────────────────── */}
       <FloatingDock data={data} activeSectionId={activeSectionId} />

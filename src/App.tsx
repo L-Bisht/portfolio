@@ -31,12 +31,6 @@ function App() {
       <DossierShell
         data={navData}
         activeSectionId={activeSectionId}
-        finale={
-          <>
-            <Contact data={contactData} />
-            <Footer />
-          </>
-        }
       >
         <AnimatePresence mode="wait">
           <Hero data={heroData} />
@@ -45,6 +39,8 @@ function App() {
           <Experience data={experienceData} />
           <Projects data={projectsData} />
         </AnimatePresence>
+        <Contact data={contactData} />
+        <Footer />
       </DossierShell>
 
       <CommandPalette />

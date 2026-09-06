@@ -19,7 +19,23 @@
     }
   }
 
+  /* ── Overscroll constraint ────────────────────────────────────────────────
+   * Prevent elastic rubber-banding from exposing the browser canvas behind
+   * the app shell. The background-color on html ensures that even if the
+   * browser does paint beyond the scroll boundaries, the color matches the
+   * active theme rather than the default white. */
+  html {
+    overscroll-behavior: none;
+    /* Light theme default — synchronized via JS class toggle */
+    background-color: #f8fafc; /* slate-50 */
+  }
+
+  html.dark {
+    background-color: #0f172a; /* slate-900 */
+  }
+
   body {
+    overscroll-behavior: none;
     @apply text-slate-900 dark:text-white transition-colors duration-200;
   }
 }
