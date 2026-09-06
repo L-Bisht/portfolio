@@ -1,68 +1,7 @@
 import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { AboutData } from "../../data/about";
-
-// ─── Quarter-circle arc motif ─────────────────────────────────────────────────
-function QuarterCircleArc({
-  corner = "tr",
-  color,
-  size = 80,
-  opacity = 0.18,
-}: {
-  corner?: "tl" | "tr" | "bl" | "br";
-  color: string;
-  size?: number;
-  opacity?: number;
-}) {
-  const posStyle: Record<string, React.CSSProperties> = {
-    tr: { top: 0, right: 0 },
-    tl: { top: 0, left: 0 },
-    br: { bottom: 0, right: 0 },
-    bl: { bottom: 0, left: 0 },
-  };
-  const rotationMap = { tr: 0, br: 90, bl: 180, tl: 270 };
-
-  return (
-    <svg
-      aria-hidden="true"
-      width={size}
-      height={size}
-      viewBox="0 0 88 88"
-      fill="none"
-      style={{
-        position: "absolute",
-        pointerEvents: "none",
-        opacity,
-        transform: `rotate(${rotationMap[corner]}deg)`,
-        ...posStyle[corner],
-      }}
-    >
-      <path
-        d="M88 0 A88 88 0 0 0 0 88"
-        stroke={color}
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M88 18 A70 70 0 0 0 18 88"
-        stroke={color}
-        strokeWidth="1"
-        fill="none"
-        strokeLinecap="round"
-        opacity={0.5}
-      />
-      <path
-        d="M88 36 A52 52 0 0 0 36 88"
-        stroke={color}
-        strokeWidth="0.75"
-        fill="none"
-        strokeLinecap="round"
-        opacity={0.3}
-      />
-    </svg>
-  );
-}
+import { QuarterCircleArc } from "../CornerBubble";
 
 interface AboutProps {
   data: AboutData;

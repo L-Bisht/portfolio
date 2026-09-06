@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, type Variants, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { SkillsData, ArchitecturalTier } from "../../data/skills";
+import { QuarterCircleArc } from "../CornerBubble";
 
 // ─── Accent palette ───────────────────────────────────────────────────────────
 const ACCENT = {
@@ -46,72 +47,7 @@ const ACCENT = {
   },
 } as const;
 
-// ─── Quarter-circle arc motif ─────────────────────────────────────────────────
-function QuarterCircleArc({
-  corner = "tr",
-  color,
-  size = 88,
-  opacity = 0.18,
-}: {
-  corner?: "tl" | "tr" | "bl" | "br";
-  color: string;
-  size?: number;
-  opacity?: number;
-}) {
-  // Position map
-  const posStyle: Record<string, React.CSSProperties> = {
-    tr: { top: 0, right: 0 },
-    tl: { top: 0, left: 0 },
-    br: { bottom: 0, right: 0 },
-    bl: { bottom: 0, left: 0 },
-  };
-  // Rotation so the arc fills into the given corner
-  const rotationMap = { tr: 0, br: 90, bl: 180, tl: 270 };
 
-  return (
-    <svg
-      aria-hidden="true"
-      width={size}
-      height={size}
-      viewBox="0 0 88 88"
-      fill="none"
-      style={{
-        position: "absolute",
-        pointerEvents: "none",
-        opacity,
-        transform: `rotate(${rotationMap[corner]}deg)`,
-        ...posStyle[corner],
-      }}
-    >
-      {/* Outer arc */}
-      <path
-        d="M88 0 A88 88 0 0 0 0 88"
-        stroke={color}
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Mid arc */}
-      <path
-        d="M88 18 A70 70 0 0 0 18 88"
-        stroke={color}
-        strokeWidth="1"
-        fill="none"
-        strokeLinecap="round"
-        opacity={0.5}
-      />
-      {/* Inner arc */}
-      <path
-        d="M88 36 A52 52 0 0 0 36 88"
-        stroke={color}
-        strokeWidth="0.75"
-        fill="none"
-        strokeLinecap="round"
-        opacity={0.3}
-      />
-    </svg>
-  );
-}
 
 // ─── Chip ─────────────────────────────────────────────────────────────────────
 function CapabilityChip({
@@ -224,8 +160,8 @@ function StratumCard({
         <QuarterCircleArc
           corner="tr"
           color={a.glowHex}
-          size={96}
-          opacity={hovered ? 0.3 : 0.16}
+          size={180}
+          opacity={hovered ? 0.32 : 0.18}
         />
 
         {/* Top edge hairline glow */}
