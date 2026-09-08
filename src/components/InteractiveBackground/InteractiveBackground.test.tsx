@@ -2,6 +2,18 @@ import { describe, it, expect } from "vitest";
 import { renderToString } from "react-dom/server";
 import InteractiveBackground from "./InteractiveBackground";
 import { buildIsometricLattice } from "./isometricLattice";
+import {
+  DOT_PROX_R,
+  DOT_BASE_R,
+  DOT_APEX_SCALE,
+  DOT_MAX_DISPLACEMENT,
+  SPRING_K,
+  SPRING_C,
+  SPRING_SETTLE_MS,
+  calculateHemisphericalElevation,
+  calculateSpringFactor,
+  calculateDomeDisplacement,
+} from "./dotMatrixPhysics";
 
 describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
   describe("DOM Seam & Default Mode Contract", () => {
@@ -120,4 +132,55 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       expect(edgeKeys.size).toBe(edges.length);
     });
   });
+
+  describe("3D Hemispherical Dot Matrix Bulge & Kinetic Spring Bounce Contract", () => {
+    it("adheres strictly to physical specification constants", () => {
+      expect(DOT_PROX_R).toBe(180);
+      expect(DOT_BASE_R).toBe(1.4);
+      expect(DOT_APEX_SCALE).toBe(2.4);
+      expect(DOT_MAX_DISPLACEMENT).toBe(16);
+      expect(SPRING_K).toBeCloseTo(280, 0);
+      expect(SPRING_C).toBeCloseTo(22, 0);
+      expect(SPRING_SETTLE_MS).toBe(550);
+    });
+
+    it("verifies 3D dome calculates convex elevation and outward displacement", () => {
+      const mx = 500;
+      const my = 500;
+      const R = DOT_PROX_R;
+
+      // Dome apex
+      const apexZ = calculateHemisphericalElevation(mx, my, mx, my, R);
+      expect(apexZ).toBe(R);
+
+      // Point at d = 100px towards positive X
+      const px = mx + 100;
+      const py = my;
+      const z = calculateHemisphericalElevation(px, py, mx, my, R);
+      expect(z).toBeGreaterThan(0);
+      expect(z).toBeLessThan(R);
+
+      const disp = calculateDomeDisplacement(px, py, mx, my, z, R, DOT_MAX_DISPLACEMENT);
+      expect(disp.dx).toBeGreaterThan(0);
+      expect(disp.dy).toBeCloseTo(0, 5);
+      expect(disp.dx).toBeCloseTo((z / R) * 16, 4);
+    });
+
+    it("verifies spring compression depresses dome by 40% on click and settles over 550ms", () => {
+      // Immediate click compression
+      const initialFactor = calculateSpringFactor(0);
+      expect(initialFactor).toBeCloseTo(0.60, 4);
+
+      // Rebound over 550ms
+      const reboundCross = calculateSpringFactor(195);
+      expect(reboundCross).toBeCloseTo(1.0, 1);
+
+      const overshoot = calculateSpringFactor(280);
+      expect(overshoot).toBeGreaterThan(1.0);
+
+      const settled = calculateSpringFactor(550);
+      expect(settled).toBeCloseTo(1.0, 3);
+    });
+  });
 });
+

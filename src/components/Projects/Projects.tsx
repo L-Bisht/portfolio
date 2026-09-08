@@ -364,7 +364,7 @@ interface ProjectsProps {
 }
 
 const Projects = ({ data }: ProjectsProps) => {
-  const [sectionRef, inView] = useInView({
+  const [sectionRef] = useInView({
     triggerOnce: false,
     threshold: 0,
     rootMargin: "-10% 0px -10% 0px",

@@ -7,6 +7,18 @@ import {
   CUBE_PROX_R2,
   type IsometricLattice,
 } from "./isometricLattice";
+import {
+  DOT_SPACING,
+  DOT_BASE_R,
+  DOT_APEX_SCALE,
+  DOT_MAX_DISPLACEMENT,
+  DOT_PROX_R,
+  DOT_PROX_R2,
+  RIPPLE_WAVE_W as DOT_RIPPLE_WAVE_W,
+  RIPPLE_PUSH_MAX,
+  calculateSpringFactor,
+  calculateDotRadius,
+} from "./dotMatrixPhysics";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -57,12 +69,6 @@ const SPOTLIGHT_R     = 380;  // px radius of the soft ambient cursor spotlight
 const RIPPLE_WAVE_W   = 65;   // px thickness of the expanding ripple wavefront ring
 const RIPPLE_DURATION = 1100; // ms duration of click ripple propagation
 
-// Dot matrix constants
-const DOT_SPACING     = 26;   // px between dot centres
-const DOT_BASE_R      = 1.4;  // resting dot radius
-const DOT_MAX_R       = 3.2;  // max radius under cursor
-const DOT_PROX_R      = 160;  // px proximity influence radius
-const DOT_PROX_R2     = DOT_PROX_R * DOT_PROX_R;
 
 /** Build a flat array of (x, y) grid intersection points for the dot matrix renderer */
 function buildGrid(w: number, h: number, spacing: number): GridPoint[] {
@@ -104,6 +110,9 @@ export default function InteractiveBackground({
 
   // Active click ripples array
   const ripplesRef = useRef<ClickRipple[]>([]);
+
+  // Pointer click timestamp for 3D dome damped spring rebound
+  const springClickTimeRef = useRef<number>(-99999);
 
   // Smoothly lerped accent colour
   const currentColorRef = useRef<RGB>({ ...DEFAULT_COLOR });
@@ -148,11 +157,14 @@ export default function InteractiveBackground({
       if (target && target.closest("#bg-switcher-cubes, #bg-switcher-dots")) {
         return;
       }
+      const now = performance.now();
+      springClickTimeRef.current = now;
+
       const maxR = Math.max(window.innerWidth, window.innerHeight) * 0.85;
       ripplesRef.current.push({
         x: e.clientX,
         y: e.clientY,
-        startTime: performance.now(),
+        startTime: now,
         duration: RIPPLE_DURATION,
         maxRadius: maxR,
       });
@@ -238,13 +250,13 @@ export default function InteractiveBackground({
           return;
         }
 
-        // Balanced resting vs hovered visibility values (darker, richer hover definition)
-        const restingEdgeAlpha   = isDark ? 0.20 : 0.16;
+        // Balanced resting vs hovered visibility values
+        const restingEdgeAlpha   = isDark ? 0.17 : 0.15;
         const peakEdgeAlpha      = isDark ? 0.70 : 0.68;
         const restingEdgeWidth   = 0.85;
         const peakEdgeWidth      = isDark ? 1.50 : 1.45;
 
-        const restingVertexAlpha = isDark ? 0.28 : 0.24;
+        const restingVertexAlpha = isDark ? 0.24 : 0.20;
         const peakVertexAlpha    = isDark ? 0.80 : 0.74;
         const restingVertexR     = 1.2;
         const peakVertexR        = 2.4;
@@ -412,66 +424,175 @@ export default function InteractiveBackground({
         }
       }
 
-      // ── MODE 2: Geometric Dot Matrix ──────────────────────────────────────
+      // ── MODE 2: 3D Hemispherical Dot Matrix & Kinetic Spring Bounce ────────
       if (currentMode === "dots") {
         const dots = dotPointsRef.current;
-        const baseAlpha = isDark ? 0.22 : 0.18;
-        const peakAlpha = isDark ? 0.70 : 0.65;
+        const baseAlpha = isDark ? 0.15 : 0.20;
+        const peakAlpha = isDark ? 0.88 : 0.82;
         const baseR = DOT_BASE_R;
-        const maxR = DOT_MAX_R;
+
+        // Balanced resting tone: crisp and clearly visible, but slightly deeper than active hover
+        const restR = isDark ? cr : Math.round(cr * 0.65);
+        const restG = isDark ? cg : Math.round(cg * 0.65);
+        const restB = isDark ? cb : Math.round(cb * 0.75);
+
         const hoverR = isDark ? cr : Math.round(cr * 0.72);
         const hoverG = isDark ? cg : Math.round(cg * 0.72);
         const hoverB = isDark ? cb : Math.round(cb * 0.82);
 
+        // Underdamped harmonic spring factor: 0.60 on click, rebounds over ~550ms to 1.0
+        const springFactor = calculateSpringFactor(now - springClickTimeRef.current);
+        const numRipples = activeRippleData.length;
+
+        // 0. Volumetric 3D Spherical Dome Ambient Under-Glow
+        if (mx > -1000) {
+          const glowR = DOT_PROX_R * Math.max(0.2, springFactor);
+          const domeGlow = ctx.createRadialGradient(
+            mx - 18,
+            my - 18,
+            0,
+            mx,
+            my,
+            glowR
+          );
+          if (isDark) {
+            domeGlow.addColorStop(0,   `rgba(${cr},${cg},${cb},0.12)`);
+            domeGlow.addColorStop(0.5, `rgba(${cr},${cg},${cb},0.05)`);
+            domeGlow.addColorStop(1,   `rgba(${cr},${cg},${cb},0)`);
+          } else {
+            domeGlow.addColorStop(0,   `rgba(${cr},${cg},${cb},0.09)`);
+            domeGlow.addColorStop(0.5, `rgba(${cr},${cg},${cb},0.03)`);
+            domeGlow.addColorStop(1,   `rgba(${cr},${cg},${cb},0)`);
+          }
+          ctx.fillStyle = domeGlow;
+          ctx.beginPath();
+          ctx.arc(mx, my, glowR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
         for (let i = 0; i < dots.length; i++) {
           const p = dots[i];
-          let hoverFactor = 0;
-          let rippleFactor = 0;
+          let domeDx = 0;
+          let domeDy = 0;
+          let elevationRatio = 0;
+          let spec = 0;
 
+          // 1. 3D Hemispherical Convex Dome Projection
           if (mx > -1000) {
             const dx = p.x - mx;
             const dy = p.y - my;
-            const d2 = dx * dx + dy * dy;
-            if (d2 < DOT_PROX_R2) {
-              const norm = 1 - Math.sqrt(d2) / DOT_PROX_R;
-              hoverFactor = norm * norm * (3 - 2 * norm);
+            // Bounding box test for proximity radius R = 180px
+            if (Math.abs(dx) < DOT_PROX_R && Math.abs(dy) < DOT_PROX_R) {
+              const d2 = dx * dx + dy * dy;
+              if (d2 < DOT_PROX_R2) {
+                const z = Math.sqrt(DOT_PROX_R2 - d2);
+                const zEff = z * springFactor;
+                elevationRatio = zEff / DOT_PROX_R;
+
+                const d = Math.sqrt(d2);
+                if (d > 0.0001) {
+                  // Smooth core taper: prevents apex hollowing, maintaining convex dome integrity
+                  const coreTaper = Math.min(1, d / 36);
+                  const disp = (zEff / DOT_PROX_R) * coreTaper * DOT_MAX_DISPLACEMENT;
+                  domeDx = (dx / d) * disp;
+                  domeDy = (dy / d) * disp;
+                }
+
+                // 3D Spherical surface normal lighting: key light from top-left (-0.38, -0.48, 0.79)
+                const nx = dx / DOT_PROX_R;
+                const ny = dy / DOT_PROX_R;
+                const nz = Math.min(1, elevationRatio);
+                const dotH = Math.max(0, -0.20 * nx - 0.25 * ny + 0.95 * nz);
+                spec = Math.pow(dotH, 6);
+              }
             }
           }
 
-          if (activeRippleData.length > 0) {
-            for (let j = 0; j < activeRippleData.length; j++) {
+          // 2. Kinetic Ripple Wavefront Push
+          let rippleFactor = 0;
+          let waveDx = 0;
+          let waveDy = 0;
+
+          if (numRipples > 0) {
+            for (let j = 0; j < numRipples; j++) {
               const rip = activeRippleData[j];
-              const dRip = Math.hypot(p.x - rip.x, p.y - rip.y);
+              const ripDx = p.x - rip.x;
+              const ripDy = p.y - rip.y;
+              const dRip = Math.hypot(ripDx, ripDy);
               const delta = Math.abs(dRip - rip.radius);
-              if (delta < 55) {
-                const wNorm = 1 - delta / 55;
+
+              if (delta < DOT_RIPPLE_WAVE_W) {
+                const wNorm = 1 - delta / DOT_RIPPLE_WAVE_W;
                 const wFactor = wNorm * wNorm * (3 - 2 * wNorm) * rip.fade;
                 if (wFactor > rippleFactor) {
                   rippleFactor = wFactor;
+                }
+                if (dRip > 0.0001) {
+                  const pushMag = wFactor * RIPPLE_PUSH_MAX;
+                  waveDx += (ripDx / dRip) * pushMag;
+                  waveDy += (ripDy / dRip) * pushMag;
                 }
               }
             }
           }
 
-          const intensity = Math.min(1, hoverFactor + rippleFactor * 0.85);
-          const radius = baseR + intensity * (maxR - baseR);
-          const alpha = baseAlpha + intensity * (peakAlpha - baseAlpha);
-          const pr = Math.round(lerpChannel(cr, hoverR, intensity));
-          const pg = Math.round(lerpChannel(cg, hoverG, intensity));
-          const pb = Math.round(lerpChannel(cb, hoverB, intensity));
+          // 3. Render Position & Magnification Scaling
+          const renderX = p.x + domeDx + waveDx;
+          const renderY = p.y + domeDy + waveDy;
+          const radius = calculateDotRadius(baseR, DOT_APEX_SCALE, elevationRatio, rippleFactor) + spec * 0.35;
 
+          // 4. Dynamic Brightness & Alpha Scaling
+          const intensity = Math.min(1, elevationRatio + rippleFactor * 0.85);
+          const alpha = baseAlpha + intensity * (peakAlpha - baseAlpha);
+
+          // Apex luminance boost: lighten colors towards luminous cyan/white at peak elevation & specular glint
+          const luminanceBoost = elevationRatio * 0.38 + spec * 0.45;
+          let pr = Math.round(lerpChannel(restR, hoverR, intensity));
+          let pg = Math.round(lerpChannel(restG, hoverG, intensity));
+          let pb = Math.round(lerpChannel(restB, hoverB, intensity));
+
+          if (isDark && elevationRatio > 0.05) {
+            pr = Math.min(255, Math.round(pr + (255 - pr) * luminanceBoost * 0.4));
+            pg = Math.min(255, Math.round(pg + (255 - pg) * luminanceBoost * 0.7));
+            pb = Math.min(255, Math.round(pb + (255 - pb) * luminanceBoost * 0.95));
+          }
+
+          // Soft luminous depth aura for elevated beads
+          if (elevationRatio > 0.4) {
+            ctx.beginPath();
+            ctx.arc(renderX, renderY, radius + 2.0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${hoverR},${hoverG},${hoverB},${alpha * 0.22})`;
+            ctx.fill();
+          }
+
+          // Main dot
           ctx.beginPath();
-          ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+          ctx.arc(renderX, renderY, radius, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${pr},${pg},${pb},${alpha})`;
           ctx.fill();
+
+          // Specular micro-glint highlight on upper-left quadrant
+          if (spec > 0.25 && elevationRatio > 0.55) {
+            ctx.beginPath();
+            ctx.arc(
+              renderX - radius * 0.25,
+              renderY - radius * 0.25,
+              radius * 0.32,
+              0,
+              Math.PI * 2
+            );
+            ctx.fillStyle = `rgba(255,255,255,${alpha * 0.75 * spec})`;
+            ctx.fill();
+          }
         }
 
-        if (activeRippleData.length > 0) {
-          for (let j = 0; j < activeRippleData.length; j++) {
+        // 5. Expanding kinetic wavefront ring stroke
+        if (numRipples > 0) {
+          for (let j = 0; j < numRipples; j++) {
             const rip = activeRippleData[j];
             ctx.beginPath();
             ctx.arc(rip.x, rip.y, rip.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(${hoverR},${hoverG},${hoverB},${rip.fade * (isDark ? 0.20 : 0.15)})`;
+            ctx.strokeStyle = `rgba(${hoverR},${hoverG},${hoverB},${rip.fade * (isDark ? 0.22 : 0.16)})`;
             ctx.lineWidth = 1.2;
             ctx.stroke();
           }
