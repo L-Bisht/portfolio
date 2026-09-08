@@ -4,6 +4,7 @@ import { useInView } from "react-intersection-observer";
 import type { ContactData } from "../../data/contact";
 import { socialRegistry } from "../../data/social";
 import { QuarterCircleArc } from "../CornerBubble";
+import SectionScaffold from "../SectionScaffold/SectionScaffold";
 
 /* ─────────────────────────── Centralized SVG Icons ─────────────────────────── */
 
@@ -183,31 +184,12 @@ interface ContactProps {
   data: ContactData;
 }
 
-const headlineVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
-  },
-};
-
-const wordVariant: Variants = {
-  hidden: { opacity: 0, y: 60, rotateX: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const HEADLINE_WORDS = ["Let's", "build", "something", "extraordinary."];
 
 const Contact = ({ data }: ContactProps) => {
   const [ref, inView] = useInView({
     triggerOnce: false,
-    threshold: 0.05,
-    rootMargin: "-5% 0px -5% 0px",
+    threshold: 0,
+    rootMargin: "-10% 0px -10% 0px",
   });
 
   const cards: ActionCardProps[] = [
@@ -258,12 +240,14 @@ const Contact = ({ data }: ContactProps) => {
   ];
 
   return (
-    <section
-      ref={ref}
+    <SectionScaffold
       id="contact"
-      className="relative w-full overflow-hidden"
+      eyebrow="Contact"
+      headline="Let's build something extraordinary."
+      accentWord="extraordinary."
+      subtitle={`${data.description} Reach out through any of the channels below — I typically respond within 24 hours.`}
     >
-      {/* ── Cinematic ambient backdrop (translucent atmospheric washes) ── */}
+      {/* ── Cinematic ambient backdrop ── */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Translucent atmospheric gradient wash allowing the background canvas lattice to shine through */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/[0.03] to-transparent dark:from-transparent dark:via-indigo-950/20 dark:to-transparent" />
@@ -292,125 +276,75 @@ const Contact = ({ data }: ContactProps) => {
           bg-gradient-to-r from-transparent via-indigo-400/30 dark:via-indigo-500/25 to-transparent" />
       </div>
 
-      {/* ── Inner content ──────────────────────────────────────── */}
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-32 lg:py-44">
+      {/* Full-height wrapper — ref spans all content so inView tracks correctly */}
+      <div ref={ref}>
 
-        {/* Section eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, x: -16 }}
-          animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center gap-3 mb-10"
-        >
-          <span className="h-px w-8 bg-indigo-500/60" />
-          <span className="text-xs font-bold tracking-[0.25em] uppercase text-indigo-500">
-            Contact
+      {/* Communication cards grid */}
+      <motion.div
+        variants={{ visible: { transition: { staggerChildren: 0 } } }}
+        initial="hidden"
+        animate={inView ? "visible" : "hidden"}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        {cards.map((card) => (
+          <ActionCard key={card.label} {...card} />
+        ))}
+      </motion.div>
+
+      {/* Availability signal & Direct Social Channels */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+        className="mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      >
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-pulse-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-        </motion.div>
-
-        {/* Commanding headline */}
-        <div className="mb-20 lg:mb-24 perspective-[1200px]">
-          <motion.h2
-            variants={headlineVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            className="flex flex-wrap gap-x-5 gap-y-2
-              text-[clamp(2.8rem,7vw,7rem)] font-extrabold tracking-tight leading-[1.05]
-              text-slate-900 dark:text-white"
-          >
-            {HEADLINE_WORDS.map((word) => (
-              <span key={word} className="overflow-hidden inline-block">
-                <motion.span
-                  variants={wordVariant}
-                  className={`inline-block ${
-                    word === "extraordinary."
-                      ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 dark:from-indigo-400 dark:via-violet-400 dark:to-indigo-300 bg-clip-text text-transparent"
-                      : ""
-                  }`}
-                >
-                  {word}
-                </motion.span>
-              </span>
-            ))}
-          </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className="mt-6 text-lg text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed"
-          >
-            {data.description} Reach out through any of the channels below — I
-            typically respond within 24 hours.
-          </motion.p>
+          <span className="text-sm text-slate-400 dark:text-slate-500">
+            Available for new opportunities ·{" "}
+            <span className="text-slate-600 dark:text-slate-300 font-medium">
+              {data.location}
+            </span>
+          </span>
         </div>
 
-        {/* Communication cards grid */}
-        <motion.div
-          variants={{ visible: { transition: { staggerChildren: 0 } } }}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {cards.map((card) => (
-            <ActionCard key={card.label} {...card} />
-          ))}
-        </motion.div>
-
-        {/* Availability signal & Direct Social Channels */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-          transition={{ duration: 0.6, delay: 0.9 }}
-          className="mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-pulse-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            <span className="text-sm text-slate-400 dark:text-slate-500">
-              Available for new opportunities ·{" "}
-              <span className="text-slate-600 dark:text-slate-300 font-medium">
-                {data.location}
-              </span>
-            </span>
-          </div>
-
-          {/* Social Channels Link Row */}
-          <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <span className="text-slate-400 dark:text-slate-500">Connect:</span>
-            {data.socialLinks.map((link) => {
-              const profile = Object.values(socialRegistry).find(
-                (p) => p.id === link.icon || p.label.toLowerCase() === link.name.toLowerCase()
-              );
-              return (
-                <a
-                  key={link.name}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={profile?.ariaLabel ?? `Open ${link.name}`}
-                  className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
-                >
-                  {profile && (
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="w-3.5 h-3.5"
-                      aria-hidden="true"
-                    >
-                      <path d={profile.iconPath} />
-                    </svg>
-                  )}
-                  <span>{link.name}</span>
-                </a>
-              );
-            })}
-          </div>
-        </motion.div>
-      </div>
-    </section>
+        {/* Social Channels Link Row */}
+        <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <span className="text-slate-400 dark:text-slate-500">Connect:</span>
+          {data.socialLinks.map((link) => {
+            const profile = Object.values(socialRegistry).find(
+              (p) => p.id === link.icon || p.label.toLowerCase() === link.name.toLowerCase()
+            );
+            return (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={profile?.ariaLabel ?? `Open ${link.name}`}
+                className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
+              >
+                {profile && (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-3.5 h-3.5"
+                    aria-hidden="true"
+                  >
+                    <path d={profile.iconPath} />
+                  </svg>
+                )}
+                <span>{link.name}</span>
+              </a>
+            );
+          })}
+        </div>
+      </motion.div>
+      </div>{/* end full-height ref wrapper */}
+    </SectionScaffold>
   );
 };
 

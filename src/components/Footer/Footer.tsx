@@ -25,7 +25,7 @@ const Footer = () => {
           bg-gradient-to-r from-transparent via-indigo-400/25 dark:via-indigo-500/15 to-transparent"
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-10 lg:py-12">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-8 lg:px-12 py-10 lg:py-12">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}

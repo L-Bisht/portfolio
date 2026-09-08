@@ -4,6 +4,7 @@ import { useInView } from "react-intersection-observer";
 import type { SkillsData, ArchitecturalTier } from "../../data/skills";
 import { QuarterCircleArc } from "../CornerBubble";
 import { SkillIcon } from "./SkillIcon";
+import SectionScaffold from "../SectionScaffold/SectionScaffold";
 
 // ─── Accent palette ───────────────────────────────────────────────────────────
 const ACCENT = {
@@ -242,24 +243,7 @@ function StratumCard({
   );
 }
 
-// ─── Word-entrance headline variants (mirrors Contact pattern) ────────────────
-const headlineVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
-  },
-};
 
-const wordVariant: Variants = {
-  hidden: { opacity: 0, y: 60, rotateX: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-  },
-};
 
 // ─── Skills section ───────────────────────────────────────────────────────────
 interface SkillsProps {
@@ -281,16 +265,17 @@ const Skills = ({ data }: SkillsProps) => {
     },
   };
 
-  // Split the section title into words for word-entrance animation
-  const titleWords = data.title.split(" ");
-  const lastWordIdx = titleWords.length - 1;
-
   return (
-    <section
-      ref={ref}
+    <SectionScaffold
       id="skills"
-      className="relative py-28 px-4 sm:px-8 lg:px-16 overflow-hidden"
+      eyebrow={data.sectionLabel}
+      headline={data.title}
+      accentWord="Stack"
+      subtitle="Three layers of craft — from pixel to model."
     >
+      {/* Full-height wrapper — ref spans all content so inView tracks correctly */}
+      <div ref={ref}>
+
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-0 w-96 h-96 rounded-full bg-indigo-500/6 blur-3xl" />
@@ -298,75 +283,24 @@ const Skills = ({ data }: SkillsProps) => {
         <div className="absolute bottom-0 right-1/3 w-64 h-64 rounded-full bg-cyan-500/4 blur-3xl" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto">
-        {/* Section label */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center gap-3 mb-4"
-        >
-          <span className="h-px flex-1 max-w-8 bg-indigo-500/60" />
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400">
-            {data.sectionLabel}
-          </span>
-        </motion.div>
-
-        {/* Commanding clamp headline with word-entrance motion */}
-        <div className="mb-4 perspective-[1200px]">
-          <motion.h2
-            variants={headlineVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            className="flex flex-wrap gap-x-4 gap-y-1
-              text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
-              text-slate-900 dark:text-white"
-          >
-            {titleWords.map((word, i) => (
-              <span key={i} className="overflow-hidden inline-block">
-                <motion.span
-                  variants={wordVariant}
-                  className={`inline-block ${
-                    i === lastWordIdx
-                      ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-600 dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-400 bg-clip-text text-transparent"
-                      : ""
-                  }`}
-                >
-                  {word}
-                </motion.span>
-              </span>
-            ))}
-          </motion.h2>
-        </div>
-
-        {/* Sub-heading */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-          className="text-slate-600 dark:text-slate-400 text-base mb-16 max-w-xl"
-        >
-          Three layers of craft — from pixel to model.
-        </motion.p>
-
-        {/* Strata */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          className="flex flex-col gap-5"
-        >
-          {data.tiers.map((tier, index) => (
-            <StratumCard
-              key={tier.tier}
-              tier={tier}
-              inView={inView}
-              index={index}
-            />
-          ))}
-        </motion.div>
-      </div>
-    </section>
+      {/* Strata */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate={inView ? "visible" : "hidden"}
+        className="flex flex-col gap-5"
+      >
+        {data.tiers.map((tier, index) => (
+          <StratumCard
+            key={tier.tier}
+            tier={tier}
+            inView={inView}
+            index={index}
+          />
+        ))}
+      </motion.div>
+      </div>{/* end full-height ref wrapper */}
+    </SectionScaffold>
   );
 };
 

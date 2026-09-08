@@ -3,6 +3,7 @@ import { motion, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ProjectsData, Project } from "../../data/projects";
 import { QuarterCircleArc } from "../CornerBubble";
+import SectionScaffold from "../SectionScaffold/SectionScaffold";
 
 // ─── Tech Chip ────────────────────────────────────────────────────────────────
 function TechChip({ label }: { label: string }) {
@@ -356,24 +357,6 @@ function CaseStudyRow({
   );
 }
 
-// ─── Word-entrance headline variants ─────────────────────────────────────────
-const headlineVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
-  },
-};
-
-const wordVariant: Variants = {
-  hidden: { opacity: 0, y: 60, rotateX: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-  },
-};
 
 // ─── Projects section ─────────────────────────────────────────────────────────
 interface ProjectsProps {
@@ -387,15 +370,17 @@ const Projects = ({ data }: ProjectsProps) => {
     rootMargin: "-10% 0px -10% 0px",
   });
 
-  const titleWords = data.title.split(" ");
-  const lastWordIdx = titleWords.length - 1;
-
   return (
-    <section
-      ref={sectionRef}
+    <SectionScaffold
       id="projects"
-      className="relative py-28 px-4 sm:px-8 lg:px-16 overflow-hidden"
+      eyebrow="Work"
+      headline={data.title}
+      accentWord="Projects"
+      subtitle={data.subtitle}
     >
+      {/* Full-height wrapper — ref spans all content so inView tracks correctly */}
+      <div ref={sectionRef}>
+
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-indigo-500/6 blur-3xl" />
@@ -403,66 +388,14 @@ const Projects = ({ data }: ProjectsProps) => {
         <div className="absolute top-1/2 left-0 w-80 h-80 rounded-full bg-indigo-600/4 blur-3xl" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto">
-        {/* Section header */}
-        <div className="max-w-2xl mb-4">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-3 mb-4"
-          >
-            <span className="h-px w-8 bg-indigo-500/60" />
-            <span className="text-xs font-semibold tracking-[0.2em] uppercase text-indigo-600 dark:text-indigo-400">
-              Work
-            </span>
-          </motion.div>
-
-          {/* Commanding clamp headline with word-entrance motion */}
-          <div className="mb-3 perspective-[1200px]">
-            <motion.h2
-              variants={headlineVariants}
-              initial="hidden"
-              animate={inView ? "visible" : "hidden"}
-              className="flex flex-wrap gap-x-4 gap-y-1
-                text-[clamp(2.2rem,5vw,5rem)] font-extrabold tracking-tight leading-[1.05]
-                text-slate-900 dark:text-white"
-            >
-              {titleWords.map((word, i) => (
-                <span key={i} className="overflow-hidden inline-block">
-                  <motion.span
-                    variants={wordVariant}
-                    className={`inline-block ${
-                      i === lastWordIdx
-                        ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 dark:from-indigo-400 dark:via-violet-500 dark:to-indigo-400 bg-clip-text text-transparent"
-                        : ""
-                    }`}
-                  >
-                    {word}
-                  </motion.span>
-                </span>
-              ))}
-            </motion.h2>
-          </div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            className="text-slate-600 dark:text-slate-400 text-base"
-          >
-            {data.subtitle}
-          </motion.p>
-        </div>
-
-        {/* Case study rows */}
-        <div className="mt-10 flex flex-col gap-4">
-          {data.projects.map((project, index) => (
-            <CaseStudyRow key={project.id} project={project} index={index} />
-          ))}
-        </div>
+      {/* Case study rows */}
+      <div className="flex flex-col gap-4">
+        {data.projects.map((project, index) => (
+          <CaseStudyRow key={project.id} project={project} index={index} />
+        ))}
       </div>
-    </section>
+      </div>{/* end full-height ref wrapper */}
+    </SectionScaffold>
   );
 };
 

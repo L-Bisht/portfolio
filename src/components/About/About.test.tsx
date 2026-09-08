@@ -31,8 +31,8 @@ describe("About Bento Board Baseline Synchronization", () => {
     expect(html).toContain('id="about-tile-focus"');
     expect(html).toContain('id="about-tile-stats"');
 
-    // 6. Content renders properly
-    expect(html).toContain(aboutData.philosophyHeadline);
+    // 6. Content renders properly — Tile 1 uses "Core Philosophy" headline per spec
+    expect(html).toContain("Core Philosophy");
     expect(html).toContain(aboutData.philosophyBody);
     expect(html).toContain("What I&#x27;m Building");
 
