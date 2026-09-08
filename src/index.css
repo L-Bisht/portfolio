@@ -19,13 +19,16 @@
     }
   }
 
-  /* ── Overscroll constraint ────────────────────────────────────────────────
-   * Prevent elastic rubber-banding from exposing the browser canvas behind
-   * the app shell. The background-color on html ensures that even if the
-   * browser does paint beyond the scroll boundaries, the color matches the
-   * active theme rather than the default white. */
+  /* ── Overscroll & Elastic Bounce Configuration ───────────────────────────
+   * Prevent horizontal swipe gestures from triggering browser back/forward
+   * navigation while restoring native vertical elastic bounce and pull-to-refresh
+   * on mobile viewports. The background-color on html and body ensures that
+   * during elastic bounce overscroll, the theme background color (#f8fafc in
+   * light mode, #050811 in dark mode) renders seamlessly across mobile Safari
+   * and Chrome without edge clipping or white flashes. */
   html {
-    overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: auto;
     /* Light theme default — synchronized via JS class toggle */
     background-color: #f8fafc; /* slate-50 */
   }
@@ -35,8 +38,15 @@
   }
 
   body {
-    overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: auto;
+    background-color: #f8fafc;
     @apply text-slate-900 dark:text-white transition-colors duration-200;
+  }
+
+  body.dark,
+  html.dark body {
+    background-color: #050811;
   }
 }
 

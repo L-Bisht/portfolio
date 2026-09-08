@@ -7,7 +7,8 @@ import {
   type ReactNode,
 } from "react";
 
-type Theme = "light" | "dark";
+import { applyTheme, type Theme } from "./themeUtils";
+export type { Theme };
 
 interface ThemeContextValue {
   theme: Theme;
@@ -34,15 +35,9 @@ function getInitialTheme(): Theme {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
-  // Sync the `dark` class on <html> whenever theme changes
+  // Sync the `dark` class on <html> and meta theme-color whenever theme changes
   useEffect(() => {
-    if (typeof document === "undefined") return;
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    applyTheme(theme);
     try {
       localStorage.setItem("theme", theme);
     } catch {
