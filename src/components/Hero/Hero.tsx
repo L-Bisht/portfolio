@@ -1,6 +1,8 @@
 import { motion, type Variants } from "framer-motion";
 import type { HeroData } from "../../data/hero";
 import { navSocialProfiles } from "../../data/social";
+import { QuarterCircleArc } from "../CornerBubble";
+import { SkillIcon } from "../Skills";
 
 interface HeroProps {
   data: HeroData;
@@ -43,6 +45,17 @@ const fadeUpVariants: Variants = {
   },
 };
 
+/** Subtle fade + scale for the Executive Telemetry Card */
+const telemetryVariants: Variants = {
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
+  },
+};
+
 // ─── Component ─────────────────────────────────────────────────────────────
 
 const Hero = ({ data }: HeroProps) => {
@@ -54,6 +67,24 @@ const Hero = ({ data }: HeroProps) => {
   const secondaryAction = {
     label: data.actions?.secondary?.label ?? data.secondaryCta?.text ?? "View Resume",
     href: data.actions?.secondary?.href ?? data.secondaryCta?.href ?? "#contact",
+  };
+
+  const telemetry = data.telemetry ?? {
+    status: "Available for Work",
+    roleTarget: "Senior Roles",
+    location: "New Delhi, India · Global Remote",
+    timezone: "UTC+5:30 (IST)",
+    focus: [
+      "Domain-Driven Design",
+      "AI-Native Developer Tooling",
+      "Resilient Distributed Systems",
+    ],
+    coreStack: [
+      "React / Next.js",
+      "TypeScript",
+      "Node.js",
+      "LLM Engineering",
+    ],
   };
 
   const nameWords = data.name.split(" ");
@@ -250,11 +281,171 @@ const Hero = ({ data }: HeroProps) => {
             </motion.div>
           </motion.div>
 
-          {/* ── Right Column: Reserved for Executive Telemetry Card (Issue 03) ── */}
-          <div
+          {/* ── Right Column: Executive Telemetry Card (5-column span) ── */}
+          <motion.div
             className="lg:col-span-5 w-full"
             data-testid="hero-telemetry-column"
-          />
+            variants={telemetryVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <div
+              id="hero-telemetry-card"
+              data-testid="hero-telemetry-card"
+              className="
+                group relative overflow-hidden rounded-3xl p-6 sm:p-8
+                editorial-glass
+                backdrop-blur-sm lg:backdrop-blur-xl
+                bg-white/80 dark:bg-slate-900/80
+                lg:bg-white/20 lg:dark:bg-slate-900/40
+                border border-slate-200/60 dark:border-white/[0.08]
+                shadow-sm hover:shadow-xl dark:hover:shadow-cyan-500/10
+                transition-all duration-500
+              "
+            >
+              {/* Corner bubble motif — top-right corner, electric cyan */}
+              <QuarterCircleArc
+                corner="tr"
+                color="#06b6d4"
+                size={80}
+                opacity={0.18}
+              />
+
+              {/* Top edge hairline glow */}
+              <div
+                aria-hidden="true"
+                className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent pointer-events-none"
+              />
+
+              {/* Hover ambient spotlight */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-br from-cyan-400/8 via-transparent to-blue-500/6 pointer-events-none"
+              />
+
+              <div className="relative z-10 flex flex-col space-y-6">
+                {/* ── 1. Live Status & Header ── */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 border border-emerald-500/20 dark:border-emerald-400/20">
+                    <span className="relative flex h-2 w-2" aria-hidden="true">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                    <span className="text-[11px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-emerald-700 dark:text-emerald-400">
+                      {telemetry.status} {telemetry.roleTarget ? `/ ${telemetry.roleTarget}` : ""}
+                    </span>
+                    <span className="sr-only">
+                      {`Status: ${telemetry.status}, Target: ${telemetry.roleTarget}`}
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 select-none">
+                    TELEMETRY // 01
+                  </span>
+                </div>
+
+                {/* ── 2. Operational Coordinates (Location & Timezone) ── */}
+                <div className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-2.5">
+                    <svg
+                      className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 21c-4.418-4.418-7-8.5-7-12a7 7 0 1114 0c0 3.5-2.582 7.582-7 12z" />
+                      <circle cx="12" cy="9" r="2.5" />
+                    </svg>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {telemetry.location}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 font-mono text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 pl-6.5">
+                    <svg
+                      className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>{telemetry.timezone}</span>
+                  </div>
+                </div>
+
+                {/* ── 3. Active Engineering Focus ── */}
+                <div className="pt-2 border-t border-slate-200/60 dark:border-white/[0.06]">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[11px] font-mono font-semibold tracking-wider uppercase text-cyan-600 dark:text-cyan-400">
+                      Active Engineering Focus
+                    </p>
+                    <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                      DOMAINS
+                    </span>
+                  </div>
+                  <ul className="space-y-2" aria-label="Active engineering focus areas">
+                    {telemetry.focus.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300"
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-cyan-500/70 dark:bg-cyan-400/80 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="font-medium">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* ── 4. Core Architecture Capability Chips ── */}
+                <div className="pt-2 border-t border-slate-200/60 dark:border-white/[0.06]">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[11px] font-mono font-semibold tracking-wider uppercase text-cyan-600 dark:text-cyan-400">
+                      Core Architecture Anchors
+                    </p>
+                    <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                      STACK
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2" aria-label="Core technology stack">
+                    {telemetry.coreStack.map((tech) => (
+                      <div
+                        key={tech}
+                        className="
+                          inline-flex items-center gap-2 px-3 py-1.5 rounded-xl
+                          text-xs font-medium
+                          bg-white/60 dark:bg-white/[0.04]
+                          text-slate-700 dark:text-slate-200
+                          border border-slate-200/80 dark:border-white/[0.08]
+                          hover:border-cyan-500/40 dark:hover:border-cyan-400/30
+                          hover:bg-cyan-500/5 dark:hover:bg-cyan-400/5
+                          transition-colors duration-150 select-none
+                        "
+                      >
+                        <SkillIcon
+                          name={tech}
+                          className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0"
+                        />
+                        <span>{tech}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

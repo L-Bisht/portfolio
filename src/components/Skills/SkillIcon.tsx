@@ -29,6 +29,7 @@ export const SkillIcon: FC<SkillIconProps> = ({
   switch (key) {
     // ─── Tier 1: Interface & Experience Engine ────────────────────────────────
     case "react":
+    case "reactnextjs":
       return (
         <svg
           viewBox="0 0 24 24"
@@ -398,6 +399,7 @@ export const SkillIcon: FC<SkillIconProps> = ({
     // ─── Tier 3: AI Systems & Intelligence Orchestration ──────────────────────
     case "llmintegration":
     case "llm":
+    case "llmengineering":
       return (
         <svg
           viewBox="0 0 24 24"
