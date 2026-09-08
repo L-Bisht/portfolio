@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { NavData } from "../../data/nav";
+import type { PatternMode } from "../../context/PatternContext";
 import LeftRail from "./LeftRail";
 import MobileHeader from "./MobileHeader";
 import FloatingDock from "./FloatingDock";
@@ -8,6 +9,8 @@ interface DossierShellProps {
   data: NavData;
   activeSectionId: string;
   children: ReactNode;
+  patternMode?: PatternMode;
+  onTogglePatternMode?: () => void;
 }
 
 /**
@@ -25,11 +28,21 @@ interface DossierShellProps {
  * Mobile (< 1024px):
  *   [MobileHeader sticky top] → content → [FloatingDock fixed bottom]
  */
-export default function DossierShell({ data, activeSectionId, children }: DossierShellProps) {
+export default function DossierShell({
+  data,
+  activeSectionId,
+  children,
+  patternMode,
+  onTogglePatternMode,
+}: DossierShellProps) {
   return (
     <>
       {/* ── Mobile Header ────────────────────────────────────────── */}
-      <MobileHeader data={data} />
+      <MobileHeader
+        data={data}
+        patternMode={patternMode}
+        onTogglePatternMode={onTogglePatternMode}
+      />
 
       {/* ── Shell: rail host + editorial canvas ──────────────────── */}
       <div className="flex">

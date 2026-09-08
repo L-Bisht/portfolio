@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { usePattern, type PatternMode } from "../../context/PatternContext";
+export type { PatternMode };
 
 import {
   buildIsometricLattice,
@@ -19,10 +21,6 @@ import {
   calculateSpringFactor,
   calculateDotRadius,
 } from "./dotMatrixPhysics";
-
-// ─── types ────────────────────────────────────────────────────────────────────
-
-export type PatternMode = "cubes" | "dots";
 
 interface RGB {
   r: number;
@@ -92,12 +90,16 @@ function lerpChannel(current: number, target: number, t: number): number {
 
 // ─── component ────────────────────────────────────────────────────────────────
 
-interface InteractiveBackgroundProps {
+export interface InteractiveBackgroundProps {
   activeSectionId?: string;
+  patternMode?: PatternMode;
+  onPatternModeChange?: (mode: PatternMode) => void;
 }
 
 export default function InteractiveBackground({
   activeSectionId = "home",
+  patternMode: controlledMode,
+  onPatternModeChange,
 }: InteractiveBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef  = useRef({ x: -9999, y: -9999 });
@@ -123,13 +125,27 @@ export default function InteractiveBackground({
     activeSectionIdRef.current = activeSectionId;
   }, [activeSectionId]);
 
-  // Mode state defaults to "cubes" per spec
-  const [mode, setMode] = useState<PatternMode>("cubes");
-  const modeRef = useRef<PatternMode>("cubes");
+  // Pattern mode state: synchronized with context and optional controlled prop
+  const patternContext = usePattern();
+  const activeMode = controlledMode ?? patternContext.patternMode;
+
+  const [mode, setMode] = useState<PatternMode>(activeMode);
+  const modeRef = useRef<PatternMode>(activeMode);
+
+  useEffect(() => {
+    modeRef.current = activeMode;
+    setMode(activeMode);
+  }, [activeMode]);
+
   const setPatternMode = useCallback((m: PatternMode) => {
     modeRef.current = m;
     setMode(m);
-  }, []);
+    if (onPatternModeChange) {
+      onPatternModeChange(m);
+    } else {
+      patternContext.setPatternMode(m);
+    }
+  }, [onPatternModeChange, patternContext]);
 
   // ── main effect ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -153,8 +169,13 @@ export default function InteractiveBackground({
 
     const onPointerDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
-      // Exclude clicks directly on the bottom pattern switcher pill
-      if (target && target.closest("#bg-switcher-cubes, #bg-switcher-dots")) {
+      // Exclude clicks directly on pattern switcher controls
+      if (
+        target &&
+        target.closest(
+          "#bg-switcher-cubes, #bg-switcher-dots, #mobile-header-pattern-toggle"
+        )
+      ) {
         return;
       }
       const now = performance.now();
@@ -619,7 +640,6 @@ export default function InteractiveBackground({
     bottom:          "1.5rem",
     right:           "1.5rem",
     zIndex:          50,
-    display:         "flex",
     alignItems:      "center",
     gap:             "2px",
     padding:         "4px",
@@ -673,6 +693,7 @@ export default function InteractiveBackground({
 
       {/* ── Pattern switcher pill ──────────────────────────────────── */}
       <div
+        className="hidden lg:flex"
         style={pillBase}
         onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
         onMouseLeave={e => (e.currentTarget.style.opacity = "0.55")}

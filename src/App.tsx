@@ -19,14 +19,17 @@ import { projectsData } from "./data/projects";
 import { contactData } from "./data/contact";
 import { useScrollSpy } from "./components/DossierShell/useScrollSpy";
 
+import { PatternProvider } from "./context/PatternContext";
+
 const SECTION_IDS = ["home", "about", "skills", "experience", "projects", "contact"];
 
 function App() {
   const activeSectionId = useScrollSpy(SECTION_IDS);
 
   return (
-    <div className="relative min-h-screen bg-slate-50 dark:bg-[#050811]">
-      <InteractiveBackground activeSectionId={activeSectionId} />
+    <PatternProvider>
+      <div className="relative min-h-screen bg-slate-50 dark:bg-[#050811]">
+        <InteractiveBackground activeSectionId={activeSectionId} />
 
       <DossierShell
         data={navData}
@@ -42,8 +45,8 @@ function App() {
         <Contact data={contactData} />
         <Footer />
       </DossierShell>
-
     </div>
+    </PatternProvider>
   );
 }
 

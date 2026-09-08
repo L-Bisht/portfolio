@@ -33,7 +33,8 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
 
       // Switcher pill must float at z-index 50
       expect(html).toContain('aria-label="Background pattern switcher"');
-      expect(html).toContain("z-index:50");
+      // Floating switcher pill must be hidden on mobile (< 1024px) and displayed on desktop (hidden lg:flex)
+      expect(html).toContain("hidden lg:flex");
 
       // Cubes button must be present and active (aria-pressed="true")
       expect(html).toContain('id="bg-switcher-cubes"');
@@ -48,6 +49,20 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       // Stale blueprint grid button must be completely removed
       expect(html).not.toContain('id="bg-switcher-grid"');
       expect(html).not.toContain("Blueprint hairline grid");
+    });
+
+    it("can be externally controlled via patternMode prop", () => {
+      const html = renderToString(
+        <InteractiveBackground activeSectionId="home" patternMode="dots" />
+      );
+
+      // Dots button must be active
+      expect(html).toContain('id="bg-switcher-dots"');
+      expect(html).toContain('aria-pressed="true"');
+
+      // Cubes button must be inactive
+      expect(html).toContain('id="bg-switcher-cubes"');
+      expect(html).toContain('aria-pressed="false"');
     });
   });
 
