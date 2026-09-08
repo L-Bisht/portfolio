@@ -44,19 +44,19 @@ export const aboutData: AboutData = {
       label: "Years Experience",
       value: "{years}+",
       icon: "layers",
-      glowColor: "rgba(99,102,241,0.35)",
+      glowColor: "rgba(14,165,233,0.35)",
     },
     {
       label: "Scaled Systems",
       value: "12+",
       icon: "zap",
-      glowColor: "rgba(139,92,246,0.35)",
+      glowColor: "rgba(6,182,212,0.35)",
     },
     {
       label: "Projects Delivered",
       value: "50+",
       icon: "box",
-      glowColor: "rgba(168,85,247,0.30)",
+      glowColor: "rgba(20,184,166,0.30)",
     },
   ],
 

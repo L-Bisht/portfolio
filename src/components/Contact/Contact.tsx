@@ -93,8 +93,8 @@ function ActionCard({
         bg-white/70 dark:bg-white/[0.04]
         border border-slate-200/80 dark:border-white/[0.08]
         backdrop-blur-xl shadow-sm
-        hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10
-        hover:border-indigo-400/50 dark:hover:border-indigo-500/40
+        hover:shadow-2xl hover:shadow-sky-500/10 dark:hover:shadow-sky-400/10
+        hover:border-sky-400/50 dark:hover:border-sky-500/40
         transition-all duration-500 cursor-pointer"
       style={{ textDecoration: "none" }}
       aria-label={`${label} — ${sublabel}`}
@@ -133,7 +133,7 @@ function ActionCard({
       <div
         className="relative flex items-center justify-center w-14 h-14 rounded-xl
           bg-slate-100 dark:bg-white/[0.06]
-          group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10
+          group-hover:bg-sky-50 dark:group-hover:bg-sky-500/10
           transition-colors duration-300"
         style={{
           color: hovered ? accent : undefined,
@@ -250,30 +250,30 @@ const Contact = ({ data }: ContactProps) => {
       {/* ── Cinematic ambient backdrop ── */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Translucent atmospheric gradient wash allowing the background canvas lattice to shine through */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/[0.03] to-transparent dark:from-transparent dark:via-indigo-950/20 dark:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-sky-500/[0.03] to-transparent dark:from-transparent dark:via-sky-950/20 dark:to-transparent" />
 
         {/* Deep midnight navy soft veil in dark mode */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050811]/30 to-transparent dark:block hidden" />
 
-        {/* Soft Indigo ambient aurora */}
+        {/* Soft Sky ambient aurora */}
         <div className="absolute -left-32 top-1/4 w-[650px] h-[650px] rounded-full
-          bg-indigo-400/10 dark:bg-indigo-600/12 blur-[130px]" />
+          bg-sky-400/10 dark:bg-sky-600/12 blur-[130px]" />
 
-        {/* Soft Violet ambient aurora */}
+        {/* Soft Cyan ambient aurora */}
         <div className="absolute -right-32 bottom-1/4 w-[550px] h-[550px] rounded-full
-          bg-violet-400/8 dark:bg-violet-600/10 blur-[110px]" />
+          bg-cyan-400/8 dark:bg-cyan-600/10 blur-[110px]" />
 
         {/* Center ambient glow beacon */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full
-          bg-indigo-500/[0.04] dark:bg-indigo-500/[0.07] blur-[140px]" />
+          bg-sky-500/[0.04] dark:bg-sky-500/[0.07] blur-[140px]" />
 
         {/* Center vertical spotlight (dark mode only) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-48
-          bg-gradient-to-b from-transparent via-indigo-500/30 dark:via-indigo-400/25 to-transparent" />
+          bg-gradient-to-b from-transparent via-sky-500/30 dark:via-sky-400/25 to-transparent" />
 
         {/* Horizontal rule at top — editorial separator */}
         <div className="absolute top-0 left-0 right-0 h-px
-          bg-gradient-to-r from-transparent via-indigo-400/30 dark:via-indigo-500/25 to-transparent" />
+          bg-gradient-to-r from-transparent via-sky-400/30 dark:via-sky-500/25 to-transparent" />
       </div>
 
       {/* Full-height wrapper — ref spans all content so inView tracks correctly */}
@@ -325,7 +325,7 @@ const Contact = ({ data }: ContactProps) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={profile?.ariaLabel ?? `Open ${link.name}`}
-                className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
+                className="flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 transition-colors duration-200"
               >
                 {profile && (
                   <svg

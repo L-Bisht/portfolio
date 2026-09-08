@@ -13,17 +13,17 @@ const METRIC_ACCENT = {
     glowSoft: "rgba(16,185,129,0.12)",
     dot: "bg-emerald-500 dark:bg-emerald-400",
   },
-  indigo: {
-    tag: "bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-400",
-    glow: "rgba(99,102,241,0.45)",
-    glowSoft: "rgba(99,102,241,0.12)",
-    dot: "bg-indigo-500 dark:bg-indigo-400",
+  sky: {
+    tag: "bg-sky-500/10 border-sky-500/30 text-sky-700 dark:text-sky-400",
+    glow: "rgba(14,165,233,0.45)",
+    glowSoft: "rgba(14,165,233,0.12)",
+    dot: "bg-sky-500 dark:bg-sky-400",
   },
-  violet: {
-    tag: "bg-violet-500/10 border-violet-500/30 text-violet-700 dark:text-violet-400",
-    glow: "rgba(139,92,246,0.45)",
-    glowSoft: "rgba(139,92,246,0.12)",
-    dot: "bg-violet-500 dark:bg-violet-400",
+  cobalt: {
+    tag: "bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-400",
+    glow: "rgba(37,99,235,0.45)",
+    glowSoft: "rgba(37,99,235,0.12)",
+    dot: "bg-blue-500 dark:bg-blue-400",
   },
   amber: {
     tag: "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400",
@@ -131,15 +131,15 @@ function LedgerRow({
       ].join(" ")}
       style={{
         boxShadow: hovered
-          ? "0 16px 48px rgba(99,102,241,0.10), 0 0 0 1px rgba(99,102,241,0.22)"
+          ? "0 16px 48px rgba(14,165,233,0.10), 0 0 0 1px rgba(14,165,233,0.22)"
           : "none",
-        borderColor: hovered ? "rgba(99,102,241,0.28)" : undefined,
+        borderColor: hovered ? "rgba(14,165,233,0.28)" : undefined,
       }}
     >
       {/* Quarter-circle arc motif — bottom-right */}
       <QuarterCircleArc
         corner="br"
-        color="#6366f1"
+        color="#0ea5e9"
         size={80}
         opacity={hovered ? 0.28 : 0.14}
       />
@@ -150,7 +150,7 @@ function LedgerRow({
         className="absolute top-0 left-0 right-0 h-px pointer-events-none z-10"
         animate={{
           opacity: hovered ? 1 : 0,
-          background: "linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.7) 50%, transparent 100%)",
+          background: "linear-gradient(90deg, transparent 0%, rgba(14,165,233,0.7) 50%, transparent 100%)",
         }}
         transition={{ duration: 0.35 }}
       />
@@ -162,7 +162,7 @@ function LedgerRow({
         animate={{
           opacity: hovered ? 1 : 0,
           background: hovered
-            ? "radial-gradient(ellipse at 80% 30%, rgba(99,102,241,0.07) 0%, transparent 60%)"
+            ? "radial-gradient(ellipse at 80% 30%, rgba(14,165,233,0.07) 0%, transparent 60%)"
             : "none",
         }}
         transition={{ duration: 0.4 }}
@@ -174,7 +174,7 @@ function LedgerRow({
         className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-400"
         style={{
           background:
-            "linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(139,92,246,0.03) 100%)",
+            "linear-gradient(135deg, rgba(14,165,233,0.04) 0%, rgba(6,182,212,0.03) 100%)",
         }}
       />
 
@@ -194,7 +194,7 @@ function LedgerRow({
           initial={{ opacity: 0, x: -12 }}
           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
           transition={{ duration: 0.5, delay: rowDelay + 0.05 }}
-          className="text-[11px] font-bold tracking-[0.22em] uppercase text-indigo-600 dark:text-indigo-400/80 mb-1"
+          className="text-[11px] font-bold tracking-[0.22em] uppercase text-sky-600 dark:text-sky-400/80 mb-1"
         >
           {item.period}
         </motion.span>
@@ -249,7 +249,7 @@ function LedgerRow({
           className="w-full h-px mb-5 opacity-20"
           style={{
             background:
-              "linear-gradient(90deg, rgba(99,102,241,0.8) 0%, transparent 70%)",
+              "linear-gradient(90deg, rgba(14,165,233,0.8) 0%, transparent 70%)",
           }}
           aria-hidden="true"
         />
@@ -270,7 +270,7 @@ function LedgerRow({
             >
               {/* Bullet chevron */}
               <span
-                className="mt-1 shrink-0 text-indigo-500/60 text-xs select-none"
+                className="mt-1 shrink-0 text-sky-500/60 text-xs select-none"
                 aria-hidden="true"
               >
                 ▹
@@ -320,8 +320,8 @@ const Experience = ({ data }: ExperienceProps) => {
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-emerald-500/6 blur-3xl" />
-        <div className="absolute bottom-1/3 left-0 w-80 h-80 rounded-full bg-indigo-500/6 blur-3xl" />
-        <div className="absolute bottom-0 right-1/3 w-64 h-64 rounded-full bg-violet-500/4 blur-3xl" />
+        <div className="absolute bottom-1/3 left-0 w-80 h-80 rounded-full bg-sky-500/6 blur-3xl" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 rounded-full bg-cyan-500/4 blur-3xl" />
       </div>
 
       {/* Executive Ledger */}

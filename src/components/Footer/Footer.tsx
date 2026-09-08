@@ -22,7 +22,7 @@ const Footer = () => {
       <div
         aria-hidden="true"
         className="absolute top-0 left-0 right-0 h-px
-          bg-gradient-to-r from-transparent via-indigo-400/25 dark:via-indigo-500/15 to-transparent"
+          bg-gradient-to-r from-transparent via-sky-400/25 dark:via-sky-500/15 to-transparent"
       />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-8 lg:px-12 py-10 lg:py-12">
@@ -41,14 +41,14 @@ const Footer = () => {
               className="group flex items-center gap-2.5
                 text-base font-bold tracking-tight
                 text-slate-800 dark:text-white
-                hover:text-indigo-500 dark:hover:text-indigo-400
+                hover:text-sky-500 dark:hover:text-sky-400
                 transition-colors duration-200"
               aria-label="Back to top"
             >
               <span
-                className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
-                  ring-2 ring-indigo-400/30 dark:ring-indigo-500/20
-                  group-hover:ring-indigo-400/60 transition-all duration-300
+                className="w-5 h-5 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500
+                  ring-2 ring-sky-400/30 dark:ring-sky-500/20
+                  group-hover:ring-sky-400/60 transition-all duration-300
                   flex-shrink-0"
               />
               <span>L. Bisht</span>
@@ -78,7 +78,7 @@ const Footer = () => {
                     rel="noopener noreferrer"
                     className="text-xs font-medium
                       text-slate-500 dark:text-slate-500
-                      hover:text-indigo-500 dark:hover:text-indigo-400
+                      hover:text-sky-500 dark:hover:text-sky-400
                       transition-colors duration-200"
                   >
                     {item.label}

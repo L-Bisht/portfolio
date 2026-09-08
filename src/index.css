@@ -42,11 +42,11 @@
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 border-2 border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-500/10 transition-all duration-300;
+    @apply px-6 py-3 border-2 border-sky-500 text-sky-500 rounded-lg hover:bg-sky-500/10 transition-all duration-300;
   }
 
   .nav-link {
-    @apply text-slate-700 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-300;
+    @apply text-slate-700 dark:text-slate-300 hover:text-sky-500 dark:hover:text-sky-400 transition-colors duration-300;
   }
 
   /* Hero word-clip: overflow hidden wrapper for per-word reveal */
@@ -56,13 +56,13 @@
     vertical-align: bottom;
   }
 
-  /* Animated gradient text — slate to indigo in light mode, crisp white to indigo in dark mode */
+  /* Animated gradient text — slate to electric sky in light mode, crisp white to electric sky in dark mode */
   .hero-name-gradient {
     background-image: linear-gradient(
       120deg,
       #0f172a 0%,
-      #4338ca 35%,
-      #6366f1 65%,
+      #0ea5e9 35%,
+      #38bdf8 65%,
       #0f172a 100%
     );
     background-size: 200% auto;
@@ -77,8 +77,8 @@
     background-image: linear-gradient(
       120deg,
       #ffffff 0%,
-      #c7d2fe 35%,
-      #818cf8 65%,
+      #38bdf8 35%,
+      #0ea5e9 65%,
       #ffffff 100%
     );
     -webkit-background-clip: text;
@@ -96,7 +96,7 @@
     position: absolute;
     inset: -2px;
     border-radius: inherit;
-    background: linear-gradient(120deg, #6366f1, #818cf8, #a5b4fc);
+    background: linear-gradient(120deg, #0ea5e9, #06b6d4, #38bdf8);
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;
@@ -111,14 +111,14 @@
     /* Subtle inner highlight on top edge */
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.12),
-      0 0 0 1px rgba(99, 102, 241, 0.06),
+      0 0 0 1px rgba(14, 165, 233, 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 
   .dark .floating-dock {
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(99, 102, 241, 0.1),
+      0 0 0 1px rgba(14, 165, 233, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 }

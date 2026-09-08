@@ -41,12 +41,12 @@ interface ActiveRippleData {
 // ─── section accent colors ────────────────────────────────────────────────────
 
 const THEME_COLORS: Record<string, RGB> = {
-  home:       { r: 99,  g: 102, b: 241 }, // indigo-500
-  about:      { r: 99,  g: 102, b: 241 }, // indigo-500
+  home:       { r: 14,  g: 165, b: 233 }, // sky-500
+  about:      { r: 20,  g: 184, b: 166 }, // teal-500 / cyan
   skills:     { r: 6,   g: 182, b: 212 }, // cyan-500
   experience: { r: 16,  g: 185, b: 129 }, // emerald-500
-  projects:   { r: 139, g: 92,  b: 246 }, // violet-500
-  contact:    { r: 99,  g: 102, b: 241 }, // indigo-500
+  projects:   { r: 37,  g: 99,  b: 235 }, // cobalt / blue-600
+  contact:    { r: 14,  g: 165, b: 233 }, // sky-500
 };
 
 const DEFAULT_COLOR: RGB = THEME_COLORS.home;
@@ -530,7 +530,7 @@ export default function InteractiveBackground({
   };
 
   const btnActive: React.CSSProperties = {
-    background: "rgba(99,102,241,0.22)",
+    background: "rgba(14,165,233,0.22)",
     color:      "rgba(226,232,240,1)",
   };
 

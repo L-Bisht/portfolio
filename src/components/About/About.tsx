@@ -79,9 +79,9 @@ const About = ({ data }: AboutProps) => {
 
       {/* Ambient background blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-indigo-400/10 dark:bg-indigo-500/8 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-violet-400/8 dark:bg-violet-600/6 blur-3xl" />
-        <div className="absolute top-1/2 left-3/4 w-64 h-64 rounded-full bg-indigo-300/6 dark:bg-indigo-400/5 blur-2xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-sky-400/10 dark:bg-sky-500/8 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-cyan-400/8 dark:bg-cyan-600/6 blur-3xl" />
+        <div className="absolute top-1/2 left-3/4 w-64 h-64 rounded-full bg-sky-300/6 dark:bg-sky-400/5 blur-2xl" />
       </div>
 
       {/* ── Bento Board ──────────────────────────────────────────────── */}
@@ -100,7 +100,7 @@ const About = ({ data }: AboutProps) => {
             bg-white/60 dark:bg-white/[0.04]
             border border-slate-200/60 dark:border-white/[0.08]
             backdrop-blur-xl
-            shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/10
+            shadow-sm hover:shadow-xl dark:hover:shadow-sky-500/10
             transition-shadow duration-500
             lg:col-span-1 h-full
             flex flex-col justify-between
@@ -109,15 +109,15 @@ const About = ({ data }: AboutProps) => {
           <div
             aria-hidden="true"
             className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700
-              bg-gradient-to-br from-indigo-400/8 via-transparent to-violet-500/6"
+              bg-gradient-to-br from-sky-400/8 via-transparent to-cyan-500/6"
           />
-          {/* Quarter-circle arc motif — top-right, indigo */}
-          <QuarterCircleArc corner="tr" color="#6366f1" size={100} opacity={0.2} />
+          {/* Quarter-circle arc motif — top-right, sky */}
+          <QuarterCircleArc corner="tr" color="#0ea5e9" size={100} opacity={0.2} />
 
           <div className="relative flex flex-col h-full justify-between gap-6">
             {/* Icon badge */}
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-600/20 border border-indigo-400/20 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500/20 to-cyan-600/20 border border-sky-400/20 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-sky-500 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
             </div>
@@ -136,9 +136,9 @@ const About = ({ data }: AboutProps) => {
                 <span
                   key={tag}
                   className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide
-                    bg-indigo-500/10 dark:bg-indigo-400/10
-                    text-indigo-600 dark:text-indigo-300
-                    border border-indigo-300/30 dark:border-indigo-400/20"
+                    bg-sky-500/10 dark:bg-sky-400/10
+                    text-sky-600 dark:text-sky-300
+                    border border-sky-300/30 dark:border-sky-400/20"
                 >
                   {tag}
                 </span>
@@ -168,7 +168,7 @@ const About = ({ data }: AboutProps) => {
               bg-white/60 dark:bg-white/[0.04]
               border border-slate-200/60 dark:border-white/[0.08]
               backdrop-blur-xl
-              shadow-sm hover:shadow-xl dark:hover:shadow-violet-500/10
+              shadow-sm hover:shadow-xl dark:hover:shadow-cyan-500/10
               transition-shadow duration-500
               flex-1 flex flex-col justify-between
             "
@@ -176,11 +176,11 @@ const About = ({ data }: AboutProps) => {
             <div
               aria-hidden="true"
               className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700
-                bg-gradient-to-br from-violet-400/6 via-transparent to-indigo-500/6"
+                bg-gradient-to-br from-cyan-400/6 via-transparent to-sky-500/6"
             />
 
-            {/* Quarter-circle arc motif — bottom-left, violet */}
-            <QuarterCircleArc corner="bl" color="#8b5cf6" size={80} opacity={0.16} />
+            {/* Quarter-circle arc motif — bottom-left, cyan */}
+            <QuarterCircleArc corner="bl" color="#06b6d4" size={80} opacity={0.16} />
 
             <div className="relative flex flex-col h-full justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -203,16 +203,16 @@ const About = ({ data }: AboutProps) => {
                     className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl
                       bg-slate-50/80 dark:bg-white/[0.04]
                       border border-slate-200/50 dark:border-white/[0.06]
-                      hover:border-indigo-300/50 dark:hover:border-indigo-400/20
+                      hover:border-cyan-300/50 dark:hover:border-cyan-400/20
                       transition-colors duration-300"
                   >
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-snug">
                       {item.label}
                     </span>
                     <span className="shrink-0 text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-full
-                      bg-indigo-500/10 dark:bg-indigo-400/10
-                      text-indigo-600 dark:text-indigo-300
-                      border border-indigo-300/25 dark:border-indigo-400/15
+                      bg-cyan-500/10 dark:bg-cyan-400/10
+                      text-cyan-600 dark:text-cyan-300
+                      border border-cyan-300/25 dark:border-cyan-400/15
                       whitespace-nowrap">
                       {item.tag}
                     </span>
@@ -265,7 +265,7 @@ const About = ({ data }: AboutProps) => {
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
                       style={{ background: stat.glowColor.replace(/[\d.]+\)$/, "0.14)") }}
                     >
-                      <span className="text-indigo-400 dark:text-indigo-300">
+                      <span className="text-sky-500 dark:text-sky-400">
                         {iconMap[stat.icon]}
                       </span>
                     </div>

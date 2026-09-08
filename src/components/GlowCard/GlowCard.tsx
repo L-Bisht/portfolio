@@ -33,7 +33,7 @@ function GlowLayer({
   const background = useTransform(
     [mxPct, myPct],
     ([x, y]: string[]) =>
-      `radial-gradient(350px circle at ${x} ${y}, rgba(99,102,241,0.5), transparent 70%)`
+      `radial-gradient(350px circle at ${x} ${y}, rgba(14,165,233,0.5), transparent 70%)`
   );
 
   return (
@@ -109,13 +109,13 @@ const GlowCard = ({
           "border border-slate-200/60 dark:border-white/10",
           "backdrop-blur-xl",
           "shadow-sm transition-shadow duration-300",
-          "hover:shadow-xl dark:hover:shadow-indigo-500/10",
+          "hover:shadow-xl dark:hover:shadow-sky-500/10",
         ].join(" ")}
       >
         {/* Subtle inner glow overlay */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-indigo-400/5 to-indigo-600/5"
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-sky-400/5 to-cyan-500/5"
         />
         {/* Content */}
         <div className="relative h-full">{children}</div>

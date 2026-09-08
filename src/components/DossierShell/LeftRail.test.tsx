@@ -90,7 +90,7 @@ describe("LeftRail Component", () => {
       expect(html).toContain("width:280px");
 
       // Floating overlay shadow
-      expect(html).toContain("shadow-[4px_0_32px_rgba(0,0,0,0.10),1px_0_0_rgba(99,102,241,0.08)]");
+      expect(html).toContain("shadow-[4px_0_32px_rgba(0,0,0,0.10),1px_0_0_rgba(14,165,233,0.08)]");
 
       // Expanded nav items present with section titles
       expect(html).toContain('id="rail-toc-home"');

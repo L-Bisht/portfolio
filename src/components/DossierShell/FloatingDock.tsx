@@ -69,7 +69,7 @@ function DockItem({
       whileTap={{ scale: 0.88 }}
       className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors duration-200
         ${isActive
-          ? "text-indigo-500 dark:text-indigo-400"
+          ? "text-sky-500 dark:text-sky-400"
           : "text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
         }`}
     >
@@ -78,7 +78,7 @@ function DockItem({
         {isActive && (
           <motion.span
             layoutId="dock-active-bg"
-            className="absolute inset-0 rounded-xl bg-indigo-50 dark:bg-indigo-950/60"
+            className="absolute inset-0 rounded-xl bg-sky-50 dark:bg-sky-950/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -105,8 +105,8 @@ export default function FloatingDock({ data, activeSectionId }: FloatingDockProp
                  rounded-2xl
                  bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl
                  border border-slate-200/70 dark:border-slate-700/60
-                 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_0_0_1px_rgba(99,102,241,0.06)]
-                 dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(99,102,241,0.1)]"
+                 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_0_0_1px_rgba(14,165,233,0.06)]
+                 dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(14,165,233,0.1)]"
     >
       {data.items.map((item) => (
         <DockItem

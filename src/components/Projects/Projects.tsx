@@ -12,8 +12,8 @@ function TechChip({ label }: { label: string }) {
       whileHover={{ y: -2, scale: 1.05 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide border
-        bg-indigo-500/8 border-indigo-500/20 text-indigo-700 dark:text-indigo-400
-        hover:bg-indigo-500/14 hover:border-indigo-400/40 hover:shadow-indigo-500/20
+        bg-blue-500/8 border-blue-500/20 text-blue-700 dark:text-blue-400
+        hover:bg-blue-500/14 hover:border-blue-400/40 hover:shadow-blue-500/20
         transition-all duration-200 cursor-default"
       style={{
         willChange: "transform",
@@ -66,7 +66,7 @@ function BrowserMockup({
       <div
         className="absolute inset-0 rounded-2xl blur-3xl transition-opacity duration-500"
         style={{
-          background: "radial-gradient(ellipse at center, rgba(99,102,241,0.35) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse at center, rgba(37,99,235,0.35) 0%, transparent 70%)",
           opacity: isHovering ? 0.9 : 0.45,
         }}
         aria-hidden="true"
@@ -88,7 +88,7 @@ function BrowserMockup({
         style={{
           transformStyle: "preserve-3d",
           boxShadow: isHovering
-            ? "0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(99,102,241,0.25)"
+            ? "0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(37,99,235,0.25)"
             : "0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)",
           transition: "box-shadow 0.4s ease",
         }}
@@ -160,8 +160,8 @@ function CaseStudyRow({
   const isEven = index % 2 === 0; // even = content left, preview right
   const baseDelay = 0.1;
 
-  // Accent color alternates per project for visual rhythm
-  const arcColor = isEven ? "#6366f1" : "#8b5cf6";
+  // Accent color alternates per project for visual rhythm: Deep Electric Cobalt (#2563eb / #3b82f6)
+  const arcColor = isEven ? "#2563eb" : "#3b82f6";
   const arcCorner = isEven ? "tl" : "tr";
 
   const contentVariants: Variants = {
@@ -187,8 +187,8 @@ function CaseStudyRow({
         transition={{ duration: 0.45, delay: baseDelay - 0.05 }}
         className="inline-flex items-center gap-2 mb-5 self-start"
       >
-        <span className="h-px w-6 bg-indigo-500/60" />
-        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-indigo-600 dark:text-indigo-400">
+        <span className="h-px w-6 bg-blue-500/60" />
+        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-blue-600 dark:text-blue-400">
           {project.category}
         </span>
       </motion.span>
@@ -209,7 +209,7 @@ function CaseStudyRow({
         <div
           className="w-full h-px opacity-20"
           style={{
-            background: "linear-gradient(90deg, rgba(99,102,241,0.7) 0%, transparent 100%)",
+            background: "linear-gradient(90deg, rgba(37,99,235,0.7) 0%, transparent 100%)",
           }}
           aria-hidden="true"
         />
@@ -235,7 +235,7 @@ function CaseStudyRow({
           href={project.demoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-500/35 hover:-translate-y-0.5"
+          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-blue-600/25 hover:shadow-blue-500/35 hover:-translate-y-0.5"
         >
           <svg
             className="w-4 h-4 transition-transform duration-200 group-hover:scale-110"
@@ -303,7 +303,7 @@ function CaseStudyRow({
         `}
         style={{
           boxShadow: hovered
-            ? `0 24px 64px rgba(99,102,241,0.08), 0 0 0 1px ${arcColor}33`
+            ? `0 24px 64px rgba(37,99,235,0.08), 0 0 0 1px ${arcColor}33`
             : "none",
           borderColor: hovered ? `${arcColor}22` : undefined,
         }}
@@ -383,9 +383,9 @@ const Projects = ({ data }: ProjectsProps) => {
 
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-indigo-500/6 blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 rounded-full bg-violet-500/5 blur-3xl" />
-        <div className="absolute top-1/2 left-0 w-80 h-80 rounded-full bg-indigo-600/4 blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-blue-600/6 blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-96 h-96 rounded-full bg-sky-500/5 blur-3xl" />
+        <div className="absolute top-1/2 left-0 w-80 h-80 rounded-full bg-blue-700/4 blur-3xl" />
       </div>
 
       {/* Case study rows */}

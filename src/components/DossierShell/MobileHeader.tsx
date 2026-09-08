@@ -29,7 +29,7 @@ export default function MobileHeader({ data }: MobileHeaderProps) {
         {/* Monogram */}
         <span
           className="flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black text-white
-                     bg-gradient-to-br from-indigo-500 to-violet-600 shrink-0 tracking-tight"
+                     bg-gradient-to-br from-sky-500 to-cyan-500 shrink-0 tracking-tight"
         >
           {data.shortName}
         </span>
@@ -37,7 +37,7 @@ export default function MobileHeader({ data }: MobileHeaderProps) {
           <p className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[140px]">
             {data.name}
           </p>
-          <p className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium mt-0.5 truncate max-w-[140px]">
+          <p className="text-[10px] text-sky-500 dark:text-sky-400 font-medium mt-0.5 truncate max-w-[140px]">
             {data.title}
           </p>
         </div>

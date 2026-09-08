@@ -8,31 +8,31 @@ import SectionScaffold from "../SectionScaffold/SectionScaffold";
 
 // ─── Accent palette ───────────────────────────────────────────────────────────
 const ACCENT = {
-  indigo: {
-    glow: "rgba(99,102,241,0.55)",
-    glowHex: "#6366f1",
-    glowSoft: "rgba(99,102,241,0.12)",
-    border: "rgba(99,102,241,0.35)",
-    badge: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/25",
-    chip: "hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-300",
-    iconActive: "text-indigo-600 dark:text-indigo-400",
-    connector: "from-indigo-500/40 to-transparent",
-    ambientTop: "bg-indigo-500/8",
-    ambientBot: "bg-indigo-600/6",
-    gradientKeyword: "from-indigo-600 via-violet-600 to-cyan-600 dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-400",
+  sky: {
+    glow: "rgba(14,165,233,0.55)",
+    glowHex: "#0ea5e9",
+    glowSoft: "rgba(14,165,233,0.12)",
+    border: "rgba(14,165,233,0.35)",
+    badge: "text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/25",
+    chip: "hover:border-sky-400/50 hover:bg-sky-500/10 hover:text-sky-600 dark:hover:text-sky-300",
+    iconActive: "text-sky-600 dark:text-sky-400",
+    connector: "from-sky-500/40 to-transparent",
+    ambientTop: "bg-sky-500/8",
+    ambientBot: "bg-sky-600/6",
+    gradientKeyword: "from-sky-600 via-cyan-600 to-blue-600 dark:from-sky-400 dark:via-cyan-400 dark:to-blue-400",
   },
-  violet: {
-    glow: "rgba(139,92,246,0.55)",
-    glowHex: "#8b5cf6",
-    glowSoft: "rgba(139,92,246,0.12)",
-    border: "rgba(139,92,246,0.35)",
-    badge: "text-violet-600 dark:text-violet-400 bg-violet-500/10 border-violet-500/25",
-    chip: "hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-300",
-    iconActive: "text-violet-600 dark:text-violet-400",
-    connector: "from-violet-500/40 to-transparent",
-    ambientTop: "bg-violet-500/8",
-    ambientBot: "bg-violet-600/6",
-    gradientKeyword: "from-violet-600 via-indigo-600 to-purple-600 dark:from-violet-400 dark:via-indigo-400 dark:to-purple-400",
+  cobalt: {
+    glow: "rgba(37,99,235,0.55)",
+    glowHex: "#2563eb",
+    glowSoft: "rgba(37,99,235,0.12)",
+    border: "rgba(37,99,235,0.35)",
+    badge: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/25",
+    chip: "hover:border-blue-400/50 hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-300",
+    iconActive: "text-blue-600 dark:text-blue-400",
+    connector: "from-blue-500/40 to-transparent",
+    ambientTop: "bg-blue-500/8",
+    ambientBot: "bg-blue-600/6",
+    gradientKeyword: "from-blue-600 via-sky-600 to-cyan-600 dark:from-blue-400 dark:via-sky-400 dark:to-cyan-400",
   },
   cyan: {
     glow: "rgba(6,182,212,0.55)",
@@ -45,7 +45,7 @@ const ACCENT = {
     connector: "from-cyan-500/40 to-transparent",
     ambientTop: "bg-cyan-500/8",
     ambientBot: "bg-cyan-600/6",
-    gradientKeyword: "from-cyan-600 via-sky-600 to-indigo-600 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400",
+    gradientKeyword: "from-cyan-600 via-sky-600 to-blue-600 dark:from-cyan-400 dark:via-sky-400 dark:to-blue-400",
   },
 } as const;
 
@@ -278,9 +278,9 @@ const Skills = ({ data }: SkillsProps) => {
 
       {/* Ambient blobs */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 right-0 w-96 h-96 rounded-full bg-indigo-500/6 blur-3xl" />
-        <div className="absolute bottom-1/3 left-0 w-80 h-80 rounded-full bg-violet-500/5 blur-3xl" />
-        <div className="absolute bottom-0 right-1/3 w-64 h-64 rounded-full bg-cyan-500/4 blur-3xl" />
+        <div className="absolute top-1/4 right-0 w-96 h-96 rounded-full bg-cyan-500/6 blur-3xl" />
+        <div className="absolute bottom-1/3 left-0 w-80 h-80 rounded-full bg-sky-500/5 blur-3xl" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 rounded-full bg-blue-500/4 blur-3xl" />
       </div>
 
       {/* Strata */}

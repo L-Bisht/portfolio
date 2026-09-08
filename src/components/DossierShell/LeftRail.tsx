@@ -65,11 +65,11 @@ function ProfileMonogram({ shortName }: { shortName: string }) {
     <div className="relative w-10 h-10 shrink-0">
       <div
         aria-hidden="true"
-        className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-500/30 to-violet-600/20 blur-md"
+        className="absolute inset-0 rounded-xl bg-gradient-to-br from-sky-500/30 to-cyan-500/20 blur-md"
       />
       <div
         className="relative w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs tracking-tight
-                   bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25"
+                   bg-gradient-to-br from-sky-500 to-cyan-500 shadow-lg shadow-sky-500/25"
       >
         {shortName}
       </div>
@@ -117,13 +117,13 @@ function CompactNavItem({ item, isActive }: { item: NavItem; isActive: boolean }
         onClick={() => scrollTo(item.id)}
         className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer
           ${isActive
-            ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/90 dark:bg-indigo-950/60"
+            ? "text-sky-600 dark:text-sky-400 bg-sky-50/90 dark:bg-sky-950/60"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/60"
           }`}
       >
         {/* Active left border pill */}
         <motion.span
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full bg-indigo-500"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full bg-sky-500"
           animate={{ height: isActive ? "55%" : "0%" }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           aria-hidden="true"
@@ -146,13 +146,13 @@ function ExpandedNavItem({ item, isActive }: { item: NavItem; isActive: boolean 
       className={`toc-item group relative flex items-center h-10 w-full rounded-xl text-sm font-medium
         text-left transition-all duration-200 cursor-pointer
         ${isActive
-          ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 shadow-sm"
+          ? "text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/50 shadow-sm"
           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/70 dark:hover:bg-slate-800/50"
         }`}
     >
       {/* Active left border pill */}
       <motion.span
-        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full bg-indigo-500"
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full bg-sky-500"
         animate={{ height: isActive ? "60%" : "0%" }}
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         aria-hidden="true"
@@ -160,7 +160,7 @@ function ExpandedNavItem({ item, isActive }: { item: NavItem; isActive: boolean 
       {/* Section Icon: 40px bounding box matching compact nav item */}
       <span
         className={`shrink-0 w-10 h-10 flex items-center justify-center transition-colors duration-200
-          ${isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"}`}
+          ${isActive ? "text-sky-600 dark:text-sky-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"}`}
       >
         {ICON_MAP[item.id] ?? null}
       </span>
@@ -249,7 +249,7 @@ export default function LeftRail({
         py-6 gap-6
         transition-shadow duration-300
         ${isExpanded
-          ? "shadow-[4px_0_32px_rgba(0,0,0,0.10),1px_0_0_rgba(99,102,241,0.08)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.5),1px_0_0_rgba(99,102,241,0.12)]"
+          ? "shadow-[4px_0_32px_rgba(0,0,0,0.10),1px_0_0_rgba(14,165,233,0.08)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.5),1px_0_0_rgba(14,165,233,0.12)]"
           : "shadow-none"
         }
       `}

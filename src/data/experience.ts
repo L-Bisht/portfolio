@@ -1,7 +1,7 @@
 export interface ExperienceMetric {
   label: string;
   /** Tailwind-compatible accent colour key — drives the tag's tint */
-  accent: "emerald" | "indigo" | "violet" | "amber" | "cyan";
+  accent: "emerald" | "sky" | "cobalt" | "amber" | "cyan";
 }
 
 export interface ExperienceItem {
@@ -34,8 +34,8 @@ export const experienceData: ExperienceData = {
       period: "2021–Now",
       metrics: [
         { label: "40% deployment time reduction", accent: "emerald" },
-        { label: "Real-time WebSocket streaming", accent: "indigo" },
-        { label: "Microservices migration lead", accent: "violet" },
+        { label: "Real-time WebSocket streaming", accent: "sky" },
+        { label: "Microservices migration lead", accent: "cobalt" },
       ],
       impact: [
         "Led the migration of a legacy monolith to microservices architecture, slashing deployment time by 40% and enabling independent team releases.",
@@ -67,8 +67,8 @@ export const experienceData: ExperienceData = {
       duration: "Aug 2017 – May 2019",
       period: "2017–2019",
       metrics: [
-        { label: "Enterprise-grade responsive UIs", accent: "indigo" },
-        { label: "Agile delivery cadence", accent: "violet" },
+        { label: "Enterprise-grade responsive UIs", accent: "sky" },
+        { label: "Agile delivery cadence", accent: "cobalt" },
         { label: "Full test coverage foundation", accent: "amber" },
       ],
       impact: [

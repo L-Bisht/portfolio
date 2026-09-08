@@ -12,7 +12,7 @@ export interface ArchitecturalTier {
   title: string;
   subtitle: string;
   /** Accent colour key for this tier */
-  accent: "indigo" | "violet" | "cyan";
+  accent: "sky" | "cobalt" | "cyan";
   capabilities: Capability[];
 }
 
@@ -31,7 +31,7 @@ export const skillsData: SkillsData = {
       badge: "Tier 01",
       title: "Interface & Experience Engine",
       subtitle: "Pixel-perfect UIs, design systems, and real-time interactions",
-      accent: "indigo",
+      accent: "sky",
       capabilities: [
         { name: "React", descriptor: "Component architecture" },
         { name: "TypeScript", descriptor: "Type-safe systems" },
@@ -48,7 +48,7 @@ export const skillsData: SkillsData = {
       badge: "Tier 02",
       title: "Distributed Systems & Cloud Architecture",
       subtitle: "Scalable infrastructure, data pipelines, and cloud-native design",
-      accent: "violet",
+      accent: "cobalt",
       capabilities: [
         { name: "AWS", descriptor: "Cloud platform" },
         { name: "Docker", descriptor: "Containerisation" },

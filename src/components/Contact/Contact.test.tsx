@@ -58,7 +58,7 @@ describe("Contact Section Atmosphere & Canvas Transparency", () => {
     expect(html).not.toContain("from-slate-50");
 
     // Must contain translucent atmospheric gradient wash
-    expect(html).toContain("dark:via-indigo-950/20");
+    expect(html).toContain("dark:via-sky-950/20");
     expect(html).toContain("from-transparent");
   });
 
@@ -68,9 +68,11 @@ describe("Contact Section Atmosphere & Canvas Transparency", () => {
     // Deep midnight navy atmospheric veil
     expect(html).toContain("#050811");
 
-    // Ambient auroras in soft indigo and violet
-    expect(html).toContain("dark:bg-indigo-600/12");
-    expect(html).toContain("dark:bg-violet-600/10");
+    // Ambient auroras in soft sky and cyan
+    expect(html).toContain("dark:bg-sky-600/12");
+    expect(html).toContain("dark:bg-cyan-600/10");
+    expect(html).not.toContain("dark:bg-indigo-600/12");
+    expect(html).not.toContain("dark:bg-violet-600/10");
 
     // Crisp typography classes
     expect(html).toContain("dark:text-white");
