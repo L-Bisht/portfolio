@@ -244,7 +244,10 @@ export default function LeftRail({
       className={`
         hidden lg:flex flex-col h-screen fixed left-0 top-0 z-50
         overflow-hidden
-        bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl
+        editorial-glass
+        backdrop-blur-sm lg:backdrop-blur-xl
+        bg-white/80 dark:bg-slate-900/80
+        lg:bg-white/20 lg:dark:bg-slate-900/40
         border-r border-slate-200/40 dark:border-white/10
         py-6 gap-6
         transition-shadow duration-300

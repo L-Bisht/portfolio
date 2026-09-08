@@ -119,13 +119,14 @@ function LedgerRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={[
-        "group relative",
+        "editorial-glass group relative",
         "grid grid-cols-1 md:grid-cols-[220px_1fr] gap-0",
         "rounded-2xl overflow-hidden",
         /* Adaptive dual-mode glass */
-        "bg-slate-50/60 dark:bg-white/[0.03]",
+        "backdrop-blur-sm lg:backdrop-blur-xl",
+        "bg-white/80 dark:bg-slate-900/80",
+        "lg:bg-white/20 lg:dark:bg-slate-900/40",
         "border border-slate-200/80 dark:border-white/8",
-        "backdrop-blur-xl",
         "transition-all duration-400",
         !isLast ? "mb-5" : "",
       ].join(" ")}

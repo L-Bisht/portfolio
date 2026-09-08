@@ -103,7 +103,7 @@ export default function FloatingDock({ data, activeSectionId }: FloatingDockProp
       className="floating-dock lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50
                  flex items-center gap-0.5 px-2 py-1.5
                  rounded-2xl
-                 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl
+                 editorial-glass bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm
                  border border-slate-200/70 dark:border-slate-700/60
                  shadow-[0_8px_32px_rgba(0,0,0,0.12),0_0_0_1px_rgba(14,165,233,0.06)]
                  dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(14,165,233,0.1)]"

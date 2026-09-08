@@ -104,10 +104,11 @@ const GlowCard = ({
       {/* Foreground card surface */}
       <div
         className={[
-          "group relative h-full overflow-hidden rounded-2xl",
-          "bg-white/60 dark:bg-white/5",
+          "editorial-glass group relative h-full overflow-hidden rounded-2xl",
+          "backdrop-blur-sm lg:backdrop-blur-xl",
+          "bg-white/80 dark:bg-slate-900/80",
+          "lg:bg-white/20 lg:dark:bg-slate-900/40",
           "border border-slate-200/60 dark:border-white/10",
-          "backdrop-blur-xl",
           "shadow-sm transition-shadow duration-300",
           "hover:shadow-xl dark:hover:shadow-sky-500/10",
         ].join(" ")}

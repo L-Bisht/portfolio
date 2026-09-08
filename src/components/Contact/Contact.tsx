@@ -89,10 +89,12 @@ function ActionCard({
       custom={index}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative flex flex-col gap-5 p-7 rounded-2xl overflow-hidden
-        bg-white/70 dark:bg-white/[0.04]
+      className="editorial-glass group relative flex flex-col gap-5 p-7 rounded-2xl overflow-hidden
+        backdrop-blur-sm lg:backdrop-blur-xl
+        bg-white/80 dark:bg-slate-900/80
+        lg:bg-white/20 lg:dark:bg-slate-900/40
         border border-slate-200/80 dark:border-white/[0.08]
-        backdrop-blur-xl shadow-sm
+        shadow-sm
         hover:shadow-2xl hover:shadow-sky-500/10 dark:hover:shadow-sky-400/10
         hover:border-sky-400/50 dark:hover:border-sky-500/40
         transition-all duration-500 cursor-pointer"

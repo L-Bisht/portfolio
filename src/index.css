@@ -131,6 +131,38 @@
       0 0 0 1px rgba(14, 165, 233, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
+
+  /* ── Dual-Mode Editorial Glass Strata ──────────────────────────────────
+   * Standardized glass stratum surface utility (ADR 0005).
+   * Mobile (< 1024px): 4px blur (`backdrop-blur-sm`) with balanced opacity
+   * (`bg-white/80 dark:bg-slate-900/80`) to eliminate GPU framebuffer
+   * convolution bottlenecks during scroll.
+   * Desktop (>= 1024px): Full 24px blur (`backdrop-blur-xl`) with ultra-translucent
+   * surface opacity (`bg-white/20 dark:bg-slate-900/40`).
+   */
+  .editorial-glass {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  :is(.dark, .dark *) .editorial-glass,
+  .dark.editorial-glass {
+    background-color: rgba(15, 23, 42, 0.8);
+  }
+
+  @media (min-width: 1024px) {
+    .editorial-glass {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    :is(.dark, .dark *) .editorial-glass,
+    .dark.editorial-glass {
+      background-color: rgba(15, 23, 42, 0.4);
+    }
+  }
 }
 
 @keyframes gradient-shift {

@@ -136,10 +136,8 @@ function StratumCard({
 
       {/* Glass stratum surface */}
       <div
-        className="relative overflow-hidden rounded-2xl backdrop-blur-xl border transition-all duration-400 group-hover:shadow-2xl"
+        className="editorial-glass relative overflow-hidden rounded-2xl backdrop-blur-sm lg:backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 lg:bg-white/20 lg:dark:bg-slate-900/40 border transition-all duration-400 group-hover:shadow-2xl"
         style={{
-          background:
-            "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)",
           borderColor: hovered
             ? a.border.replace("0.35", "0.55")
             : a.border,

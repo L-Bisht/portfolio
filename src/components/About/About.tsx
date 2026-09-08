@@ -97,9 +97,11 @@ const About = ({ data }: AboutProps) => {
           variants={tileVariants}
           className="
             group relative overflow-hidden rounded-3xl p-8
-            bg-white/60 dark:bg-white/[0.04]
+            editorial-glass
+            backdrop-blur-sm lg:backdrop-blur-xl
+            bg-white/80 dark:bg-slate-900/80
+            lg:bg-white/20 lg:dark:bg-slate-900/40
             border border-slate-200/60 dark:border-white/[0.08]
-            backdrop-blur-xl
             shadow-sm hover:shadow-xl dark:hover:shadow-sky-500/10
             transition-shadow duration-500
             lg:col-span-1 h-full
@@ -165,9 +167,11 @@ const About = ({ data }: AboutProps) => {
             variants={tileVariants}
             className="
               group relative overflow-hidden rounded-3xl p-7
-              bg-white/60 dark:bg-white/[0.04]
+              editorial-glass
+              backdrop-blur-sm lg:backdrop-blur-xl
+              bg-white/80 dark:bg-slate-900/80
+              lg:bg-white/20 lg:dark:bg-slate-900/40
               border border-slate-200/60 dark:border-white/[0.08]
-              backdrop-blur-xl
               shadow-sm hover:shadow-xl dark:hover:shadow-cyan-500/10
               transition-shadow duration-500
               flex-1 flex flex-col justify-between
@@ -236,9 +240,11 @@ const About = ({ data }: AboutProps) => {
                   transition={{ type: "spring", stiffness: 280, damping: 18 }}
                   className="
                     group relative overflow-hidden rounded-3xl p-5
-                    bg-white/60 dark:bg-white/[0.04]
+                    editorial-glass
+                    backdrop-blur-sm lg:backdrop-blur-xl
+                    bg-white/80 dark:bg-slate-900/80
+                    lg:bg-white/20 lg:dark:bg-slate-900/40
                     border border-slate-200/60 dark:border-white/[0.08]
-                    backdrop-blur-xl
                     shadow-sm hover:shadow-xl
                     transition-shadow duration-500
                     flex flex-col gap-3 h-full justify-between
