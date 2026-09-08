@@ -25,3 +25,5 @@ This document defines the core domain concepts used in the portfolio's architect
 *   **Adaptive Idle Sleep Loop**: An event-driven canvas rendering lifecycle that suspends `requestAnimationFrame` when pointer motion, ripples, and color transitions settle, waking dynamically on user input or state change.
 *   **Scroll-Damped Canvas**: A mobile-optimized canvas execution mode that halts frame rasterization during active touch-scrolling gestures to preserve 60fps compositor bandwidth.
 *   **Dual-Mode Editorial Glass**: A responsive extension of the Editorial Glass Strata that delivers full `backdrop-blur-xl` on desktop while stepping down to `backdrop-blur-sm` with higher opacity on mobile viewports to prevent GPU fill-rate exhaustion.
+*   **Executive Telemetry Card**: A high-signal architectural glass surface anchored in the Hero's asymmetric two-column split, presenting live operational metadata (system availability, active engineering focus, primary stack, and location) with quiet precision.
+

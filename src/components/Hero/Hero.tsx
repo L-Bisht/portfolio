@@ -1,11 +1,4 @@
-import { useRef } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  type Variants,
-} from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import type { HeroData } from "../../data/hero";
 
 interface HeroProps {
@@ -45,15 +38,6 @@ const fadeUpVariants: Variants = {
   },
 };
 
-/** Slower fade-in for the scroll indicator */
-const scrollIndicatorVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.8, delay: 0.1 },
-  },
-};
-
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 /** Splits a string into words and wraps each in a clip container */
@@ -84,42 +68,21 @@ function AnimatedWords({
 // ─── Component ─────────────────────────────────────────────────────────────
 
 const Hero = ({ data }: HeroProps) => {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Scroll-linked parallax — ghost background word drifts up as you scroll,
-  // keeping the experience alive without locking scroll.
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-
-  const rawY = useTransform(scrollYProgress, [0, 1], ["0%", "-25%"]);
-  const ghostY = useSpring(rawY, { stiffness: 60, damping: 20, mass: 0.5 });
-  const ghostOpacity = useTransform(scrollYProgress, [0, 0.6], [0.05, 0]);
+  const eyebrowText = data.eyebrow ?? data.greeting;
+  const primaryAction = {
+    label: data.actions?.primary?.label ?? data.primaryCta?.text ?? "Explore Selected Work",
+    href: data.actions?.primary?.href ?? data.primaryCta?.href ?? "#projects",
+  };
+  const secondaryAction = {
+    label: data.actions?.secondary?.label ?? data.secondaryCta?.text ?? "View Resume",
+    href: data.actions?.secondary?.href ?? data.secondaryCta?.href ?? "#contact",
+  };
 
   return (
     <section
       id="home"
-      ref={sectionRef}
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-24 px-4 sm:px-8 lg:px-16"
     >
-      {/* ── Ghost background word (parallax) ───────────────────── */}
-      <motion.div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
-        style={{ y: ghostY, opacity: ghostOpacity }}
-      >
-        <span
-          className="font-black text-slate-900 dark:text-white uppercase tracking-tighter whitespace-nowrap"
-          style={{
-            fontSize: "clamp(6rem, 25vw, 22rem)",
-            lineHeight: 1,
-          }}
-        >
-          PORTFOLIO
-        </span>
-      </motion.div>
-
       {/* ── Decorative radial glow ─────────────────────────────── */}
       <div
         aria-hidden="true"
@@ -137,32 +100,42 @@ const Hero = ({ data }: HeroProps) => {
         initial="hidden"
         animate="visible"
       >
-        {/* Greeting */}
+        {/* Eyebrow */}
         <motion.p
           variants={fadeUpVariants}
           className="text-sky-500 dark:text-sky-400 text-base sm:text-lg font-medium tracking-widest uppercase mb-6"
         >
-          {data.greeting}
+          {eyebrowText}
         </motion.p>
 
-        {/* Name — massive gradient heading */}
+        {/* Name — static high-contrast typography */}
         <h1
           className="font-black leading-none mb-6"
           style={{ fontSize: "clamp(2.8rem, 8vw, 7rem)" }}
         >
           <AnimatedWords
             text={data.name}
-            className="hero-name-gradient"
+            className="text-slate-900 dark:text-white"
           />
         </h1>
 
         {/* Title — large, slightly muted */}
         <h2
-          className="font-bold text-slate-600 dark:text-slate-300 leading-tight mb-10"
+          className="font-bold text-slate-600 dark:text-slate-300 leading-tight mb-6"
           style={{ fontSize: "clamp(1.4rem, 3.5vw, 3rem)" }}
         >
           <AnimatedWords text={data.title} />
         </h2>
+
+        {/* Executive Thesis */}
+        {data.thesis && (
+          <motion.p
+            variants={fadeUpVariants}
+            className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            {data.thesis}
+          </motion.p>
+        )}
 
         {/* CTA row */}
         <motion.div
@@ -170,56 +143,24 @@ const Hero = ({ data }: HeroProps) => {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
           <motion.a
-            href={data.primaryCta.href}
+            href={primaryAction.href}
             id="hero-cta-primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             className="btn-primary btn-glow px-8 py-4 text-base font-semibold rounded-xl"
           >
-            {data.primaryCta.text}
+            {primaryAction.label}
           </motion.a>
 
           <motion.a
-            href={data.secondaryCta.href}
+            href={secondaryAction.href}
             id="hero-cta-secondary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             className="px-8 py-4 text-base font-semibold rounded-xl text-slate-600 dark:text-slate-300 border-2 border-slate-300 dark:border-slate-600 hover:border-sky-500 dark:hover:border-sky-400 hover:text-sky-500 dark:hover:text-sky-400 transition-all duration-300"
           >
-            {data.secondaryCta.text}
+            {secondaryAction.label}
           </motion.a>
-        </motion.div>
-      </motion.div>
-
-      {/* ── Scroll indicator ──────────────────────────────────── */}
-      <motion.div
-        variants={scrollIndicatorVariants}
-        initial="hidden"
-        animate="visible"
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        aria-label="Scroll down"
-      >
-        <span className="text-xs tracking-widest uppercase text-slate-400 dark:text-slate-500">
-          Scroll
-        </span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-slate-400 dark:text-slate-500"
-          >
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
         </motion.div>
       </motion.div>
     </section>

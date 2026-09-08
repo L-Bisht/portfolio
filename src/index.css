@@ -66,35 +66,6 @@
     vertical-align: bottom;
   }
 
-  /* Animated gradient text — slate to electric sky in light mode, crisp white to electric sky in dark mode */
-  .hero-name-gradient {
-    background-image: linear-gradient(
-      120deg,
-      #0f172a 0%,
-      #0ea5e9 35%,
-      #38bdf8 65%,
-      #0f172a 100%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: gradient-shift 6s linear infinite;
-  }
-
-  .dark .hero-name-gradient,
-  :is(.dark *) .hero-name-gradient {
-    background-image: linear-gradient(
-      120deg,
-      #ffffff 0%,
-      #38bdf8 35%,
-      #0ea5e9 65%,
-      #ffffff 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
 
 
   /* Glow pulse for CTA buttons */
@@ -165,14 +136,6 @@
   }
 }
 
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
-}
 
 @keyframes bounce-y {
   0%, 100% {

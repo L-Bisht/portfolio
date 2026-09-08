@@ -18,7 +18,7 @@ describe("Stable Section Motion Lifecycle & MotionValue Decoupling (Issue 05)", 
   let projectsSource = "";
   let contactSource = "";
   let footerSource = "";
-  let filesWithTriggerOnceFalse: string[] = [];
+  const filesWithTriggerOnceFalse: string[] = [];
 
   beforeAll(async () => {
     const fsMod = "node:fs";
