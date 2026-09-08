@@ -1,4 +1,3 @@
-import { AnimatePresence } from "framer-motion";
 import DossierShell from "./components/DossierShell";
 import Hero from "./components/Hero";
 import About from "./components/About";
@@ -35,13 +34,11 @@ function App() {
         data={navData}
         activeSectionId={activeSectionId}
       >
-        <AnimatePresence mode="wait">
-          <Hero data={heroData} />
-          <About data={aboutData} />
-          <Skills data={skillsData} />
-          <Experience data={experienceData} />
-          <Projects data={projectsData} />
-        </AnimatePresence>
+        <Hero data={heroData} />
+        <About data={aboutData} />
+        <Skills data={skillsData} />
+        <Experience data={experienceData} />
+        <Projects data={projectsData} />
         <Contact data={contactData} />
         <Footer />
       </DossierShell>

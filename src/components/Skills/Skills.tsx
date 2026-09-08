@@ -250,7 +250,7 @@ interface SkillsProps {
 
 const Skills = ({ data }: SkillsProps) => {
   const [ref, inView] = useInView({
-    triggerOnce: false,
+    triggerOnce: true,
     threshold: 0,
     rootMargin: "-10% 0px -10% 0px",
   });

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { motion, type Variants } from "framer-motion";
+import { motion, useMotionValue, useSpring, type Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { ProjectsData, Project } from "../../data/projects";
 import { QuarterCircleArc } from "../CornerBubble";
@@ -35,8 +35,17 @@ function BrowserMockup({
   delay: number;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+
+  // Decoupled motion values for 3D pointer tilt & hover scale outside React state cycles
+  const rawTiltX = useMotionValue(0);
+  const rawTiltY = useMotionValue(0);
+  const rawScale = useMotionValue(1);
+
+  const springConfig = { stiffness: 260, damping: 28 };
+  const rotateX = useSpring(rawTiltX, springConfig);
+  const rotateY = useSpring(rawTiltY, springConfig);
+  const scale = useSpring(rawScale, springConfig);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = frameRef.current;
@@ -46,11 +55,19 @@ function BrowserMockup({
     const cy = rect.top + rect.height / 2;
     const dx = (e.clientX - cx) / (rect.width / 2);
     const dy = (e.clientY - cy) / (rect.height / 2);
-    setTilt({ x: dy * -8, y: dx * 8 });
+    rawTiltX.set(dy * -8);
+    rawTiltY.set(dx * 8);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+    rawScale.set(1.025);
   };
 
   const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 });
+    rawTiltX.set(0);
+    rawTiltY.set(0);
+    rawScale.set(1);
     setIsHovering(false);
   };
 
@@ -76,16 +93,13 @@ function BrowserMockup({
       <motion.div
         ref={frameRef}
         onMouseMove={handleMouseMove}
-        onMouseEnter={() => setIsHovering(true)}
+        onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        animate={{
-          rotateX: tilt.x,
-          rotateY: tilt.y,
-          scale: isHovering ? 1.025 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 260, damping: 28 }}
         className="relative w-full rounded-2xl overflow-hidden"
         style={{
+          rotateX,
+          rotateY,
+          scale,
           transformStyle: "preserve-3d",
           boxShadow: isHovering
             ? "0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(37,99,235,0.25)"
@@ -151,7 +165,7 @@ function CaseStudyRow({
   index: number;
 }) {
   const [ref, inView] = useInView({
-    triggerOnce: false,
+    triggerOnce: true,
     threshold: 0.1,
     rootMargin: "-8% 0px -8% 0px",
   });
@@ -365,7 +379,7 @@ interface ProjectsProps {
 
 const Projects = ({ data }: ProjectsProps) => {
   const [sectionRef] = useInView({
-    triggerOnce: false,
+    triggerOnce: true,
     threshold: 0,
     rootMargin: "-10% 0px -10% 0px",
   });
