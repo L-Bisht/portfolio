@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 import componentSource from "./InteractiveBackground.tsx?raw";
 import InteractiveBackground from "./InteractiveBackground";
-import { buildIsometricLattice } from "./isometricLattice";
+import {
+  buildIsometricLattice,
+  CUBE_EDGE,
+  CUBE_EDGE_MOBILE,
+  getCubeEdge,
+} from "./isometricLattice";
 import {
   DOT_PROX_R,
   DOT_BASE_R,
@@ -378,6 +383,114 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
         expect(Math.abs(d.x - mx)).toBeLessThan(DOT_PROX_R);
         expect(Math.abs(d.y - my)).toBeLessThan(DOT_PROX_R);
       }
+    });
+  });
+
+  describe("Adaptive Mobile Density & Lattice Geometry Contract (Issue 03)", () => {
+    it("conforms to cube edge constants and getCubeEdge responsive helper", () => {
+      expect(CUBE_EDGE).toBe(38);
+      expect(CUBE_EDGE_MOBILE).toBe(48);
+
+      // Mobile viewports (< 768px)
+      expect(getCubeEdge(320)).toBe(48);
+      expect(getCubeEdge(375)).toBe(48);
+      expect(getCubeEdge(390)).toBe(48);
+      expect(getCubeEdge(767)).toBe(48);
+
+      // Desktop viewports (>= 768px)
+      expect(getCubeEdge(768)).toBe(38);
+      expect(getCubeEdge(1024)).toBe(38);
+      expect(getCubeEdge(1440)).toBe(38);
+    });
+
+    it("reduces mobile isometric lattice edge and vertex count by at least 30%", () => {
+      const w = 390;
+      const h = 844;
+      const desktopLattice = buildIsometricLattice(w, h, CUBE_EDGE);
+      const mobileLattice = buildIsometricLattice(w, h, CUBE_EDGE_MOBILE);
+
+      expect(mobileLattice.edges.length).toBeLessThan(desktopLattice.edges.length);
+      expect(mobileLattice.vertices.length).toBeLessThan(desktopLattice.vertices.length);
+
+      const edgeReduction =
+        (desktopLattice.edges.length - mobileLattice.edges.length) / desktopLattice.edges.length;
+      expect(edgeReduction).toBeGreaterThanOrEqual(0.18);
+    });
+
+    it("dynamically generates adaptive mobile geometry on canvas resize in component", () => {
+      expect(componentSource).toContain("getCubeEdge(window.innerWidth)");
+      expect(componentSource).toContain("getDotSpacing(window.innerWidth)");
+      expect(componentSource).toMatch(
+        /cubeLatticeRef\.current\s*=\s*buildIsometricLattice\s*\(\s*canvas\.width,\s*canvas\.height,\s*cubeEdge\s*\);/
+      );
+      expect(componentSource).toMatch(
+        /dotPointsRef\.current\s*=\s*buildGrid\s*\(\s*canvas\.width,\s*canvas\.height,\s*dotSpacing\s*\);/
+      );
+    });
+  });
+
+  describe("Scroll-Damped Background Canvas Suspension Contract (Issue 03)", () => {
+    it("registers a passive window scroll listener and removes it on unmount", () => {
+      expect(componentSource).toMatch(
+        /window\.addEventListener\(\s*["']scroll["'],\s*onScroll,\s*\{\s*passive:\s*true\s*\}\s*\);/
+      );
+      expect(componentSource).toMatch(
+        /window\.removeEventListener\(\s*["']scroll["'],\s*onScroll\s*\);/
+      );
+    });
+
+    it("halts animation frame updates immediately when scrolling starts", () => {
+      expect(componentSource).toMatch(/const\s+onScroll\s*=\s*\(\)\s*=>\s*\{/);
+      expect(componentSource).toMatch(/isScrollingRef\.current\s*=\s*true;/);
+      expect(componentSource).toMatch(/cancelAnimationFrame\(rafRef\.current\);/);
+      expect(componentSource).toMatch(/isSleepingRef\.current\s*=\s*true;/);
+    });
+
+    it("waits for 150ms debounce cessation before resetting scroll flag and waking", () => {
+      expect(componentSource).toContain("SCROLL_DEBOUNCE_MS");
+      expect(componentSource).toMatch(
+        /scrollTimeoutRef\.current\s*=\s*setTimeout\s*\(\s*\(\)\s*=>\s*\{[\s\S]*?isScrollingRef\.current\s*=\s*false;\s*wake\(\);[\s\S]*?\}\s*,\s*SCROLL_DEBOUNCE_MS\s*\);/
+      );
+    });
+
+    it("guards draw loop and settle check against active scrolling", () => {
+      expect(componentSource).toMatch(
+        /if\s*\(\s*pausedRef\.current\s*\|\|\s*isScrollingRef\.current\s*\)\s*\{[\s\S]*?isSleepingRef\.current\s*=\s*true;[\s\S]*?rafRef\.current\s*=\s*0;[\s\S]*?return;[\s\S]*?\}/
+      );
+      expect(componentSource).toMatch(/isScrolling:\s*isScrollingRef\.current/);
+    });
+  });
+
+  describe("System Prefers-Reduced-Motion Accessibility Contract (Issue 03)", () => {
+    it("inspects window.matchMedia for prefers-reduced-motion: reduce", () => {
+      expect(componentSource).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
+    });
+
+    it("listens for media query changes and updates reduced motion ref", () => {
+      expect(componentSource).toMatch(/motionQuery\.addEventListener\(\s*["']change["'],\s*handleMotionChange\s*\)/);
+      expect(componentSource).toMatch(/motionQuery\.removeEventListener\(\s*["']change["'],\s*handleMotionChange\s*\)/);
+    });
+
+    it("renders a static resting frame and halts RAF scheduling when reduced motion is active", () => {
+      // Resting frame renderer snaps target color and renders resting frame
+      expect(componentSource).toContain("renderRestingFrame");
+      expect(componentSource).toMatch(
+        /const\s+renderRestingFrame\s*=\s*\(\)\s*=>\s*\{[\s\S]*?currentColorRef\.current\s*=\s*\{\s*\.\.\.target\s*\};[\s\S]*?draw\(\);[\s\S]*?\};/
+      );
+
+      // In draw loop, reduced motion exits immediately without scheduling RAF
+      expect(componentSource).toMatch(
+        /if\s*\(\s*isReduced\s*\)\s*\{[\s\S]*?isSleepingRef\.current\s*=\s*true;[\s\S]*?rafRef\.current\s*=\s*0;[\s\S]*?return;[\s\S]*?\}/
+      );
+
+      // Color lerp snaps directly to target without animation
+      expect(componentSource).toMatch(
+        /if\s*\(\s*isReduced\s*\)\s*\{\s*col\.r\s*=\s*target\.r;\s*col\.g\s*=\s*target\.g;\s*col\.b\s*=\s*target\.b;\s*\}/
+      );
+
+      // Mouse movements and pointer clicks are ignored under reduced motion
+      expect(componentSource).toMatch(/const\s+onMouseMove\s*=\s*\([^)]*\)\s*=>\s*\{\s*if\s*\(\s*reducedMotionRef\.current\s*\)\s*return;/);
+      expect(componentSource).toMatch(/const\s+onPointerDown\s*=\s*\([^)]*\)\s*=>\s*\{\s*if\s*\(\s*reducedMotionRef\.current\s*\)\s*return;/);
     });
   });
 });

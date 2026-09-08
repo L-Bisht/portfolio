@@ -11,7 +11,9 @@
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const DOT_SPACING = 26; // px between dot centres in resting grid
+export const DOT_SPACING = 26; // px between dot centres in resting grid (desktop >= 768px)
+export const DOT_SPACING_MOBILE = 38; // px between dot centres in resting grid (mobile < 768px)
+export const MOBILE_BREAKPOINT = 768; // px mobile viewport breakpoint
 export const DOT_BASE_R = 1.4; // px resting dot radius
 export const DOT_APEX_SCALE = 2.4; // peak scale multiplier at dome apex (1.4 * 2.4 = 3.36px)
 export const DOT_MAX_DISPLACEMENT = 16; // px max radial outward shift
@@ -32,7 +34,16 @@ export const RIPPLE_PUSH_MAX = 8; // px max outward displacement from kinetic wa
 
 // Idle sleep loop constants
 export const POINTER_IDLE_MS = 150; // ms threshold of stationary pointer before sleep
+export const SCROLL_DEBOUNCE_MS = 150; // ms debounce upon scroll cessation before wake-and-settle
 export const COLOR_LERP_TOLERANCE = 0.5; // RGB channel convergence tolerance
+
+/**
+ * Returns the dot grid spacing based on viewport width (< 768px mobile -> 38px, desktop -> 26px)
+ */
+export function getDotSpacing(width: number): number {
+  return width < MOBILE_BREAKPOINT ? DOT_SPACING_MOBILE : DOT_SPACING;
+}
+
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -57,6 +68,7 @@ export interface IdleSettleState {
   springClickTime: number;
   currentColor: { r: number; g: number; b: number };
   targetColor: { r: number; g: number; b: number };
+  isScrolling?: boolean;
 }
 
 export interface IdleSettleResult {
@@ -64,6 +76,7 @@ export interface IdleSettleResult {
   isRipplesSettled: boolean;
   isSpringSettled: boolean;
   isColorConverged: boolean;
+  isScrollingSettled: boolean;
   shouldSleep: boolean;
 }
 
@@ -211,6 +224,7 @@ export function calculateDotRadius(
  * 2. Active click ripples array is empty (ripplesCount === 0).
  * 3. Damped harmonic spring compression has settled (now - springClickTime >= 550ms).
  * 4. Section accent color linear interpolation has converged within 0.5 units on all RGB channels.
+ * 5. Window is not in an active scroll gesture (!isScrolling).
  */
 export function evaluateIdleSettle(state: IdleSettleState): IdleSettleResult {
   const isPointerSettled =
@@ -230,17 +244,21 @@ export function evaluateIdleSettle(state: IdleSettleState): IdleSettleResult {
     diffG < COLOR_LERP_TOLERANCE &&
     diffB < COLOR_LERP_TOLERANCE;
 
+  const isScrollingSettled = !state.isScrolling;
+
   const shouldSleep =
     isPointerSettled &&
     isRipplesSettled &&
     isSpringSettled &&
-    isColorConverged;
+    isColorConverged &&
+    isScrollingSettled;
 
   return {
     isPointerSettled,
     isRipplesSettled,
     isSpringSettled,
     isColorConverged,
+    isScrollingSettled,
     shouldSleep,
   };
 }

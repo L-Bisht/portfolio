@@ -24,9 +24,18 @@ export interface IsometricLattice {
   vertices: CubeVertex[];
 }
 
-export const CUBE_EDGE = 38; // px length of each isometric cube wireframe edge
+export const CUBE_EDGE = 38; // px length of each isometric cube wireframe edge (desktop >= 768px)
+export const CUBE_EDGE_MOBILE = 48; // px length of each isometric cube wireframe edge (mobile < 768px)
+export const MOBILE_BREAKPOINT = 768; // px mobile viewport breakpoint
 export const CUBE_PROX_R = 190; // px proximity influence radius
 export const CUBE_PROX_R2 = CUBE_PROX_R * CUBE_PROX_R;
+
+/**
+ * Returns the isometric cube edge length based on viewport width (< 768px mobile -> 48px, desktop -> 38px)
+ */
+export function getCubeEdge(width: number): number {
+  return width < MOBILE_BREAKPOINT ? CUBE_EDGE_MOBILE : CUBE_EDGE;
+}
 
 /**
  * Generates a tessellated 3D Isometric Cubes Wireframe Lattice.

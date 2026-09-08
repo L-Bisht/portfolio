@@ -12,6 +12,11 @@ import {
   COLOR_LERP_TOLERANCE,
   RIPPLE_WAVE_W,
   RIPPLE_PUSH_MAX,
+  DOT_SPACING,
+  DOT_SPACING_MOBILE,
+  MOBILE_BREAKPOINT,
+  SCROLL_DEBOUNCE_MS,
+  getDotSpacing,
   calculateHemisphericalElevation,
   calculateSpringFactor,
   calculateDomeDisplacement,
@@ -450,6 +455,90 @@ describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () =
 
       // Dot preservation
       expect(resting.length + dynamic.length).toBe(testDots.length);
+    });
+  });
+
+  describe("Adaptive Mobile Density & Scroll-Damped Settle Contract (Issue 03)", () => {
+    it("conforms to mobile breakpoint and dot spacing constants", () => {
+      expect(MOBILE_BREAKPOINT).toBe(768);
+      expect(DOT_SPACING).toBe(26);
+      expect(DOT_SPACING_MOBILE).toBe(38);
+      expect(SCROLL_DEBOUNCE_MS).toBe(150);
+    });
+
+    it("evaluates getDotSpacing dynamically based on viewport width", () => {
+      // Mobile screens (< 768px)
+      expect(getDotSpacing(320)).toBe(38);
+      expect(getDotSpacing(375)).toBe(38);
+      expect(getDotSpacing(390)).toBe(38);
+      expect(getDotSpacing(414)).toBe(38);
+      expect(getDotSpacing(767)).toBe(38);
+
+      // Desktop and tablet screens (>= 768px)
+      expect(getDotSpacing(768)).toBe(26);
+      expect(getDotSpacing(1024)).toBe(26);
+      expect(getDotSpacing(1440)).toBe(26);
+      expect(getDotSpacing(1920)).toBe(26);
+    });
+
+    it("reduces mobile dot primitive draw count by 40% to 60% on standard mobile viewports", () => {
+      // Standard mobile viewports: 375x667 (iPhone SE), 390x844 (iPhone 14/15), 414x896 (XR/11)
+      const viewports = [
+        { w: 375, h: 667 },
+        { w: 390, h: 844 },
+        { w: 414, h: 896 },
+      ];
+
+      for (const { w, h } of viewports) {
+        const desktopCols = Math.ceil(w / DOT_SPACING) + 1;
+        const desktopRows = Math.ceil(h / DOT_SPACING) + 1;
+        const desktopDots = desktopCols * desktopRows;
+
+        const mobileCols = Math.ceil(w / DOT_SPACING_MOBILE) + 1;
+        const mobileRows = Math.ceil(h / DOT_SPACING_MOBILE) + 1;
+        const mobileDots = mobileCols * mobileRows;
+
+        const reduction = (desktopDots - mobileDots) / desktopDots;
+
+        // Must reduce primitive counts by 40–60%
+        expect(reduction).toBeGreaterThanOrEqual(0.40);
+        expect(reduction).toBeLessThanOrEqual(0.60);
+      }
+    });
+
+    it("halts sleep evaluation while window is actively scrolling (isScrolling = true)", () => {
+      const now = 5000;
+      const baseState = {
+        pointerX: -9999,
+        pointerY: -9999,
+        lastPointerMoveTime: now - 1000,
+        now,
+        ripplesCount: 0,
+        springClickTime: now - 1000,
+        currentColor: { r: 14, g: 165, b: 233 },
+        targetColor: { r: 14, g: 165, b: 233 },
+      };
+
+      // While scrolling: sleep is blocked
+      const scrollingResult = evaluateIdleSettle({
+        ...baseState,
+        isScrolling: true,
+      });
+      expect(scrollingResult.isScrollingSettled).toBe(false);
+      expect(scrollingResult.shouldSleep).toBe(false);
+
+      // Once scrolling cessation settles (isScrolling = false): sleep is permitted
+      const stoppedResult = evaluateIdleSettle({
+        ...baseState,
+        isScrolling: false,
+      });
+      expect(stoppedResult.isScrollingSettled).toBe(true);
+      expect(stoppedResult.shouldSleep).toBe(true);
+
+      // When omitted (backward compatibility): defaults to true
+      const defaultResult = evaluateIdleSettle(baseState);
+      expect(defaultResult.isScrollingSettled).toBe(true);
+      expect(defaultResult.shouldSleep).toBe(true);
     });
   });
 });

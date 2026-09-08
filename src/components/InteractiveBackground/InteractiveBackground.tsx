@@ -4,13 +4,13 @@ export type { PatternMode };
 
 import {
   buildIsometricLattice,
-  CUBE_EDGE,
   CUBE_PROX_R,
   CUBE_PROX_R2,
+  getCubeEdge,
   type IsometricLattice,
 } from "./isometricLattice";
 import {
-  DOT_SPACING,
+  getDotSpacing,
   DOT_BASE_R,
   DOT_APEX_SCALE,
   DOT_MAX_DISPLACEMENT,
@@ -19,6 +19,7 @@ import {
   RIPPLE_WAVE_W as DOT_RIPPLE_WAVE_W,
   RIPPLE_PUSH_MAX,
   COLOR_LERP_TOLERANCE,
+  SCROLL_DEBOUNCE_MS,
   calculateSpringFactor,
   calculateDotRadius,
   evaluateIdleSettle,
@@ -104,6 +105,12 @@ export default function InteractiveBackground({
   const lastPointerTimeRef   = useRef(performance.now());
   const wakeRef              = useRef<() => void>(() => {});
 
+  // Scroll damping & reduced motion refs
+  const isScrollingRef       = useRef(false);
+  const scrollTimeoutRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reducedMotionRef     = useRef(false);
+  const renderRestingRef     = useRef<() => void>(() => {});
+
   // Precomputed geometry — rebuilt on resize only
   const cubeLatticeRef = useRef<IsometricLattice>({ edges: [], vertices: [] });
   const dotPointsRef   = useRef<GridPoint[]>([]);
@@ -155,8 +162,23 @@ export default function InteractiveBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // ── query system prefers-reduced-motion ──────────────────────────────────
+    const motionQuery =
+      typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
+
+    reducedMotionRef.current = !!motionQuery?.matches;
+
     // ── wake helper: resume RAF loop from idle sleep ─────────────────────────
     const wake = () => {
+      if (reducedMotionRef.current) {
+        renderRestingRef.current();
+        return;
+      }
+      if (isScrollingRef.current) {
+        return;
+      }
       if (isSleepingRef.current) {
         isSleepingRef.current = false;
         rafRef.current = requestAnimationFrame(draw);
@@ -164,28 +186,63 @@ export default function InteractiveBackground({
     };
     wakeRef.current = wake;
 
-    // ── resize: size canvas + rebuild geometry ───────────────────────────────
+    // ── render resting frame helper for reduced motion ───────────────────────
+    const renderRestingFrame = () => {
+      const target = THEME_COLORS[activeSectionIdRef.current] ?? DEFAULT_COLOR;
+      currentColorRef.current = { ...target };
+      draw();
+    };
+    renderRestingRef.current = renderRestingFrame;
+
+    const handleMotionChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      reducedMotionRef.current = e.matches;
+      if (e.matches) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+        isSleepingRef.current = true;
+        renderRestingFrame();
+      } else {
+        wake();
+      }
+    };
+
+    if (motionQuery) {
+      if (typeof motionQuery.addEventListener === "function") {
+        motionQuery.addEventListener("change", handleMotionChange);
+      } else if (typeof (motionQuery as unknown as { addListener?: (fn: unknown) => void }).addListener === "function") {
+        (motionQuery as unknown as { addListener: (fn: unknown) => void }).addListener(handleMotionChange);
+      }
+    }
+
+    // ── resize: size canvas + rebuild geometry (adaptive mobile density) ─────
     const resize = () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
-      cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, CUBE_EDGE);
-      dotPointsRef.current   = buildGrid(canvas.width, canvas.height, DOT_SPACING);
+      const cubeEdge   = getCubeEdge(window.innerWidth);
+      const dotSpacing = getDotSpacing(window.innerWidth);
+      cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, cubeEdge);
+      dotPointsRef.current   = buildGrid(canvas.width, canvas.height, dotSpacing);
       wake();
     };
     resize();
 
     // ── mouse & click tracking ────────────────────────────────────────────────
     const onMouseMove = (e: MouseEvent) => {
+      if (reducedMotionRef.current) return;
       mouseRef.current = { x: e.clientX, y: e.clientY };
       lastPointerTimeRef.current = performance.now();
       wake();
     };
     const onMouseLeave = () => {
+      if (reducedMotionRef.current) return;
       mouseRef.current = { x: -9999, y: -9999 };
       wake();
     };
 
     const onPointerDown = (e: MouseEvent) => {
+      if (reducedMotionRef.current) return;
       const target = e.target as HTMLElement | null;
       // Exclude clicks directly on pattern switcher controls
       if (
@@ -214,9 +271,29 @@ export default function InteractiveBackground({
       wake();
     };
 
+    // ── window scroll damping: halt frame updates during scrolling ───────────
+    const onScroll = () => {
+      if (reducedMotionRef.current) return;
+      isScrollingRef.current = true;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+      isSleepingRef.current = true;
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        isScrollingRef.current = false;
+        wake();
+      }, SCROLL_DEBOUNCE_MS);
+    };
+
     window.addEventListener("mousemove",   onMouseMove);
     window.addEventListener("mouseleave",  onMouseLeave);
     window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("scroll",      onScroll, { passive: true });
     window.addEventListener("resize",      resize);
 
     // ── Theme toggle mutation observer — wake canvas when theme class changes
@@ -251,45 +328,56 @@ export default function InteractiveBackground({
 
     // ── animation loop ───────────────────────────────────────────────────────
     const draw = () => {
-      if (pausedRef.current) {
+      if (pausedRef.current || isScrollingRef.current) {
         isSleepingRef.current = true;
         rafRef.current = 0;
         return;
       }
 
+      const isReduced = reducedMotionRef.current;
       const w     = canvas.width;
       const h     = canvas.height;
-      const mouse = mouseRef.current;
+      const mouse = isReduced ? { x: -9999, y: -9999 } : mouseRef.current;
       const isDark = document.documentElement.classList.contains("dark");
       const currentMode = modeRef.current;
       const now = performance.now();
 
       // ── ripple state management ───────────────────────────────────────────
-      ripplesRef.current = ripplesRef.current.filter(r => now - r.startTime < r.duration);
+      ripplesRef.current = isReduced
+        ? []
+        : ripplesRef.current.filter(r => now - r.startTime < r.duration);
       const activeRipples = ripplesRef.current;
       const activeRippleData: ActiveRippleData[] = [];
-      for (let i = 0; i < activeRipples.length; i++) {
-        const rip = activeRipples[i];
-        const t = (now - rip.startTime) / rip.duration;
-        const radius = rip.maxRadius * Math.pow(t, 0.82);
-        const fade = Math.pow(1 - t, 1.3);
-        activeRippleData.push({ x: rip.x, y: rip.y, radius, fade });
+      if (!isReduced) {
+        for (let i = 0; i < activeRipples.length; i++) {
+          const rip = activeRipples[i];
+          const t = (now - rip.startTime) / rip.duration;
+          const radius = rip.maxRadius * Math.pow(t, 0.82);
+          const fade = Math.pow(1 - t, 1.3);
+          activeRippleData.push({ x: rip.x, y: rip.y, radius, fade });
+        }
       }
 
       // ── colour lerp (section accent) with convergence snap ────────────────
       const target  = THEME_COLORS[activeSectionIdRef.current] ?? DEFAULT_COLOR;
       const col     = currentColorRef.current;
-      const diffR = Math.abs(col.r - target.r);
-      const diffG = Math.abs(col.g - target.g);
-      const diffB = Math.abs(col.b - target.b);
-      if (diffR < COLOR_LERP_TOLERANCE && diffG < COLOR_LERP_TOLERANCE && diffB < COLOR_LERP_TOLERANCE) {
+      if (isReduced) {
         col.r = target.r;
         col.g = target.g;
         col.b = target.b;
       } else {
-        col.r = lerpChannel(col.r, target.r, 0.05);
-        col.g = lerpChannel(col.g, target.g, 0.05);
-        col.b = lerpChannel(col.b, target.b, 0.05);
+        const diffR = Math.abs(col.r - target.r);
+        const diffG = Math.abs(col.g - target.g);
+        const diffB = Math.abs(col.b - target.b);
+        if (diffR < COLOR_LERP_TOLERANCE && diffG < COLOR_LERP_TOLERANCE && diffB < COLOR_LERP_TOLERANCE) {
+          col.r = target.r;
+          col.g = target.g;
+          col.b = target.b;
+        } else {
+          col.r = lerpChannel(col.r, target.r, 0.05);
+          col.g = lerpChannel(col.g, target.g, 0.05);
+          col.b = lerpChannel(col.b, target.b, 0.05);
+        }
       }
       const cr = Math.round(col.r);
       const cg = Math.round(col.g);
@@ -690,6 +778,12 @@ export default function InteractiveBackground({
         }
       }
 
+      if (isReduced) {
+        isSleepingRef.current = true;
+        rafRef.current = 0;
+        return;
+      }
+
       // ── Settle check: suspend animation frame loop when idle ──────────────
       const settleResult = evaluateIdleSettle({
         pointerX: mouse.x,
@@ -700,6 +794,7 @@ export default function InteractiveBackground({
         springClickTime: springClickTimeRef.current,
         currentColor: col,
         targetColor: target,
+        isScrolling: isScrollingRef.current,
       });
 
       if (settleResult.shouldSleep) {
@@ -712,19 +807,35 @@ export default function InteractiveBackground({
     };
 
     // Initial frame kick-off
-    isSleepingRef.current = false;
-    rafRef.current = requestAnimationFrame(draw);
+    if (reducedMotionRef.current) {
+      isSleepingRef.current = true;
+      renderRestingFrame();
+    } else {
+      isSleepingRef.current = false;
+      rafRef.current = requestAnimationFrame(draw);
+    }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       isSleepingRef.current = true;
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
       if (themeObserver) {
         themeObserver.disconnect();
       }
       observer.disconnect();
+      if (motionQuery) {
+        if (typeof motionQuery.removeEventListener === "function") {
+          motionQuery.removeEventListener("change", handleMotionChange);
+        } else if (typeof (motionQuery as unknown as { removeListener?: (fn: unknown) => void }).removeListener === "function") {
+          (motionQuery as unknown as { removeListener: (fn: unknown) => void }).removeListener(handleMotionChange);
+        }
+      }
       window.removeEventListener("mousemove",   onMouseMove);
       window.removeEventListener("mouseleave",  onMouseLeave);
       window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("scroll",      onScroll);
       window.removeEventListener("resize",      resize);
     };
   }, []); // no deps — all mutable state accessed via refs
