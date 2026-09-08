@@ -8,6 +8,8 @@ import {
   SPRING_C,
   SPRING_INITIAL_COMPRESSION,
   SPRING_SETTLE_MS,
+  POINTER_IDLE_MS,
+  COLOR_LERP_TOLERANCE,
   RIPPLE_WAVE_W,
   RIPPLE_PUSH_MAX,
   calculateHemisphericalElevation,
@@ -15,6 +17,8 @@ import {
   calculateDomeDisplacement,
   calculateWavePush,
   calculateDotRadius,
+  evaluateIdleSettle,
+  partitionDots,
 } from "./dotMatrixPhysics";
 
 describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () => {
@@ -250,4 +254,203 @@ describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () =
       expect(midRadius).toBeCloseTo(1.4 * (1 + 1.4 * 0.5), 4);
     });
   });
+
+  describe("Adaptive Idle Settle Evaluation Contract (evaluateIdleSettle)", () => {
+    const baseState = {
+      pointerX: -9999,
+      pointerY: -9999,
+      lastPointerMoveTime: 1000,
+      now: 2000,
+      ripplesCount: 0,
+      springClickTime: 500,
+      currentColor: { r: 14, g: 165, b: 233 },
+      targetColor: { r: 14, g: 165, b: 233 },
+    };
+
+    it("verifies idle sleep constants (POINTER_IDLE_MS = 150, COLOR_LERP_TOLERANCE = 0.5)", () => {
+      expect(POINTER_IDLE_MS).toBe(150);
+      expect(COLOR_LERP_TOLERANCE).toBe(0.5);
+    });
+
+    it("returns shouldSleep = true when all settle conditions are met", () => {
+      const result = evaluateIdleSettle(baseState);
+      expect(result.isPointerSettled).toBe(true);
+      expect(result.isRipplesSettled).toBe(true);
+      expect(result.isSpringSettled).toBe(true);
+      expect(result.isColorConverged).toBe(true);
+      expect(result.shouldSleep).toBe(true);
+    });
+
+    it("settles pointer immediately when off-screen (pointerX < -1000)", () => {
+      const result = evaluateIdleSettle({
+        ...baseState,
+        pointerX: -1001,
+        now: 1050, // elapsed only 50ms since move
+        lastPointerMoveTime: 1000,
+      });
+      expect(result.isPointerSettled).toBe(true);
+      expect(result.shouldSleep).toBe(true);
+    });
+
+    it("evaluates pointer settled based on 150ms stationary threshold when on-screen", () => {
+      // Active movement (elapsed 80ms < 150ms)
+      const moving = evaluateIdleSettle({
+        ...baseState,
+        pointerX: 400,
+        pointerY: 300,
+        now: 1080,
+        lastPointerMoveTime: 1000,
+      });
+      expect(moving.isPointerSettled).toBe(false);
+      expect(moving.shouldSleep).toBe(false);
+
+      // Settled stationary (elapsed 150ms)
+      const settledThreshold = evaluateIdleSettle({
+        ...baseState,
+        pointerX: 400,
+        pointerY: 300,
+        now: 1150,
+        lastPointerMoveTime: 1000,
+      });
+      expect(settledThreshold.isPointerSettled).toBe(true);
+      expect(settledThreshold.shouldSleep).toBe(true);
+
+      // Settled stationary (elapsed 300ms > 150ms)
+      const settled = evaluateIdleSettle({
+        ...baseState,
+        pointerX: 400,
+        pointerY: 300,
+        now: 1300,
+        lastPointerMoveTime: 1000,
+      });
+      expect(settled.isPointerSettled).toBe(true);
+      expect(settled.shouldSleep).toBe(true);
+    });
+
+    it("blocks sleep while active ripples exist", () => {
+      const result = evaluateIdleSettle({
+        ...baseState,
+        ripplesCount: 1,
+      });
+      expect(result.isRipplesSettled).toBe(false);
+      expect(result.shouldSleep).toBe(false);
+    });
+
+    it("blocks sleep while harmonic spring is actively rebounding (< 550ms)", () => {
+      // 300ms since click (< 550ms)
+      const rebounding = evaluateIdleSettle({
+        ...baseState,
+        now: 1300,
+        springClickTime: 1000,
+      });
+      expect(rebounding.isSpringSettled).toBe(false);
+      expect(rebounding.shouldSleep).toBe(false);
+
+      // 550ms since click (settled)
+      const settled = evaluateIdleSettle({
+        ...baseState,
+        now: 1550,
+        springClickTime: 1000,
+      });
+      expect(settled.isSpringSettled).toBe(true);
+      expect(settled.shouldSleep).toBe(true);
+    });
+
+    it("blocks sleep while section accent color lerp has not converged within 0.5 units", () => {
+      // Divergent colors
+      const divergent = evaluateIdleSettle({
+        ...baseState,
+        currentColor: { r: 14, g: 165, b: 233 },
+        targetColor: { r: 16, g: 185, b: 129 },
+      });
+      expect(divergent.isColorConverged).toBe(false);
+      expect(divergent.shouldSleep).toBe(false);
+
+      // Channel difference 0.6 (> 0.5)
+      const closeButNotConverged = evaluateIdleSettle({
+        ...baseState,
+        currentColor: { r: 14, g: 165, b: 233 },
+        targetColor: { r: 14, g: 165.6, b: 233 },
+      });
+      expect(closeButNotConverged.isColorConverged).toBe(false);
+      expect(closeButNotConverged.shouldSleep).toBe(false);
+
+      // Channel difference 0.4 (< 0.5)
+      const converged = evaluateIdleSettle({
+        ...baseState,
+        currentColor: { r: 14, g: 165, b: 233 },
+        targetColor: { r: 14.3, g: 165.4, b: 232.8 },
+      });
+      expect(converged.isColorConverged).toBe(true);
+      expect(converged.shouldSleep).toBe(true);
+    });
+  });
+
+  describe("Two-Pass Dot Matrix Spatial Bounding-Box Partitioning Contract (partitionDots)", () => {
+    // Generate a representative 1000x800 grid with 26px spacing (~1200 points)
+    const testDots: Array<{ x: number; y: number }> = [];
+    for (let y = 0; y <= 800; y += 26) {
+      for (let x = 0; x <= 1000; x += 26) {
+        testDots.push({ x, y });
+      }
+    }
+
+    it("batches 100% of dots into resting pass when pointer is off-screen and ripples are empty", () => {
+      const { resting, dynamic } = partitionDots(testDots, -9999, -9999, []);
+      expect(resting.length).toBe(testDots.length);
+      expect(dynamic.length).toBe(0);
+    });
+
+    it("partitions dots using 2D spatial bounding box around cursor (|dx| < 180 && |dy| < 180)", () => {
+      const mx = 500;
+      const my = 400;
+      const { resting, dynamic } = partitionDots(testDots, mx, my, []);
+
+      // Dynamic dots must strictly be inside the bounding box
+      for (const p of dynamic) {
+        expect(Math.abs(p.x - mx)).toBeLessThan(DOT_PROX_R);
+        expect(Math.abs(p.y - my)).toBeLessThan(DOT_PROX_R);
+      }
+
+      // Resting dots must strictly be outside the bounding box
+      for (const p of resting) {
+        const outside = Math.abs(p.x - mx) >= DOT_PROX_R || Math.abs(p.y - my) >= DOT_PROX_R;
+        expect(outside).toBe(true);
+      }
+
+      // Total dots must be conserved exactly
+      expect(resting.length + dynamic.length).toBe(testDots.length);
+
+      // In a 360x360 box with 26px spacing, dynamic count is roughly (360/26)^2 ~ 190 dots
+      expect(dynamic.length).toBeGreaterThan(100);
+      expect(dynamic.length).toBeLessThan(250);
+
+      // Over 80% of dots are batched into the resting pass
+      expect(resting.length).toBeGreaterThan(testDots.length * 0.8);
+    });
+
+    it("includes dots within active ripple wavefront zones into the dynamic pass", () => {
+      const activeRipples = [
+        {
+          x: 200,
+          y: 200,
+          radius: 100,
+          fade: 0.8,
+        },
+      ];
+
+      // Pointer off-screen, only ripple active
+      const { resting, dynamic } = partitionDots(testDots, -9999, -9999, activeRipples);
+
+      expect(dynamic.length).toBeGreaterThan(0);
+      for (const p of dynamic) {
+        const d = Math.hypot(p.x - 200, p.y - 200);
+        expect(Math.abs(d - 100)).toBeLessThan(RIPPLE_WAVE_W);
+      }
+
+      // Dot preservation
+      expect(resting.length + dynamic.length).toBe(testDots.length);
+    });
+  });
 });
+

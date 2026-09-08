@@ -30,6 +30,43 @@ export const SPRING_SETTLE_MS = 550; // ms duration until fully settled
 export const RIPPLE_WAVE_W = 55; // px wavefront ring thickness
 export const RIPPLE_PUSH_MAX = 8; // px max outward displacement from kinetic wavefront
 
+// Idle sleep loop constants
+export const POINTER_IDLE_MS = 150; // ms threshold of stationary pointer before sleep
+export const COLOR_LERP_TOLERANCE = 0.5; // RGB channel convergence tolerance
+
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+
+export interface GridPoint {
+  x: number;
+  y: number;
+}
+
+export interface ActiveRippleData {
+  x: number;
+  y: number;
+  radius: number;
+  fade: number;
+}
+
+export interface IdleSettleState {
+  pointerX: number;
+  pointerY: number;
+  lastPointerMoveTime: number;
+  now: number;
+  ripplesCount: number;
+  springClickTime: number;
+  currentColor: { r: number; g: number; b: number };
+  targetColor: { r: number; g: number; b: number };
+}
+
+export interface IdleSettleResult {
+  isPointerSettled: boolean;
+  isRipplesSettled: boolean;
+  isSpringSettled: boolean;
+  isColorConverged: boolean;
+  shouldSleep: boolean;
+}
+
 // ─── Mathematical Projection & Physics Functions ──────────────────────────────
 
 /**
@@ -166,3 +203,96 @@ export function calculateDotRadius(
   const rippleBonus = rippleFactor * 0.8;
   return baseR * domeScale + rippleBonus;
 }
+
+/**
+ * Evaluates whether the canvas background rendering engine has settled into an idle state.
+ * Settle criteria:
+ * 1. Pointer has been stationary for >= 150ms or is off-screen (pointerX < -1000).
+ * 2. Active click ripples array is empty (ripplesCount === 0).
+ * 3. Damped harmonic spring compression has settled (now - springClickTime >= 550ms).
+ * 4. Section accent color linear interpolation has converged within 0.5 units on all RGB channels.
+ */
+export function evaluateIdleSettle(state: IdleSettleState): IdleSettleResult {
+  const isPointerSettled =
+    state.pointerX < -1000 ||
+    state.now - state.lastPointerMoveTime >= POINTER_IDLE_MS;
+
+  const isRipplesSettled = state.ripplesCount === 0;
+
+  const isSpringSettled =
+    state.now - state.springClickTime >= SPRING_SETTLE_MS;
+
+  const diffR = Math.abs(state.currentColor.r - state.targetColor.r);
+  const diffG = Math.abs(state.currentColor.g - state.targetColor.g);
+  const diffB = Math.abs(state.currentColor.b - state.targetColor.b);
+  const isColorConverged =
+    diffR < COLOR_LERP_TOLERANCE &&
+    diffG < COLOR_LERP_TOLERANCE &&
+    diffB < COLOR_LERP_TOLERANCE;
+
+  const shouldSleep =
+    isPointerSettled &&
+    isRipplesSettled &&
+    isSpringSettled &&
+    isColorConverged;
+
+  return {
+    isPointerSettled,
+    isRipplesSettled,
+    isSpringSettled,
+    isColorConverged,
+    shouldSleep,
+  };
+}
+
+/**
+ * Partitions grid intersection dots into resting dots and dynamic dots using a 2D spatial bounding box.
+ * - Resting dots: outside cursor proximity bounding box (|dx| >= R or |dy| >= R) and outside active ripple wavefronts.
+ * - Dynamic dots: inside cursor proximity bounding box (|dx| < R and |dy| < R) or within active ripple wavefront zones.
+ */
+export function partitionDots(
+  dots: GridPoint[],
+  mouseX: number,
+  mouseY: number,
+  activeRipples: ActiveRippleData[] = [],
+  proxR: number = DOT_PROX_R,
+  waveWidth: number = RIPPLE_WAVE_W
+): { resting: GridPoint[]; dynamic: GridPoint[] } {
+  const resting: GridPoint[] = [];
+  const dynamic: GridPoint[] = [];
+
+  const hasMouse = mouseX > -1000;
+  const numRipples = activeRipples.length;
+
+  for (let i = 0; i < dots.length; i++) {
+    const p = dots[i];
+    let isDynamic = false;
+
+    // Bounding box test around cursor: |dx| < R and |dy| < R
+    if (
+      hasMouse &&
+      Math.abs(p.x - mouseX) < proxR &&
+      Math.abs(p.y - mouseY) < proxR
+    ) {
+      isDynamic = true;
+    } else if (numRipples > 0) {
+      for (let j = 0; j < numRipples; j++) {
+        const rip = activeRipples[j];
+        const d = Math.hypot(p.x - rip.x, p.y - rip.y);
+        if (Math.abs(d - rip.radius) < waveWidth) {
+          isDynamic = true;
+          break;
+        }
+      }
+    }
+
+    if (isDynamic) {
+      dynamic.push(p);
+    } else {
+      resting.push(p);
+    }
+  }
+
+  return { resting, dynamic };
+}
+

@@ -18,8 +18,13 @@ import {
   DOT_PROX_R2,
   RIPPLE_WAVE_W as DOT_RIPPLE_WAVE_W,
   RIPPLE_PUSH_MAX,
+  COLOR_LERP_TOLERANCE,
   calculateSpringFactor,
   calculateDotRadius,
+  evaluateIdleSettle,
+  partitionDots,
+  type GridPoint,
+  type ActiveRippleData,
 } from "./dotMatrixPhysics";
 
 interface RGB {
@@ -28,24 +33,12 @@ interface RGB {
   b: number;
 }
 
-interface GridPoint {
-  x: number;
-  y: number;
-}
-
 interface ClickRipple {
   x: number;
   y: number;
   startTime: number;
   duration: number;
   maxRadius: number;
-}
-
-interface ActiveRippleData {
-  x: number;
-  y: number;
-  radius: number;
-  fade: number;
 }
 
 // ─── section accent colors ────────────────────────────────────────────────────
@@ -106,6 +99,11 @@ export default function InteractiveBackground({
   const rafRef    = useRef<number>(0);
   const pausedRef = useRef(false);
 
+  // Idle sleep lifecycle refs
+  const isSleepingRef        = useRef(false);
+  const lastPointerTimeRef   = useRef(performance.now());
+  const wakeRef              = useRef<() => void>(() => {});
+
   // Precomputed geometry — rebuilt on resize only
   const cubeLatticeRef = useRef<IsometricLattice>({ edges: [], vertices: [] });
   const dotPointsRef   = useRef<GridPoint[]>([]);
@@ -123,6 +121,7 @@ export default function InteractiveBackground({
   const activeSectionIdRef = useRef(activeSectionId);
   useEffect(() => {
     activeSectionIdRef.current = activeSectionId;
+    wakeRef.current();
   }, [activeSectionId]);
 
   // Pattern mode state: synchronized with context and optional controlled prop
@@ -135,11 +134,13 @@ export default function InteractiveBackground({
   useEffect(() => {
     modeRef.current = activeMode;
     setMode(activeMode);
+    wakeRef.current();
   }, [activeMode]);
 
   const setPatternMode = useCallback((m: PatternMode) => {
     modeRef.current = m;
     setMode(m);
+    wakeRef.current();
     if (onPatternModeChange) {
       onPatternModeChange(m);
     } else {
@@ -154,18 +155,35 @@ export default function InteractiveBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // ── wake helper: resume RAF loop from idle sleep ─────────────────────────
+    const wake = () => {
+      if (isSleepingRef.current) {
+        isSleepingRef.current = false;
+        rafRef.current = requestAnimationFrame(draw);
+      }
+    };
+    wakeRef.current = wake;
+
     // ── resize: size canvas + rebuild geometry ───────────────────────────────
     const resize = () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
       cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, CUBE_EDGE);
       dotPointsRef.current   = buildGrid(canvas.width, canvas.height, DOT_SPACING);
+      wake();
     };
     resize();
 
     // ── mouse & click tracking ────────────────────────────────────────────────
-    const onMouseMove  = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
-    const onMouseLeave = ()              => { mouseRef.current = { x: -9999, y: -9999 }; };
+    const onMouseMove = (e: MouseEvent) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+      lastPointerTimeRef.current = performance.now();
+      wake();
+    };
+    const onMouseLeave = () => {
+      mouseRef.current = { x: -9999, y: -9999 };
+      wake();
+    };
 
     const onPointerDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -193,6 +211,7 @@ export default function InteractiveBackground({
       if (ripplesRef.current.length > 5) {
         ripplesRef.current.shift();
       }
+      wake();
     };
 
     window.addEventListener("mousemove",   onMouseMove);
@@ -200,17 +219,43 @@ export default function InteractiveBackground({
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("resize",      resize);
 
+    // ── Theme toggle mutation observer — wake canvas when theme class changes
+    let themeObserver: MutationObserver | null = null;
+    if (typeof MutationObserver !== "undefined") {
+      themeObserver = new MutationObserver((mutations) => {
+        for (let i = 0; i < mutations.length; i++) {
+          const m = mutations[i];
+          if (m.type === "attributes" && m.attributeName === "class") {
+            wake();
+            break;
+          }
+        }
+      });
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
+
     // ── IntersectionObserver — pause RAF when canvas is off-screen ───────────
     const observer = new IntersectionObserver(
-      ([entry]) => { pausedRef.current = !entry.isIntersecting; },
+      ([entry]) => {
+        pausedRef.current = !entry.isIntersecting;
+        if (entry.isIntersecting) {
+          wake();
+        }
+      },
       { threshold: 0 }
     );
     observer.observe(canvas);
 
     // ── animation loop ───────────────────────────────────────────────────────
     const draw = () => {
-      rafRef.current = requestAnimationFrame(draw);
-      if (pausedRef.current) return;
+      if (pausedRef.current) {
+        isSleepingRef.current = true;
+        rafRef.current = 0;
+        return;
+      }
 
       const w     = canvas.width;
       const h     = canvas.height;
@@ -231,12 +276,21 @@ export default function InteractiveBackground({
         activeRippleData.push({ x: rip.x, y: rip.y, radius, fade });
       }
 
-      // ── colour lerp (section accent) ──────────────────────────────────────
+      // ── colour lerp (section accent) with convergence snap ────────────────
       const target  = THEME_COLORS[activeSectionIdRef.current] ?? DEFAULT_COLOR;
       const col     = currentColorRef.current;
-      col.r = lerpChannel(col.r, target.r, 0.05);
-      col.g = lerpChannel(col.g, target.g, 0.05);
-      col.b = lerpChannel(col.b, target.b, 0.05);
+      const diffR = Math.abs(col.r - target.r);
+      const diffG = Math.abs(col.g - target.g);
+      const diffB = Math.abs(col.b - target.b);
+      if (diffR < COLOR_LERP_TOLERANCE && diffG < COLOR_LERP_TOLERANCE && diffB < COLOR_LERP_TOLERANCE) {
+        col.r = target.r;
+        col.g = target.g;
+        col.b = target.b;
+      } else {
+        col.r = lerpChannel(col.r, target.r, 0.05);
+        col.g = lerpChannel(col.g, target.g, 0.05);
+        col.b = lerpChannel(col.b, target.b, 0.05);
+      }
       const cr = Math.round(col.r);
       const cg = Math.round(col.g);
       const cb = Math.round(col.b);
@@ -491,14 +545,30 @@ export default function InteractiveBackground({
           ctx.fill();
         }
 
-        for (let i = 0; i < dots.length; i++) {
-          const p = dots[i];
+        // ── TWO-PASS SPATIAL BATCHING ──────────────────────────────────────
+        // Pass 1: Batch all resting dots outside proximity and ripple zones into a single GPU fill call
+        // Pass 2: Dynamically calculate 3D projection, displacement, and glints for proximate/ripple dots
+        const { resting, dynamic } = partitionDots(dots, mx, my, activeRippleData);
+
+        // 1. Base resting dots pass (single-batch fill call)
+        ctx.fillStyle = `rgba(${restR},${restG},${restB},${baseAlpha})`;
+        ctx.beginPath();
+        for (let i = 0; i < resting.length; i++) {
+          const p = resting[i];
+          ctx.moveTo(p.x + baseR, p.y);
+          ctx.arc(p.x, p.y, baseR, 0, Math.PI * 2);
+        }
+        ctx.fill();
+
+        // 2. Dynamic proximate dome & ripple-energized dots pass
+        for (let i = 0; i < dynamic.length; i++) {
+          const p = dynamic[i];
           let domeDx = 0;
           let domeDy = 0;
           let elevationRatio = 0;
           let spec = 0;
 
-          // 1. 3D Hemispherical Convex Dome Projection
+          // 2a. 3D Hemispherical Convex Dome Projection
           if (mx > -1000) {
             const dx = p.x - mx;
             const dy = p.y - my;
@@ -529,7 +599,7 @@ export default function InteractiveBackground({
             }
           }
 
-          // 2. Kinetic Ripple Wavefront Push
+          // 2b. Kinetic Ripple Wavefront Push
           let rippleFactor = 0;
           let waveDx = 0;
           let waveDy = 0;
@@ -557,12 +627,12 @@ export default function InteractiveBackground({
             }
           }
 
-          // 3. Render Position & Magnification Scaling
+          // 2c. Render Position & Magnification Scaling
           const renderX = p.x + domeDx + waveDx;
           const renderY = p.y + domeDy + waveDy;
           const radius = calculateDotRadius(baseR, DOT_APEX_SCALE, elevationRatio, rippleFactor) + spec * 0.35;
 
-          // 4. Dynamic Brightness & Alpha Scaling
+          // 2d. Dynamic Brightness & Alpha Scaling
           const intensity = Math.min(1, elevationRatio + rippleFactor * 0.85);
           const alpha = baseAlpha + intensity * (peakAlpha - baseAlpha);
 
@@ -586,7 +656,7 @@ export default function InteractiveBackground({
             ctx.fill();
           }
 
-          // Main dot
+          // Main dynamic dot
           ctx.beginPath();
           ctx.arc(renderX, renderY, radius, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${pr},${pg},${pb},${alpha})`;
@@ -607,7 +677,7 @@ export default function InteractiveBackground({
           }
         }
 
-        // 5. Expanding kinetic wavefront ring stroke
+        // 3. Expanding kinetic wavefront ring stroke
         if (numRipples > 0) {
           for (let j = 0; j < numRipples; j++) {
             const rip = activeRippleData[j];
@@ -619,12 +689,38 @@ export default function InteractiveBackground({
           }
         }
       }
+
+      // ── Settle check: suspend animation frame loop when idle ──────────────
+      const settleResult = evaluateIdleSettle({
+        pointerX: mouse.x,
+        pointerY: mouse.y,
+        lastPointerMoveTime: lastPointerTimeRef.current,
+        now,
+        ripplesCount: ripplesRef.current.length,
+        springClickTime: springClickTimeRef.current,
+        currentColor: col,
+        targetColor: target,
+      });
+
+      if (settleResult.shouldSleep) {
+        isSleepingRef.current = true;
+        rafRef.current = 0;
+        return;
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
     };
 
+    // Initial frame kick-off
+    isSleepingRef.current = false;
     rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      isSleepingRef.current = true;
+      if (themeObserver) {
+        themeObserver.disconnect();
+      }
       observer.disconnect();
       window.removeEventListener("mousemove",   onMouseMove);
       window.removeEventListener("mouseleave",  onMouseLeave);
