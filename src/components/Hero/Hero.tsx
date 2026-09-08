@@ -1,64 +1,37 @@
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { HeroData } from "../../data/hero";
 import { navSocialProfiles } from "../../data/social";
 import { QuarterCircleArc } from "../CornerBubble";
 import { SkillIcon } from "../Skills";
+import {
+  getContainerVariants,
+  getNameContainerVariants,
+  getWordVariants,
+  getFadeUpVariants,
+  getTelemetryVariants,
+} from "./heroVariants";
 
-interface HeroProps {
+export interface HeroProps {
   data: HeroData;
+  reducedMotion?: boolean;
 }
-
-// ─── Animation variants ────────────────────────────────────────────────────
-
-/** Container: orchestrates all monograph children with a stagger */
-const containerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.15,
-    },
-  },
-};
-
-/**
- * Each word rises from beneath its overflow mask.
- * The mask uses `pb-3 -mb-3 pt-1 -mt-1` to give descenders (`g j p y`)
- * breathing room so they are never visually clipped.
- */
-const wordVariants: Variants = {
-  hidden: { y: "115%", opacity: 0 },
-  visible: {
-    y: "0%",
-    opacity: 1,
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-/** Fade + slide up for eyebrow, role, thesis, and action bar */
-const fadeUpVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-/** Subtle fade + scale for the Executive Telemetry Card */
-const telemetryVariants: Variants = {
-  hidden: { opacity: 0, y: 24, scale: 0.98 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
-  },
-};
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
-const Hero = ({ data }: HeroProps) => {
+const Hero = ({ data, reducedMotion }: HeroProps) => {
+  const systemReducedMotion = useReducedMotion();
+  const isReducedMotion =
+    reducedMotion ??
+    (Boolean(systemReducedMotion) ||
+      (typeof window !== "undefined" &&
+        Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches)));
+
+  const containerVariants = getContainerVariants(isReducedMotion);
+  const nameContainerVariants = getNameContainerVariants(isReducedMotion);
+  const wordVariants = getWordVariants(isReducedMotion);
+  const fadeUpVariants = getFadeUpVariants(isReducedMotion);
+  const telemetryVariants = getTelemetryVariants(isReducedMotion);
+
   const eyebrowText = data.eyebrow ?? data.greeting ?? "Senior Software Engineer & Architect";
   const primaryAction = {
     label: data.actions?.primary?.label ?? data.primaryCta?.text ?? "Explore Selected Work",
@@ -92,6 +65,7 @@ const Hero = ({ data }: HeroProps) => {
   return (
     <section
       id="home"
+      data-reduced-motion={isReducedMotion ? "true" : "false"}
       className="relative min-h-screen flex flex-col justify-center overflow-hidden py-24 sm:py-28 lg:py-32"
     >
       {/* ── Decorative radial glow ─────────────────────────────── */}
@@ -112,7 +86,7 @@ const Hero = ({ data }: HeroProps) => {
           <motion.div
             className="lg:col-span-7 flex flex-col items-start text-left"
             variants={containerVariants}
-            initial="hidden"
+            initial={isReducedMotion ? false : "hidden"}
             animate="visible"
           >
             {/* Metadata Eyebrow with Leading Cyan Hairline */}
@@ -129,8 +103,9 @@ const Hero = ({ data }: HeroProps) => {
             </motion.div>
 
             {/* Commanding H1 with Descender Protection & Surname Cyan Accent */}
-            <h1
+            <motion.h1
               aria-label={data.name}
+              variants={nameContainerVariants}
               className="font-black leading-[1.08] tracking-tight mb-6"
               style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
             >
@@ -162,7 +137,7 @@ const Hero = ({ data }: HeroProps) => {
                   </span>
                 );
               })}
-            </h1>
+            </motion.h1>
 
             {/* Professional Role Title */}
             <motion.h2
@@ -193,8 +168,9 @@ const Hero = ({ data }: HeroProps) => {
                 <motion.a
                   href={primaryAction.href}
                   id="hero-cta-primary"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  aria-label={primaryAction.label}
+                  whileHover={isReducedMotion ? undefined : { scale: 1.02 }}
+                  whileTap={isReducedMotion ? undefined : { scale: 0.98 }}
                   className="
                     group inline-flex items-center gap-2 px-6 py-3.5
                     text-sm font-semibold rounded-xl
@@ -205,13 +181,15 @@ const Hero = ({ data }: HeroProps) => {
                     hover:border-cyan-500/50 dark:hover:border-cyan-400/40
                     hover:shadow-[0_0_20px_rgba(6,182,212,0.25)]
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500
+                    focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950
+                    motion-reduce:transition-none
                     transition-all duration-200
                   "
                 >
                   <span>{primaryAction.label}</span>
                   <span
                     aria-hidden="true"
-                    className="text-cyan-500 dark:text-cyan-400 transition-transform group-hover:translate-x-0.5"
+                    className="text-cyan-500 dark:text-cyan-400 motion-reduce:transform-none transition-transform group-hover:translate-x-0.5"
                   >
                     →
                   </span>
@@ -220,8 +198,9 @@ const Hero = ({ data }: HeroProps) => {
                 <motion.a
                   href={secondaryAction.href}
                   id="hero-cta-secondary"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  aria-label={secondaryAction.label}
+                  whileHover={isReducedMotion ? undefined : { scale: 1.02 }}
+                  whileTap={isReducedMotion ? undefined : { scale: 0.98 }}
                   className="
                     inline-flex items-center gap-2 px-6 py-3.5
                     text-sm font-semibold rounded-xl
@@ -231,6 +210,8 @@ const Hero = ({ data }: HeroProps) => {
                     hover:border-sky-500 dark:hover:border-sky-400
                     hover:text-cyan-600 dark:hover:text-cyan-400
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500
+                    focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950
+                    motion-reduce:transition-none
                     transition-all duration-200
                   "
                 >
@@ -256,8 +237,8 @@ const Hero = ({ data }: HeroProps) => {
                     target={profile.external ? "_blank" : undefined}
                     rel={profile.external ? "noopener noreferrer" : undefined}
                     aria-label={profile.ariaLabel}
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={isReducedMotion ? undefined : { scale: 1.08 }}
+                    whileTap={isReducedMotion ? undefined : { scale: 0.95 }}
                     className="
                       p-2.5 rounded-lg
                       text-slate-500 dark:text-slate-400
@@ -265,6 +246,8 @@ const Hero = ({ data }: HeroProps) => {
                       hover:bg-cyan-500/10 dark:hover:bg-cyan-400/10
                       border border-transparent hover:border-cyan-500/20 dark:hover:border-cyan-400/20
                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500
+                      focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950
+                      motion-reduce:transition-none
                       transition-colors duration-200
                     "
                   >
@@ -272,6 +255,7 @@ const Hero = ({ data }: HeroProps) => {
                       className="w-4 h-4 fill-current"
                       viewBox="0 0 24 24"
                       aria-hidden="true"
+                      focusable="false"
                     >
                       <path d={profile.iconPath} />
                     </svg>
@@ -286,7 +270,7 @@ const Hero = ({ data }: HeroProps) => {
             className="lg:col-span-5 w-full"
             data-testid="hero-telemetry-column"
             variants={telemetryVariants}
-            initial="hidden"
+            initial={isReducedMotion ? false : "hidden"}
             animate="visible"
           >
             <div
@@ -300,6 +284,7 @@ const Hero = ({ data }: HeroProps) => {
                 lg:bg-white/20 lg:dark:bg-slate-900/40
                 border border-slate-200/60 dark:border-white/[0.08]
                 shadow-sm hover:shadow-xl dark:hover:shadow-cyan-500/10
+                motion-reduce:transition-none
                 transition-all duration-500
               "
             >
@@ -320,18 +305,29 @@ const Hero = ({ data }: HeroProps) => {
               {/* Hover ambient spotlight */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-br from-cyan-400/8 via-transparent to-blue-500/6 pointer-events-none"
+                className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 motion-reduce:transition-none transition-opacity duration-700 bg-gradient-to-br from-cyan-400/8 via-transparent to-blue-500/6 pointer-events-none"
               />
 
               <div className="relative z-10 flex flex-col space-y-6">
                 {/* ── 1. Live Status & Header ── */}
                 <div className="flex items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 border border-emerald-500/20 dark:border-emerald-400/20">
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 border border-emerald-500/20 dark:border-emerald-400/20"
+                  >
                     <span className="relative flex h-2 w-2" aria-hidden="true">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span
+                        className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none ${
+                          isReducedMotion ? "" : "animate-ping"
+                        }`}
+                      />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                     </span>
-                    <span className="text-[11px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-emerald-700 dark:text-emerald-400">
+                    <span
+                      aria-hidden="true"
+                      className="text-[11px] sm:text-xs font-mono font-semibold tracking-wider uppercase text-emerald-700 dark:text-emerald-400"
+                    >
                       {telemetry.status} {telemetry.roleTarget ? `/ ${telemetry.roleTarget}` : ""}
                     </span>
                     <span className="sr-only">
@@ -356,6 +352,7 @@ const Hero = ({ data }: HeroProps) => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       aria-hidden="true"
+                      focusable="false"
                     >
                       <path d="M12 21c-4.418-4.418-7-8.5-7-12a7 7 0 1114 0c0 3.5-2.582 7.582-7 12z" />
                       <circle cx="12" cy="9" r="2.5" />
@@ -375,6 +372,7 @@ const Hero = ({ data }: HeroProps) => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       aria-hidden="true"
+                      focusable="false"
                     >
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
@@ -431,6 +429,7 @@ const Hero = ({ data }: HeroProps) => {
                           border border-slate-200/80 dark:border-white/[0.08]
                           hover:border-cyan-500/40 dark:hover:border-cyan-400/30
                           hover:bg-cyan-500/5 dark:hover:bg-cyan-400/5
+                          motion-reduce:transition-none
                           transition-colors duration-150 select-none
                         "
                       >
@@ -453,3 +452,4 @@ const Hero = ({ data }: HeroProps) => {
 };
 
 export default Hero;
+
