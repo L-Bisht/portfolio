@@ -7,6 +7,10 @@ import {
   CUBE_PROX_R,
   CUBE_PROX_R2,
   getCubeEdge,
+  isMobileViewport,
+  getMobileAnchorCoordinates,
+  MOBILE_ANCHOR_PROX_R,
+  MOBILE_ANCHOR_PROX_R2,
   type IsometricLattice,
 } from "./isometricLattice";
 import {
@@ -172,6 +176,10 @@ export default function InteractiveBackground({
 
     // ── wake helper: resume RAF loop from idle sleep ─────────────────────────
     const wake = () => {
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) {
+        draw();
+        return;
+      }
       if (reducedMotionRef.current) {
         renderRestingRef.current();
         return;
@@ -216,33 +224,24 @@ export default function InteractiveBackground({
       }
     }
 
-    // ── resize: size canvas + rebuild geometry (adaptive mobile density) ─────
-    const resize = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const cubeEdge   = getCubeEdge(window.innerWidth);
-      const dotSpacing = getDotSpacing(window.innerWidth);
-      cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, cubeEdge);
-      dotPointsRef.current   = buildGrid(canvas.width, canvas.height, dotSpacing);
-      wake();
-    };
-    resize();
-
     // ── mouse & click tracking ────────────────────────────────────────────────
     const onMouseMove = (e: MouseEvent) => {
       if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
       mouseRef.current = { x: e.clientX, y: e.clientY };
       lastPointerTimeRef.current = performance.now();
       wake();
     };
     const onMouseLeave = () => {
       if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
       mouseRef.current = { x: -9999, y: -9999 };
       wake();
     };
 
     const onPointerDown = (e: MouseEvent) => {
       if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
       const target = e.target as HTMLElement | null;
       // Exclude clicks directly on pattern switcher controls
       if (
@@ -272,6 +271,7 @@ export default function InteractiveBackground({
     // ── window scroll damping: halt frame updates during scrolling ───────────
     const onScroll = () => {
       if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
       isScrollingRef.current = true;
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
@@ -288,9 +288,45 @@ export default function InteractiveBackground({
       }, SCROLL_DEBOUNCE_MS);
     };
 
-    window.addEventListener("mousemove",   onMouseMove);
-    window.addEventListener("mouseleave",  onMouseLeave);
-    window.addEventListener("pointerdown", onPointerDown);
+    let pointerListenersAttached = false;
+    const attachPointerListeners = () => {
+      if (pointerListenersAttached) return;
+      window.addEventListener("mousemove",   onMouseMove);
+      window.addEventListener("mouseleave",  onMouseLeave);
+      window.addEventListener("pointerdown", onPointerDown);
+      pointerListenersAttached = true;
+    };
+    const detachPointerListeners = () => {
+      if (!pointerListenersAttached) return;
+      window.removeEventListener("mousemove",   onMouseMove);
+      window.removeEventListener("mouseleave",  onMouseLeave);
+      window.removeEventListener("pointerdown", onPointerDown);
+      pointerListenersAttached = false;
+    };
+
+    // ── resize: size canvas + rebuild geometry (adaptive mobile density) ─────
+    const resize = () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const isMobile = isMobileViewport(window.innerWidth);
+      if (isMobile) {
+        detachPointerListeners();
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+        ripplesRef.current = [];
+      } else {
+        attachPointerListeners();
+      }
+      const cubeEdge   = getCubeEdge(window.innerWidth);
+      const dotSpacing = getDotSpacing(window.innerWidth);
+      cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, cubeEdge);
+      dotPointsRef.current   = buildGrid(canvas.width, canvas.height, dotSpacing);
+      wake();
+    };
+    resize();
+
     window.addEventListener("scroll",      onScroll, { passive: true });
     window.addEventListener("resize",      resize);
 
@@ -335,18 +371,20 @@ export default function InteractiveBackground({
       const isReduced = reducedMotionRef.current;
       const w     = canvas.width;
       const h     = canvas.height;
-      const mouse = isReduced ? { x: -9999, y: -9999 } : mouseRef.current;
+      const isMobile = typeof window !== "undefined" && isMobileViewport(window.innerWidth);
+      const effectiveMode = isMobile ? "cubes" : modeRef.current;
+      const mouse = isReduced || isMobile ? { x: -9999, y: -9999 } : mouseRef.current;
       const isDark = document.documentElement.classList.contains("dark");
-      const currentMode = modeRef.current;
+      const currentMode = effectiveMode;
       const now = performance.now();
 
       // ── ripple state management ───────────────────────────────────────────
-      ripplesRef.current = isReduced
+      ripplesRef.current = isReduced || isMobile
         ? []
         : ripplesRef.current.filter(r => now - r.startTime < r.duration);
       const activeRipples = ripplesRef.current;
       const activeRippleData: ActiveRippleData[] = [];
-      if (!isReduced) {
+      if (!isReduced && !isMobile) {
         for (let i = 0; i < activeRipples.length; i++) {
           const rip = activeRipples[i];
           const t = (now - rip.startTime) / rip.duration;
@@ -360,6 +398,10 @@ export default function InteractiveBackground({
       const target  = THEME_COLORS[activeSectionIdRef.current] ?? DEFAULT_COLOR;
       const col     = currentColorRef.current;
       if (isReduced) {
+        col.r = target.r;
+        col.g = target.g;
+        col.b = target.b;
+      } else if (isMobile) {
         col.r = target.r;
         col.g = target.g;
         col.b = target.b;
@@ -383,11 +425,18 @@ export default function InteractiveBackground({
 
       ctx.clearRect(0, 0, w, h);
 
-      // ── shared: balanced ambient cursor spotlight ─────────────────────────
+      // ── shared: ambient spotlight (cursor on desktop, fixed anchor on mobile) ────
       const mx = mouse.x;
       const my = mouse.y;
-      if (mx > -1000) {
-        const spotlight = ctx.createRadialGradient(mx, my, 0, mx, my, SPOTLIGHT_R);
+      const mobileAnchor = isMobile ? getMobileAnchorCoordinates(w, h) : null;
+      const focalX = isMobile ? mobileAnchor!.x : mx;
+      const focalY = isMobile ? mobileAnchor!.y : my;
+      const proxR  = isMobile ? MOBILE_ANCHOR_PROX_R : CUBE_PROX_R;
+      const proxR2 = isMobile ? MOBILE_ANCHOR_PROX_R2 : CUBE_PROX_R2;
+      const hasFocal = isMobile ? true : focalX > -1000;
+
+      if (hasFocal) {
+        const spotlight = ctx.createRadialGradient(focalX, focalY, 0, focalX, focalY, SPOTLIGHT_R);
         if (isDark) {
           spotlight.addColorStop(0,    `rgba(${cr},${cg},${cb},0.06)`);
           spotlight.addColorStop(0.45, `rgba(${cr},${cg},${cb},0.02)`);
@@ -448,34 +497,33 @@ export default function InteractiveBackground({
         }
         ctx.fill();
 
-        // 3. Dynamic Cursor Proximity & Click Ripple Illumination
-        const hasMouse   = mx > -1000;
+        // 3. Dynamic Cursor Proximity (Desktop) or Fixed Illumination Anchor (Mobile)
         const hasRipples = activeRippleData.length > 0;
 
-        if (hasMouse || hasRipples) {
+        if (hasFocal || hasRipples) {
           // A. Glowing proximate & ripple-energized edges
           for (let i = 0; i < edges.length; i++) {
             const e = edges[i];
             let hoverFactor = 0;
             let rippleFactor = 0;
 
-            // Cursor proximity factor
-            if (hasMouse) {
-              if (!(e.maxX < mx - CUBE_PROX_R || e.minX > mx + CUBE_PROX_R || e.maxY < my - CUBE_PROX_R || e.minY > my + CUBE_PROX_R)) {
+            // Focal proximity factor (Fixed Illumination Anchor on mobile, cursor on desktop)
+            if (hasFocal) {
+              if (!(e.maxX < focalX - proxR || e.minX > focalX + proxR || e.maxY < focalY - proxR || e.minY > focalY + proxR)) {
                 const vx = e.x2 - e.x1;
                 const vy = e.y2 - e.y1;
-                const wx = mx - e.x1;
-                const wy = my - e.y1;
+                const wx = focalX - e.x1;
+                const wy = focalY - e.y1;
                 const c1 = wx * vx + wy * vy;
                 const c2 = e.len2;
                 const t = c1 <= 0 ? 0 : c1 >= c2 ? 1 : c1 / c2;
                 const px = e.x1 + t * vx;
                 const py = e.y1 + t * vy;
-                const d2 = (mx - px) * (mx - px) + (my - py) * (my - py);
+                const d2 = (focalX - px) * (focalX - px) + (focalY - py) * (focalY - py);
 
-                if (d2 < CUBE_PROX_R2) {
+                if (d2 < proxR2) {
                   const dist = Math.sqrt(d2);
-                  const norm = 1 - dist / CUBE_PROX_R;
+                  const norm = 1 - dist / proxR;
                   hoverFactor = norm * norm * (3 - 2 * norm);
                 }
               }
@@ -520,15 +568,15 @@ export default function InteractiveBackground({
             let hoverFactor = 0;
             let rippleFactor = 0;
 
-            if (hasMouse) {
-              if (!(v.x < mx - CUBE_PROX_R || v.x > mx + CUBE_PROX_R || v.y < my - CUBE_PROX_R || v.y > my + CUBE_PROX_R)) {
-                const dx = v.x - mx;
-                const dy = v.y - my;
+            if (hasFocal) {
+              if (!(v.x < focalX - proxR || v.x > focalX + proxR || v.y < focalY - proxR || v.y > focalY + proxR)) {
+                const dx = v.x - focalX;
+                const dy = v.y - focalY;
                 const d2 = dx * dx + dy * dy;
 
-                if (d2 < CUBE_PROX_R2) {
+                if (d2 < proxR2) {
                   const dist = Math.sqrt(d2);
-                  const norm = 1 - dist / CUBE_PROX_R;
+                  const norm = 1 - dist / proxR;
                   hoverFactor = norm * norm * (3 - 2 * norm);
                 }
               }
@@ -782,6 +830,12 @@ export default function InteractiveBackground({
         return;
       }
 
+      if (isMobile) {
+        isSleepingRef.current = true;
+        rafRef.current = 0;
+        return;
+      }
+
       // ── Settle check: suspend animation frame loop when idle ──────────────
       const settleResult = evaluateIdleSettle({
         pointerX: mouse.x,
@@ -805,7 +859,10 @@ export default function InteractiveBackground({
     };
 
     // Initial frame kick-off
-    if (reducedMotionRef.current) {
+    if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) {
+      isSleepingRef.current = true;
+      draw();
+    } else if (reducedMotionRef.current) {
       isSleepingRef.current = true;
       renderRestingFrame();
     } else {
@@ -830,9 +887,7 @@ export default function InteractiveBackground({
           (motionQuery as unknown as { removeListener: (fn: unknown) => void }).removeListener(handleMotionChange);
         }
       }
-      window.removeEventListener("mousemove",   onMouseMove);
-      window.removeEventListener("mouseleave",  onMouseLeave);
-      window.removeEventListener("pointerdown", onPointerDown);
+      detachPointerListeners();
       window.removeEventListener("scroll",      onScroll);
       window.removeEventListener("resize",      resize);
     };

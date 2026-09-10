@@ -26,15 +26,39 @@ export interface IsometricLattice {
 
 export const CUBE_EDGE = 38; // px length of each isometric cube wireframe edge (desktop >= 768px)
 export const CUBE_EDGE_MOBILE = 48; // px length of each isometric cube wireframe edge (mobile < 768px)
-export const MOBILE_BREAKPOINT = 768; // px mobile viewport breakpoint
-export const CUBE_PROX_R = 190; // px proximity influence radius
+export const MOBILE_BREAKPOINT = 768; // px mobile viewport breakpoint for cube edge density
+export const DESKTOP_BREAKPOINT = 1024; // px macro layout and canvas engine breakpoint (< 1024px mobile, >= 1024px desktop)
+export const CUBE_PROX_R = 190; // px proximity influence radius (desktop cursor)
 export const CUBE_PROX_R2 = CUBE_PROX_R * CUBE_PROX_R;
+
+// ── Mobile Fixed Illumination Anchor Specification (ADR 0007) ────────────────
+export const MOBILE_ANCHOR_X_RATIO = 0.65; // x: 65% of viewport width
+export const MOBILE_ANCHOR_Y_RATIO = 0.18; // y: 18% of viewport height
+export const MOBILE_ANCHOR_PROX_R = 220;   // px proximity influence radius for static mobile anchor
+export const MOBILE_ANCHOR_PROX_R2 = MOBILE_ANCHOR_PROX_R * MOBILE_ANCHOR_PROX_R;
 
 /**
  * Returns the isometric cube edge length based on viewport width (< 768px mobile -> 48px, desktop -> 38px)
  */
 export function getCubeEdge(width: number): number {
   return width < MOBILE_BREAKPOINT ? CUBE_EDGE_MOBILE : CUBE_EDGE;
+}
+
+/**
+ * Returns whether a viewport width is in mobile mode (< 1024px)
+ */
+export function isMobileViewport(width: number): boolean {
+  return width < DESKTOP_BREAKPOINT;
+}
+
+/**
+ * Computes deterministic Fixed Illumination Anchor canvas coordinates for mobile viewports
+ */
+export function getMobileAnchorCoordinates(width: number, height: number): { x: number; y: number } {
+  return {
+    x: width * MOBILE_ANCHOR_X_RATIO,
+    y: height * MOBILE_ANCHOR_Y_RATIO,
+  };
 }
 
 /**

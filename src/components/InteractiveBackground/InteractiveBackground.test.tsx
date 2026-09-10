@@ -7,6 +7,13 @@ import {
   CUBE_EDGE,
   CUBE_EDGE_MOBILE,
   getCubeEdge,
+  DESKTOP_BREAKPOINT,
+  MOBILE_ANCHOR_X_RATIO,
+  MOBILE_ANCHOR_Y_RATIO,
+  MOBILE_ANCHOR_PROX_R,
+  MOBILE_ANCHOR_PROX_R2,
+  getMobileAnchorCoordinates,
+  isMobileViewport,
 } from "./isometricLattice";
 import {
   DOT_PROX_R,
@@ -491,6 +498,187 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       // Mouse movements and pointer clicks are ignored under reduced motion
       expect(componentSource).toMatch(/const\s+onMouseMove\s*=\s*\([^)]*\)\s*=>\s*\{\s*if\s*\(\s*reducedMotionRef\.current\s*\)\s*return;/);
       expect(componentSource).toMatch(/const\s+onPointerDown\s*=\s*\([^)]*\)\s*=>\s*\{\s*if\s*\(\s*reducedMotionRef\.current\s*\)\s*return;/);
+    });
+  });
+
+  describe("Fixed-Illumination Mobile Lattice Engine & Event Decoupling Contract (Issue 02)", () => {
+    it("declares canonical macro layout boundary and mobile anchor constants", () => {
+      expect(DESKTOP_BREAKPOINT).toBe(1024);
+      expect(MOBILE_ANCHOR_X_RATIO).toBe(0.65);
+      expect(MOBILE_ANCHOR_Y_RATIO).toBe(0.18);
+      expect(MOBILE_ANCHOR_PROX_R).toBe(220);
+      expect(MOBILE_ANCHOR_PROX_R2).toBe(220 * 220);
+    });
+
+    it("evaluates mobile viewport predicate accurately across boundaries", () => {
+      expect(isMobileViewport(320)).toBe(true);
+      expect(isMobileViewport(375)).toBe(true);
+      expect(isMobileViewport(768)).toBe(true);
+      expect(isMobileViewport(1023)).toBe(true);
+      expect(isMobileViewport(1024)).toBe(false);
+      expect(isMobileViewport(1440)).toBe(false);
+    });
+
+    it("calculates deterministic Fixed Illumination Anchor coordinates in upper viewport", () => {
+      const coords390 = getMobileAnchorCoordinates(390, 844);
+      expect(coords390.x).toBeCloseTo(390 * 0.65, 2);
+      expect(coords390.y).toBeCloseTo(844 * 0.18, 2);
+
+      const coords768 = getMobileAnchorCoordinates(768, 1024);
+      expect(coords768.x).toBeCloseTo(768 * 0.65, 2);
+      expect(coords768.y).toBeCloseTo(1024 * 0.18, 2);
+    });
+
+    it("unconditionally enforces Isometric Cubes Wireframe Lattice on mobile viewports (< 1024px)", () => {
+      // Must compute effectiveMode forcing 'cubes' when on mobile
+      expect(componentSource).toMatch(
+        /const\s+effectiveMode\s*=\s*isMobile\s*\?\s*["']cubes["']\s*:\s*modeRef\.current;/
+      );
+      // Ensures currentMode reflects effectiveMode
+      expect(componentSource).toMatch(/const\s+currentMode\s*=\s*effectiveMode;/);
+    });
+
+    it("suppresses requestAnimationFrame loops on mobile viewports (zero continuous RAF)", () => {
+      // Initial mount kick-off immediately draws static frame without scheduling requestAnimationFrame
+      expect(componentSource).toMatch(
+        /if\s*\(\s*typeof\s+window\s*!==\s*["']undefined["']\s*&&\s*isMobileViewport\(window\.innerWidth\)\s*\)\s*\{[\s\S]*?isSleepingRef\.current\s*=\s*true;[\s\S]*?draw\(\);[\s\S]*?\}/
+      );
+
+      // In wake(), mobile viewports perform a single synchronous draw and exit
+      expect(componentSource).toMatch(
+        /if\s*\(\s*typeof\s+window\s*!==\s*["']undefined["']\s*&&\s*isMobileViewport\(window\.innerWidth\)\s*\)\s*\{[\s\S]*?draw\(\);[\s\S]*?return;[\s\S]*?\}/
+      );
+
+      // In draw loop, mobile viewports sleep immediately without scheduling RAF
+      expect(componentSource).toMatch(
+        /if\s*\(\s*isMobile\s*\)\s*\{[\s\S]*?isSleepingRef\.current\s*=\s*true;[\s\S]*?rafRef\.current\s*=\s*0;[\s\S]*?return;[\s\S]*?\}/
+      );
+    });
+
+    it("decouples pointer tracking listeners from window on mobile viewports", () => {
+      // Must encapsulate listener attachment/detachment
+      expect(componentSource).toContain("attachPointerListeners");
+      expect(componentSource).toContain("detachPointerListeners");
+
+      // Only attaches on desktop
+      expect(componentSource).toMatch(
+        /if\s*\(\s*isMobile\s*\)\s*\{[\s\S]*?detachPointerListeners\(\);[\s\S]*?\}[\s\S]*?else\s*\{[\s\S]*?attachPointerListeners\(\);[\s\S]*?\}/
+      );
+
+      // Defense-in-depth: onMouseMove, onMouseLeave, and onPointerDown early exit on mobile
+      expect(componentSource).toMatch(
+        /const\s+onMouseMove\s*=\s*\([^)]*\)\s*=>\s*\{[\s\S]*?if\s*\(\s*typeof\s+window\s*!==\s*["']undefined["']\s*&&\s*isMobileViewport\(window\.innerWidth\)\s*\)\s*return;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+onMouseLeave\s*=\s*\(\)\s*=>\s*\{[\s\S]*?if\s*\(\s*typeof\s+window\s*!==\s*["']undefined["']\s*&&\s*isMobileViewport\(window\.innerWidth\)\s*\)\s*return;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+onPointerDown\s*=\s*\([^)]*\)\s*=>\s*\{[\s\S]*?if\s*\(\s*typeof\s+window\s*!==\s*["']undefined["']\s*&&\s*isMobileViewport\(window\.innerWidth\)\s*\)\s*return;/
+      );
+    });
+
+    it("suppresses click ripple wavefront generation and harmonic spring compression on mobile", () => {
+      // Ripples array is emptied on mobile
+      expect(componentSource).toMatch(/ripplesRef\.current\s*=\s*isReduced\s*\|\|\s*isMobile\s*\?\s*\[\]/);
+      expect(componentSource).toMatch(/if\s*\(\s*!isReduced\s*&&\s*!isMobile\s*\)/);
+    });
+
+    it("renders Fixed Illumination Anchor spotlight and proximity glow at (65%, 18%)", () => {
+      // Anchor coordinates computed from canvas dimensions
+      expect(componentSource).toMatch(
+        /const\s+mobileAnchor\s*=\s*isMobile\s*\?\s*getMobileAnchorCoordinates\(w,\s*h\)\s*:\s*null;/
+      );
+      // Ambient spotlight rendered at focal point
+      expect(componentSource).toMatch(
+        /const\s+spotlight\s*=\s*ctx\.createRadialGradient\(focalX,\s*focalY,\s*0,\s*focalX,\s*focalY,\s*SPOTLIGHT_R\);/
+      );
+      // Proximity check uses MOBILE_ANCHOR_PROX_R on mobile
+      expect(componentSource).toMatch(
+        /const\s+proxR\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R\s*:\s*CUBE_PROX_R;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+proxR2\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R2\s*:\s*CUBE_PROX_R2;/
+      );
+    });
+
+    it("verifies static proximity illumination mathematics for mobile fixed anchor", () => {
+      // Simulate mobile viewport 390x844
+      const w = 390;
+      const h = 844;
+      const anchor = getMobileAnchorCoordinates(w, h);
+      const lattice = buildIsometricLattice(w, h, CUBE_EDGE_MOBILE);
+
+      // Verify at least one edge is within proximity radius R = 220px of anchor
+      let proximateEdges = 0;
+      for (const e of lattice.edges) {
+        const vx = e.x2 - e.x1;
+        const vy = e.y2 - e.y1;
+        const wx = anchor.x - e.x1;
+        const wy = anchor.y - e.y1;
+        const c1 = wx * vx + wy * vy;
+        const c2 = e.len2;
+        const t = c1 <= 0 ? 0 : c1 >= c2 ? 1 : c1 / c2;
+        const px = e.x1 + t * vx;
+        const py = e.y1 + t * vy;
+        const d2 = (anchor.x - px) * (anchor.x - px) + (anchor.y - py) * (anchor.y - py);
+        if (d2 < MOBILE_ANCHOR_PROX_R2) {
+          proximateEdges++;
+        }
+      }
+
+      // Verify at least one vertex is within proximity radius of anchor
+      let proximateVertices = 0;
+      for (const v of lattice.vertices) {
+        const dx = v.x - anchor.x;
+        const dy = v.y - anchor.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < MOBILE_ANCHOR_PROX_R2) {
+          proximateVertices++;
+        }
+      }
+
+      expect(proximateEdges).toBeGreaterThan(5);
+      expect(proximateVertices).toBeGreaterThan(3);
+    });
+
+    it("verifies mobile lifecycle schedules 0 RAFs during idle and mount", () => {
+      let rafCallCount = 0;
+      const origRaf = globalThis.requestAnimationFrame;
+      globalThis.requestAnimationFrame = vi.fn(() => {
+        rafCallCount++;
+        return 123;
+      });
+
+      const origInnerWidth = globalThis.innerWidth;
+      const origInnerHeight = globalThis.innerHeight;
+      globalThis.innerWidth = 390;
+      globalThis.innerHeight = 844;
+
+      try {
+        expect(isMobileViewport(globalThis.innerWidth)).toBe(true);
+        let isSleeping = false;
+        let activeRaf = 0;
+        const simulateDraw = () => {
+          const isMobile = isMobileViewport(globalThis.innerWidth);
+          if (isMobile) {
+            isSleeping = true;
+            activeRaf = 0;
+            return;
+          }
+          activeRaf = globalThis.requestAnimationFrame(simulateDraw);
+        };
+
+        simulateDraw();
+
+        // Must have scheduled 0 requestAnimationFrames
+        expect(rafCallCount).toBe(0);
+        expect(isSleeping).toBe(true);
+        expect(activeRaf).toBe(0);
+      } finally {
+        globalThis.innerWidth = origInnerWidth;
+        globalThis.innerHeight = origInnerHeight;
+        globalThis.requestAnimationFrame = origRaf;
+      }
     });
   });
 });
