@@ -28,7 +28,7 @@ describe("Master Vector Favicon & Document Head Integration (Issue 01)", () => {
     viteSvgExists = fs.existsSync(vitePath);
 
     if (faviconSvgExists) {
-      faviconSvg = fs.readFileSync(faviconPath, "utf-8");
+      faviconSvg = fs.readFileSync(faviconPath, "utf-8") as string;
     }
   });
 
@@ -85,6 +85,118 @@ describe("Master Vector Favicon & Document Head Integration (Issue 01)", () => {
       expect(faviconSvg).not.toContain("<style");
       expect(faviconSvg).not.toContain("feGaussianBlur");
       expect(faviconSvg).not.toContain("feDropShadow");
+    });
+  });
+});
+
+describe("Fallback Raster Asset Pipeline & Touch Icon Integration (Issue 02)", () => {
+  let appleTouchIconExists = false;
+  let appleTouchIconBytes: Uint8Array | null = null;
+  let faviconIcoExists = false;
+  let faviconIcoBytes: Uint8Array | null = null;
+
+  beforeAll(async () => {
+    const fsMod = "node:fs";
+    const pathMod = "node:path";
+    const fs = (await import(fsMod)) as unknown as {
+      existsSync: (p: string) => boolean;
+      readFileSync: (p: string) => Uint8Array;
+    };
+    const path = (await import(pathMod)) as unknown as {
+      resolve: (...p: string[]) => string;
+      join: (...p: string[]) => string;
+    };
+
+    const publicDir = path.resolve(process.cwd(), "public");
+    const touchPath = path.join(publicDir, "apple-touch-icon.png");
+    const icoPath = path.join(publicDir, "favicon.ico");
+
+    appleTouchIconExists = fs.existsSync(touchPath);
+    faviconIcoExists = fs.existsSync(icoPath);
+
+    if (appleTouchIconExists) {
+      appleTouchIconBytes = new Uint8Array(fs.readFileSync(touchPath));
+    }
+    if (faviconIcoExists) {
+      faviconIcoBytes = new Uint8Array(fs.readFileSync(icoPath));
+    }
+  });
+
+  describe("HTML Entry Document Head Fallback Links", () => {
+    it("declares fallback ICO icon with rel='icon', type='image/x-icon', href='/favicon.ico', and sizes='any'", () => {
+      expect(indexHtml).toMatch(
+        /<link\s+rel="icon"\s+type="image\/x-icon"\s+href="\/favicon\.ico"\s+sizes="any"\s*\/?>/
+      );
+    });
+
+    it("declares Apple Touch icon with rel='apple-touch-icon' and href='/apple-touch-icon.png'", () => {
+      expect(indexHtml).toMatch(
+        /<link\s+rel="apple-touch-icon"\s+href="\/apple-touch-icon\.png"\s*\/?>/
+      );
+    });
+  });
+
+  describe("Raster Fallback Static Assets (public/)", () => {
+    it("ensures public/apple-touch-icon.png exists and is non-empty", () => {
+      expect(appleTouchIconExists).toBe(true);
+      expect(appleTouchIconBytes).not.toBeNull();
+      expect(appleTouchIconBytes!.length).toBeGreaterThan(0);
+    });
+
+    it("verifies public/apple-touch-icon.png is a valid PNG with 180x180 dimensions", () => {
+      expect(appleTouchIconBytes).not.toBeNull();
+      const bytes = appleTouchIconBytes!;
+
+      // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+      expect(bytes[0]).toBe(0x89);
+      expect(bytes[1]).toBe(0x50);
+      expect(bytes[2]).toBe(0x4e);
+      expect(bytes[3]).toBe(0x47);
+      expect(bytes[4]).toBe(0x0d);
+      expect(bytes[5]).toBe(0x0a);
+      expect(bytes[6]).toBe(0x1a);
+      expect(bytes[7]).toBe(0x0a);
+
+      // Read dimensions from IHDR chunk (offset 16 for width, offset 20 for height, 32-bit big-endian)
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const width = view.getUint32(16, false);
+      const height = view.getUint32(20, false);
+      expect(width).toBe(180);
+      expect(height).toBe(180);
+    });
+
+    it("ensures public/favicon.ico exists and is non-empty", () => {
+      expect(faviconIcoExists).toBe(true);
+      expect(faviconIcoBytes).not.toBeNull();
+      expect(faviconIcoBytes!.length).toBeGreaterThan(0);
+    });
+
+    it("verifies public/favicon.ico is a valid multi-resolution ICO file containing 16x16, 32x32, and 48x48 icon resources", () => {
+      expect(faviconIcoBytes).not.toBeNull();
+      const bytes = faviconIcoBytes!;
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+      // ICO signature: reserved=0, type=1 (ICO)
+      const reserved = view.getUint16(0, true);
+      const type = view.getUint16(2, true);
+      const imageCount = view.getUint16(4, true);
+
+      expect(reserved).toBe(0);
+      expect(type).toBe(1);
+      expect(imageCount).toBeGreaterThanOrEqual(3);
+
+      // Collect resolutions from directory entries (each entry is 16 bytes)
+      const resolutions: { width: number; height: number }[] = [];
+      for (let i = 0; i < imageCount; i++) {
+        const entryOffset = 6 + i * 16;
+        const width = view.getUint8(entryOffset) || 256;
+        const height = view.getUint8(entryOffset + 1) || 256;
+        resolutions.push({ width, height });
+      }
+
+      expect(resolutions).toContainEqual({ width: 16, height: 16 });
+      expect(resolutions).toContainEqual({ width: 32, height: 32 });
+      expect(resolutions).toContainEqual({ width: 48, height: 48 });
     });
   });
 });
