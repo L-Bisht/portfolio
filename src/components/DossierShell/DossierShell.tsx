@@ -9,7 +9,9 @@ interface DossierShellProps {
   data: NavData;
   activeSectionId: string;
   children: ReactNode;
+  /** @deprecated Obsolete pattern toggle prop; mobile header no longer switches background patterns. */
   patternMode?: PatternMode;
+  /** @deprecated Obsolete pattern toggle prop; mobile header no longer switches background patterns. */
   onTogglePatternMode?: () => void;
 }
 
@@ -32,17 +34,11 @@ export default function DossierShell({
   data,
   activeSectionId,
   children,
-  patternMode,
-  onTogglePatternMode,
 }: DossierShellProps) {
   return (
     <>
       {/* ── Mobile Header ────────────────────────────────────────── */}
-      <MobileHeader
-        data={data}
-        patternMode={patternMode}
-        onTogglePatternMode={onTogglePatternMode}
-      />
+      <MobileHeader data={data} />
 
       {/* ── Shell: rail host + editorial canvas ──────────────────── */}
       <div className="flex">

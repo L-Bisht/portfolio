@@ -5,8 +5,8 @@ import { navData } from "../../data/nav";
 import { ThemeProvider } from "../../context/ThemeContext";
 import { PatternProvider } from "../../context/PatternContext";
 
-describe("MobileHeader Component — Theme & Background Pattern Controls Contract", () => {
-  it("renders both theme toggle and pattern toggle with circular 32px dimensions", () => {
+describe("MobileHeader Component — Clean Control Surface & Pattern Toggle Purge", () => {
+  it("renders accessible theme toggle and strictly omits background pattern toggle", () => {
     const html = renderToString(
       <ThemeProvider>
         <PatternProvider initialMode="cubes">
@@ -18,50 +18,47 @@ describe("MobileHeader Component — Theme & Background Pattern Controls Contrac
     // Theme toggle button must exist
     expect(html).toContain('id="mobile-header-theme-toggle"');
 
-    // Pattern toggle button must exist adjacent in controls
-    expect(html).toContain('id="mobile-header-pattern-toggle"');
+    // Pattern toggle button must be completely absent from the DOM
+    expect(html).not.toContain('id="mobile-header-pattern-toggle"');
+    expect(html).not.toContain("Switch to Dot Matrix background");
+    expect(html).not.toContain("Switch to Isometric Lattice background");
 
-    // Both buttons must be circular 32px (w-8 h-8 rounded-full)
+    // Only 1 circular 32px button (the theme toggle) should be present in controls
     const matches32px = html.match(/w-8 h-8[^"]*rounded-full/g);
     expect(matches32px).not.toBeNull();
-    // At least 2 buttons (theme and pattern toggle)
-    expect(matches32px!.length).toBeGreaterThanOrEqual(2);
+    expect(matches32px!.length).toBe(1);
   });
 
-  it("renders Cubes mode with accessible aria-label and Isometric Cube wireframe icon", () => {
+  it("renders accessible theme toggle with proper aria-label and smooth icon", () => {
     const html = renderToString(
       <ThemeProvider>
-        <PatternProvider initialMode="cubes">
-          <MobileHeader data={navData} />
-        </PatternProvider>
+        <MobileHeader data={navData} />
       </ThemeProvider>
     );
 
-    // Announces action to switch to Dot Matrix background
-    expect(html).toContain('aria-label="Switch to Dot Matrix background"');
-
-    // Contains cube wireframe SVG path coordinates
-    expect(html).toContain("M6.5 1.2 L11.2 3.9");
-    expect(html).toContain("M6.5 6.5 L6.5 11.8");
+    // Accessible theme toggle with aria-label
+    expect(html).toMatch(/aria-label="Switch to (light|dark) mode"/);
+    expect(html).toContain('id="mobile-header-theme-toggle"');
   });
 
-  it("renders Dots mode with accessible aria-label and 3x3 Dot Grid icon", () => {
+  it("maintains balanced identity layout with logo monogram, name, and title", () => {
     const html = renderToString(
       <ThemeProvider>
-        <PatternProvider initialMode="dots">
-          <MobileHeader data={navData} />
-        </PatternProvider>
+        <MobileHeader data={navData} />
       </ThemeProvider>
     );
 
-    // Announces action to switch to Isometric Lattice background
-    expect(html).toContain('aria-label="Switch to Isometric Lattice background"');
+    // Identity link anchored to #home
+    expect(html).toContain('id="mobile-header-logo"');
+    expect(html).toContain('href="#home"');
 
-    // Contains dot grid circles
-    expect(html).toContain("<circle");
+    // Monogram and typography
+    expect(html).toContain(navData.shortName);
+    expect(html).toContain(navData.name);
+    expect(html).toContain("AI-Augmented Developer");
   });
 
-  it("supports controlled patternMode and onTogglePatternMode props", () => {
+  it("safely accepts deprecated patternMode and onTogglePatternMode props without rendering pattern toggle", () => {
     const onToggle = vi.fn();
     const html = renderToString(
       <ThemeProvider>
@@ -73,8 +70,13 @@ describe("MobileHeader Component — Theme & Background Pattern Controls Contrac
       </ThemeProvider>
     );
 
-    // Prop overrides context/default
-    expect(html).toContain('aria-label="Switch to Isometric Lattice background"');
+    // Even with explicit props passed, pattern toggle is completely absent
+    expect(html).not.toContain('id="mobile-header-pattern-toggle"');
+    expect(html).not.toContain("Switch to Isometric Lattice background");
+    expect(html).not.toContain("Switch to Dot Matrix background");
+
+    // Theme toggle remains functional and present
+    expect(html).toContain('id="mobile-header-theme-toggle"');
   });
 
   it("renders gracefully when used without PatternProvider (safe fallback)", () => {
@@ -84,7 +86,7 @@ describe("MobileHeader Component — Theme & Background Pattern Controls Contrac
       </ThemeProvider>
     );
 
-    expect(html).toContain('id="mobile-header-pattern-toggle"');
-    expect(html).toContain('aria-label="Switch to Dot Matrix background"');
+    expect(html).toContain('id="mobile-header-theme-toggle"');
+    expect(html).not.toContain('id="mobile-header-pattern-toggle"');
   });
 });

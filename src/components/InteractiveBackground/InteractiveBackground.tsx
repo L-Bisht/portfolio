@@ -247,9 +247,7 @@ export default function InteractiveBackground({
       // Exclude clicks directly on pattern switcher controls
       if (
         target &&
-        target.closest(
-          "#bg-switcher-cubes, #bg-switcher-dots, #mobile-header-pattern-toggle"
-        )
+        target.closest("#bg-switcher-cubes, #bg-switcher-dots")
       ) {
         return;
       }
