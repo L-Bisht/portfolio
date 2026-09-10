@@ -166,200 +166,6 @@ export default function InteractiveBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // ── query system prefers-reduced-motion ──────────────────────────────────
-    const motionQuery =
-      typeof window !== "undefined" && typeof window.matchMedia === "function"
-        ? window.matchMedia("(prefers-reduced-motion: reduce)")
-        : null;
-
-    reducedMotionRef.current = !!motionQuery?.matches;
-
-    // ── wake helper: resume RAF loop from idle sleep ─────────────────────────
-    const wake = () => {
-      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) {
-        draw();
-        return;
-      }
-      if (reducedMotionRef.current) {
-        renderRestingRef.current();
-        return;
-      }
-      if (isScrollingRef.current) {
-        return;
-      }
-      if (isSleepingRef.current) {
-        isSleepingRef.current = false;
-        rafRef.current = requestAnimationFrame(draw);
-      }
-    };
-    wakeRef.current = wake;
-
-    // ── render resting frame helper for reduced motion ───────────────────────
-    const renderRestingFrame = () => {
-      const target = THEME_COLORS[activeSectionIdRef.current] ?? DEFAULT_COLOR;
-      currentColorRef.current = { ...target };
-      draw();
-    };
-    renderRestingRef.current = renderRestingFrame;
-
-    const handleMotionChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      reducedMotionRef.current = e.matches;
-      if (e.matches) {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-          rafRef.current = 0;
-        }
-        isSleepingRef.current = true;
-        renderRestingFrame();
-      } else {
-        wake();
-      }
-    };
-
-    if (motionQuery) {
-      if (typeof motionQuery.addEventListener === "function") {
-        motionQuery.addEventListener("change", handleMotionChange);
-      } else if (typeof (motionQuery as unknown as { addListener?: (fn: unknown) => void }).addListener === "function") {
-        (motionQuery as unknown as { addListener: (fn: unknown) => void }).addListener(handleMotionChange);
-      }
-    }
-
-    // ── mouse & click tracking ────────────────────────────────────────────────
-    const onMouseMove = (e: MouseEvent) => {
-      if (reducedMotionRef.current) return;
-      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
-      mouseRef.current = { x: e.clientX, y: e.clientY };
-      lastPointerTimeRef.current = performance.now();
-      wake();
-    };
-    const onMouseLeave = () => {
-      if (reducedMotionRef.current) return;
-      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
-      mouseRef.current = { x: -9999, y: -9999 };
-      wake();
-    };
-
-    const onPointerDown = (e: MouseEvent) => {
-      if (reducedMotionRef.current) return;
-      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
-      const target = e.target as HTMLElement | null;
-      // Exclude clicks directly on pattern switcher controls
-      if (
-        target &&
-        target.closest("#bg-switcher-cubes, #bg-switcher-dots")
-      ) {
-        return;
-      }
-      const now = performance.now();
-      springClickTimeRef.current = now;
-
-      const maxR = Math.max(window.innerWidth, window.innerHeight) * 0.85;
-      ripplesRef.current.push({
-        x: e.clientX,
-        y: e.clientY,
-        startTime: now,
-        duration: RIPPLE_DURATION,
-        maxRadius: maxR,
-      });
-      // Cap ripples array at 5 to maintain high efficiency
-      if (ripplesRef.current.length > 5) {
-        ripplesRef.current.shift();
-      }
-      wake();
-    };
-
-    // ── window scroll damping: halt frame updates during scrolling ───────────
-    const onScroll = () => {
-      if (reducedMotionRef.current) return;
-      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
-      isScrollingRef.current = true;
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = 0;
-      }
-      isSleepingRef.current = true;
-
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        isScrollingRef.current = false;
-        wake();
-      }, SCROLL_DEBOUNCE_MS);
-    };
-
-    let pointerListenersAttached = false;
-    const attachPointerListeners = () => {
-      if (pointerListenersAttached) return;
-      window.addEventListener("mousemove",   onMouseMove);
-      window.addEventListener("mouseleave",  onMouseLeave);
-      window.addEventListener("pointerdown", onPointerDown);
-      pointerListenersAttached = true;
-    };
-    const detachPointerListeners = () => {
-      if (!pointerListenersAttached) return;
-      window.removeEventListener("mousemove",   onMouseMove);
-      window.removeEventListener("mouseleave",  onMouseLeave);
-      window.removeEventListener("pointerdown", onPointerDown);
-      pointerListenersAttached = false;
-    };
-
-    // ── resize: size canvas + rebuild geometry (adaptive mobile density) ─────
-    const resize = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const isMobile = isMobileViewport(window.innerWidth);
-      if (isMobile) {
-        detachPointerListeners();
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-          rafRef.current = 0;
-        }
-        ripplesRef.current = [];
-      } else {
-        attachPointerListeners();
-      }
-      const cubeEdge   = getCubeEdge(window.innerWidth);
-      const dotSpacing = getDotSpacing(window.innerWidth);
-      cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, cubeEdge);
-      dotPointsRef.current   = buildGrid(canvas.width, canvas.height, dotSpacing);
-      wake();
-    };
-    resize();
-
-    window.addEventListener("scroll",      onScroll, { passive: true });
-    window.addEventListener("resize",      resize);
-
-    // ── Theme toggle mutation observer — wake canvas when theme class changes
-    let themeObserver: MutationObserver | null = null;
-    if (typeof MutationObserver !== "undefined") {
-      themeObserver = new MutationObserver((mutations) => {
-        for (let i = 0; i < mutations.length; i++) {
-          const m = mutations[i];
-          if (m.type === "attributes" && m.attributeName === "class") {
-            wake();
-            break;
-          }
-        }
-      });
-      themeObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["class"],
-      });
-    }
-
-    // ── IntersectionObserver — pause RAF when canvas is off-screen ───────────
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        pausedRef.current = !entry.isIntersecting;
-        if (entry.isIntersecting) {
-          wake();
-        }
-      },
-      { threshold: 0 }
-    );
-    observer.observe(canvas);
-
     // ── animation loop ───────────────────────────────────────────────────────
     const draw = () => {
       if (pausedRef.current || isScrollingRef.current) {
@@ -856,7 +662,201 @@ export default function InteractiveBackground({
       }
 
       rafRef.current = requestAnimationFrame(draw);
+    }
+
+    // ── query system prefers-reduced-motion ──────────────────────────────────
+    const motionQuery =
+      typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
+
+    reducedMotionRef.current = !!motionQuery?.matches;
+
+    // ── wake helper: resume RAF loop from idle sleep ─────────────────────────
+    const wake = () => {
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) {
+        draw();
+        return;
+      }
+      if (reducedMotionRef.current) {
+        renderRestingRef.current();
+        return;
+      }
+      if (isScrollingRef.current) {
+        return;
+      }
+      if (isSleepingRef.current) {
+        isSleepingRef.current = false;
+        rafRef.current = requestAnimationFrame(draw);
+      }
     };
+    wakeRef.current = wake;
+
+    // ── render resting frame helper for reduced motion ───────────────────────
+    const renderRestingFrame = () => {
+      const target = THEME_COLORS[activeSectionIdRef.current] ?? DEFAULT_COLOR;
+      currentColorRef.current = { ...target };
+      draw();
+    };
+    renderRestingRef.current = renderRestingFrame;
+
+    const handleMotionChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      reducedMotionRef.current = e.matches;
+      if (e.matches) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+        isSleepingRef.current = true;
+        renderRestingFrame();
+      } else {
+        wake();
+      }
+    };
+
+    if (motionQuery) {
+      if (typeof motionQuery.addEventListener === "function") {
+        motionQuery.addEventListener("change", handleMotionChange);
+      } else if (typeof (motionQuery as unknown as { addListener?: (fn: unknown) => void }).addListener === "function") {
+        (motionQuery as unknown as { addListener: (fn: unknown) => void }).addListener(handleMotionChange);
+      }
+    }
+
+    // ── mouse & click tracking ────────────────────────────────────────────────
+    const onMouseMove = (e: MouseEvent) => {
+      if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+      lastPointerTimeRef.current = performance.now();
+      wake();
+    };
+    const onMouseLeave = () => {
+      if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
+      mouseRef.current = { x: -9999, y: -9999 };
+      wake();
+    };
+
+    const onPointerDown = (e: MouseEvent) => {
+      if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
+      const target = e.target as HTMLElement | null;
+      // Exclude clicks directly on pattern switcher controls
+      if (
+        target &&
+        target.closest("#bg-switcher-cubes, #bg-switcher-dots")
+      ) {
+        return;
+      }
+      const now = performance.now();
+      springClickTimeRef.current = now;
+
+      const maxR = Math.max(window.innerWidth, window.innerHeight) * 0.85;
+      ripplesRef.current.push({
+        x: e.clientX,
+        y: e.clientY,
+        startTime: now,
+        duration: RIPPLE_DURATION,
+        maxRadius: maxR,
+      });
+      // Cap ripples array at 5 to maintain high efficiency
+      if (ripplesRef.current.length > 5) {
+        ripplesRef.current.shift();
+      }
+      wake();
+    };
+
+    // ── window scroll damping: halt frame updates during scrolling ───────────
+    const onScroll = () => {
+      if (reducedMotionRef.current) return;
+      if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) return;
+      isScrollingRef.current = true;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+      isSleepingRef.current = true;
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        isScrollingRef.current = false;
+        wake();
+      }, SCROLL_DEBOUNCE_MS);
+    };
+
+    let pointerListenersAttached = false;
+    const attachPointerListeners = () => {
+      if (pointerListenersAttached) return;
+      window.addEventListener("mousemove",   onMouseMove);
+      window.addEventListener("mouseleave",  onMouseLeave);
+      window.addEventListener("pointerdown", onPointerDown);
+      pointerListenersAttached = true;
+    };
+    const detachPointerListeners = () => {
+      if (!pointerListenersAttached) return;
+      window.removeEventListener("mousemove",   onMouseMove);
+      window.removeEventListener("mouseleave",  onMouseLeave);
+      window.removeEventListener("pointerdown", onPointerDown);
+      pointerListenersAttached = false;
+    };
+
+    // ── resize: size canvas + rebuild geometry (adaptive mobile density) ─────
+    const resize = () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const isMobile = isMobileViewport(window.innerWidth);
+      if (isMobile) {
+        detachPointerListeners();
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+        ripplesRef.current = [];
+      } else {
+        attachPointerListeners();
+      }
+      const cubeEdge   = getCubeEdge(window.innerWidth);
+      const dotSpacing = getDotSpacing(window.innerWidth);
+      cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, cubeEdge);
+      dotPointsRef.current   = buildGrid(canvas.width, canvas.height, dotSpacing);
+      wake();
+    };
+    resize();
+
+    window.addEventListener("scroll",      onScroll, { passive: true });
+    window.addEventListener("resize",      resize);
+
+    // ── Theme toggle mutation observer — wake canvas when theme class changes
+    let themeObserver: MutationObserver | null = null;
+    if (typeof MutationObserver !== "undefined") {
+      themeObserver = new MutationObserver((mutations) => {
+        for (let i = 0; i < mutations.length; i++) {
+          const m = mutations[i];
+          if (m.type === "attributes" && m.attributeName === "class") {
+            wake();
+            break;
+          }
+        }
+      });
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
+
+    // ── IntersectionObserver — pause RAF when canvas is off-screen ───────────
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        pausedRef.current = !entry.isIntersecting;
+        if (entry.isIntersecting) {
+          wake();
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
 
     // Initial frame kick-off
     if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) {
