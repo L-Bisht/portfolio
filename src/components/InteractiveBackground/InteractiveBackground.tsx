@@ -48,7 +48,7 @@ interface ClickRipple {
 
 // ─── section accent colors ────────────────────────────────────────────────────
 
-const THEME_COLORS: Record<string, RGB> = {
+export const THEME_COLORS: Record<string, RGB> = {
   home:       { r: 14,  g: 165, b: 233 }, // sky-500
   about:      { r: 20,  g: 184, b: 166 }, // teal-500 / cyan
   skills:     { r: 6,   g: 182, b: 212 }, // cyan-500
@@ -57,7 +57,7 @@ const THEME_COLORS: Record<string, RGB> = {
   contact:    { r: 14,  g: 165, b: 233 }, // sky-500
 };
 
-const DEFAULT_COLOR: RGB = THEME_COLORS.home;
+export const DEFAULT_COLOR: RGB = THEME_COLORS.home;
 
 // ─── geometry & wave constants ────────────────────────────────────────────────
 
@@ -132,6 +132,10 @@ export default function InteractiveBackground({
   const activeSectionIdRef = useRef(activeSectionId);
   useEffect(() => {
     activeSectionIdRef.current = activeSectionId;
+    if (typeof window !== "undefined" && isMobileViewport(window.innerWidth)) {
+      const target = THEME_COLORS[activeSectionId] ?? DEFAULT_COLOR;
+      currentColorRef.current = { ...target };
+    }
     wakeRef.current();
   }, [activeSectionId]);
 
@@ -814,6 +818,13 @@ export default function InteractiveBackground({
           rafRef.current = 0;
         }
         ripplesRef.current = [];
+        mouseRef.current = { x: -9999, y: -9999 };
+        springClickTimeRef.current = -99999;
+        isScrollingRef.current = false;
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+          scrollTimeoutRef.current = null;
+        }
       } else {
         attachPointerListeners();
       }

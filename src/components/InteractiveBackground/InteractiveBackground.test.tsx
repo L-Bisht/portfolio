@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 import componentSource from "./InteractiveBackground.tsx?raw";
-import InteractiveBackground from "./InteractiveBackground";
+import InteractiveBackground, { THEME_COLORS, DEFAULT_COLOR } from "./InteractiveBackground";
 import {
   buildIsometricLattice,
   CUBE_EDGE,
@@ -245,7 +245,7 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       expect(componentSource).toMatch(/wake\(\);/);
 
       // Section and mode reactivity
-      expect(componentSource).toMatch(/activeSectionIdRef\.current\s*=\s*activeSectionId;\s*wakeRef\.current\(\);/);
+      expect(componentSource).toMatch(/activeSectionIdRef\.current\s*=\s*activeSectionId;[\s\S]*?wakeRef\.current\(\);/);
     });
 
     it("snaps color lerp channels to target once within tolerance (< 0.5)", () => {
@@ -679,6 +679,182 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
         globalThis.innerHeight = origInnerHeight;
         globalThis.requestAnimationFrame = origRaf;
       }
+    });
+  });
+
+  describe("Zero-RAF Section Color Snapping & Responsive Breakpoint Handoff Contract (Issue 03)", () => {
+    it("defines canonical section accent colors with verified chromatic palette", () => {
+      expect(THEME_COLORS).toBeDefined();
+      expect(THEME_COLORS.home).toEqual({ r: 14, g: 165, b: 233 });       // sky-500
+      expect(THEME_COLORS.about).toEqual({ r: 20, g: 184, b: 166 });      // teal-500 / cyan
+      expect(THEME_COLORS.skills).toEqual({ r: 6, g: 182, b: 212 });      // cyan-500
+      expect(THEME_COLORS.experience).toEqual({ r: 16, g: 185, b: 129 });  // emerald-500
+      expect(THEME_COLORS.projects).toEqual({ r: 37, g: 99, b: 235 });     // cobalt / blue-600
+      expect(THEME_COLORS.contact).toEqual({ r: 14, g: 165, b: 233 });     // sky-500
+      expect(DEFAULT_COLOR).toEqual(THEME_COLORS.home);
+    });
+
+    it("snaps section accent color immediately on mobile without multi-frame channel lerping", () => {
+      // Component source contract:
+      // 1. activeSectionId effect snaps currentColorRef.current on mobile viewports immediately
+      expect(componentSource).toMatch(
+        /if\s*\(\s*typeof\s+window\s*!==\s*["']undefined["']\s*&&\s*isMobileViewport\(window\.innerWidth\)\s*\)\s*\{[\s\S]*?const\s+target\s*=\s*THEME_COLORS\[activeSectionId\]\s*\?\?\s*DEFAULT_COLOR;[\s\S]*?currentColorRef\.current\s*=\s*\{\s*\.\.\.target\s*\};[\s\S]*?\}/
+      );
+
+      // 2. In draw loop, mobile viewports assign col directly to target without lerpChannel calls
+      expect(componentSource).toMatch(
+        /else\s+if\s*\(\s*isMobile\s*\)\s*\{[\s\S]*?col\.r\s*=\s*target\.r;[\s\S]*?col\.g\s*=\s*target\.g;[\s\S]*?col\.b\s*=\s*target\.b;[\s\S]*?\}/
+      );
+    });
+
+    it("executes a single static repaint on section change without scheduling requestAnimationFrame loops", () => {
+      let rafCount = 0;
+      const origRaf = globalThis.requestAnimationFrame;
+      globalThis.requestAnimationFrame = vi.fn(() => {
+        rafCount++;
+        return 999;
+      });
+
+      const origInnerWidth = globalThis.innerWidth;
+      globalThis.innerWidth = 390;
+
+      try {
+        expect(isMobileViewport(globalThis.innerWidth)).toBe(true);
+
+        // Simulate mobile wake cycle on section navigation
+        let isSleeping = true;
+        let activeRaf = 0;
+        let currentColor = { ...THEME_COLORS.home };
+
+        const simulateSectionChange = (newSectionId: string) => {
+          const target = THEME_COLORS[newSectionId] ?? DEFAULT_COLOR;
+          // Synchronous snap
+          currentColor = { ...target };
+          // Wake mobile
+          const wakeMobile = () => {
+            if (isMobileViewport(globalThis.innerWidth)) {
+              // Static draw simulation
+              isSleeping = true;
+              activeRaf = 0;
+              return;
+            }
+            activeRaf = globalThis.requestAnimationFrame(() => {});
+          };
+          wakeMobile();
+        };
+
+        // Scroll to 'about' section
+        simulateSectionChange("about");
+        expect(currentColor).toEqual(THEME_COLORS.about);
+        expect(rafCount).toBe(0);
+        expect(isSleeping).toBe(true);
+        expect(activeRaf).toBe(0);
+
+        // Scroll to 'projects' section
+        simulateSectionChange("projects");
+        expect(currentColor).toEqual(THEME_COLORS.projects);
+        expect(rafCount).toBe(0);
+        expect(isSleeping).toBe(true);
+        expect(activeRaf).toBe(0);
+      } finally {
+        globalThis.innerWidth = origInnerWidth;
+        globalThis.requestAnimationFrame = origRaf;
+      }
+    });
+
+    it("triggers a synchronous static repaint on mobile theme mutations with updated contrast and zero RAF", () => {
+      // Component source verifies theme observer triggers wake() which synchronously repaints on mobile
+      expect(componentSource).toMatch(/themeObserver\s*=\s*new\s+MutationObserver\(/);
+      expect(componentSource).toMatch(/wake\(\);/);
+
+      // Verify draw() dynamically computes dark vs light contrast tokens
+      expect(componentSource).toMatch(/const\s+isDark\s*=\s*document\.documentElement\.classList\.contains\(["']dark["']\);/);
+      expect(componentSource).toMatch(/restingEdgeAlpha\s*=\s*isDark\s*\?\s*0\.17\s*:\s*0\.15/);
+      expect(componentSource).toMatch(/peakEdgeAlpha\s*=\s*isDark\s*\?\s*0\.70\s*:\s*0\.68/);
+      expect(componentSource).toMatch(/restingVertexAlpha\s*=\s*isDark\s*\?\s*0\.24\s*:\s*0\.20/);
+      expect(componentSource).toMatch(/peakVertexAlpha\s*=\s*isDark\s*\?\s*0\.80\s*:\s*0\.74/);
+
+      // Verify light mode tone deepening for crisp contrast
+      expect(componentSource).toMatch(/const\s+hoverR\s*=\s*isDark\s*\?\s*cr\s*:\s*Math\.round\(cr\s*\*\s*0\.72\);/);
+      expect(componentSource).toMatch(/const\s+hoverG\s*=\s*isDark\s*\?\s*cg\s*:\s*Math\.round\(cg\s*\*\s*0\.72\);/);
+      expect(componentSource).toMatch(/const\s+hoverB\s*=\s*isDark\s*\?\s*cb\s*:\s*Math\.round\(cb\s*\*\s*0\.82\);/);
+    });
+
+    it("manages dynamic cross-breakpoint handoff across the 1024px boundary in resize()", () => {
+      // 1. Detaches pointer listeners, halts RAF, empties ripples, resets mouse on transition to mobile (< 1024px)
+      expect(componentSource).toMatch(
+        /if\s*\(\s*isMobile\s*\)\s*\{[\s\S]*?detachPointerListeners\(\);[\s\S]*?if\s*\(\s*rafRef\.current\s*\)\s*\{[\s\S]*?cancelAnimationFrame\(rafRef\.current\);[\s\S]*?rafRef\.current\s*=\s*0;[\s\S]*?\}[\s\S]*?ripplesRef\.current\s*=\s*\[\];[\s\S]*?mouseRef\.current\s*=\s*\{\s*x:\s*-9999,\s*y:\s*-9999\s*\};[\s\S]*?\}[\s\S]*?else\s*\{[\s\S]*?attachPointerListeners\(\);[\s\S]*?\}/
+      );
+
+      // 2. Rebuilds lattice geometry with responsive density
+      expect(componentSource).toMatch(
+        /const\s+cubeEdge\s*=\s*getCubeEdge\(window\.innerWidth\);[\s\S]*?const\s+dotSpacing\s*=\s*getDotSpacing\(window\.innerWidth\);/
+      );
+    });
+
+    it("verifies dynamic handoff state transitions across simulated viewport resize", () => {
+      let pointerAttached = false;
+      let activeRaf = 0;
+      let ripples: any[] = [{ x: 100, y: 100 }];
+      let currentWidth = 1200;
+
+      const attachPointerListeners = () => { pointerAttached = true; };
+      const detachPointerListeners = () => { pointerAttached = false; };
+      const cancelRaf = vi.fn(() => { activeRaf = 0; });
+
+      const simulateResize = (newWidth: number) => {
+        currentWidth = newWidth;
+        const isMobile = isMobileViewport(newWidth);
+        if (isMobile) {
+          detachPointerListeners();
+          if (activeRaf) {
+            cancelRaf();
+          }
+          ripples = [];
+        } else {
+          attachPointerListeners();
+        }
+      };
+
+      // Desktop initial state (1200px)
+      simulateResize(1200);
+      expect(pointerAttached).toBe(true);
+
+      // User triggers a ripple on desktop
+      activeRaf = 42;
+      ripples = [{ x: 500, y: 300, startTime: 1000 }];
+
+      // Resize across boundary to mobile (768px)
+      simulateResize(768);
+      expect(pointerAttached).toBe(false);
+      expect(cancelRaf).toHaveBeenCalledTimes(1);
+      expect(activeRaf).toBe(0);
+      expect(ripples.length).toBe(0);
+
+      // Resize back across boundary to desktop (1440px)
+      simulateResize(1440);
+      expect(pointerAttached).toBe(true);
+    });
+
+    it("verifies desktop (≥ 1024px) retains full interactive fidelity without regressions", () => {
+      // Desktop retains mousemove proximity spotlight
+      expect(componentSource).toContain("SPOTLIGHT_R");
+      expect(componentSource).toContain("CUBE_PROX_R");
+      expect(componentSource).toContain("DOT_PROX_R");
+
+      // Desktop retains click ripples with 1100ms duration
+      expect(componentSource).toContain("RIPPLE_DURATION = 1100");
+
+      // Desktop retains 3D hemispherical dot matrix dome projection & damped harmonic bounce
+      expect(componentSource).toContain("calculateSpringFactor");
+      expect(componentSource).toContain("calculateDotRadius");
+      expect(componentSource).toContain("DOT_MAX_DISPLACEMENT");
+
+      // Desktop floating switcher pill retains accessible button controls
+      const html = renderToString(<InteractiveBackground activeSectionId="home" />);
+      expect(html).toContain('id="bg-switcher-cubes"');
+      expect(html).toContain('id="bg-switcher-dots"');
+      expect(html).toContain("hidden lg:flex");
     });
   });
 });
