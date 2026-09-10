@@ -796,14 +796,12 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       let pointerAttached = false;
       let activeRaf = 0;
       let ripples: any[] = [{ x: 100, y: 100 }];
-      let currentWidth = 1200;
 
       const attachPointerListeners = () => { pointerAttached = true; };
       const detachPointerListeners = () => { pointerAttached = false; };
       const cancelRaf = vi.fn(() => { activeRaf = 0; });
 
       const simulateResize = (newWidth: number) => {
-        currentWidth = newWidth;
         const isMobile = isMobileViewport(newWidth);
         if (isMobile) {
           detachPointerListeners();
