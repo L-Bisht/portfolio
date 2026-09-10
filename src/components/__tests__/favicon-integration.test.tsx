@@ -200,3 +200,91 @@ describe("Fallback Raster Asset Pipeline & Touch Icon Integration (Issue 02)", (
     });
   });
 });
+
+describe("Domain Glossary & Architectural Decision Record Integration (Issue 03)", () => {
+  let contextMdExists = false;
+  let contextMdContent = "";
+  let adrExists = false;
+  let adrContent = "";
+
+  beforeAll(async () => {
+    const fsMod = "node:fs";
+    const pathMod = "node:path";
+    const fs = (await import(fsMod)) as unknown as {
+      existsSync: (p: string) => boolean;
+      readFileSync: (p: string, enc: string) => string;
+    };
+    const path = (await import(pathMod)) as unknown as {
+      resolve: (...p: string[]) => string;
+      join: (...p: string[]) => string;
+    };
+
+    const rootDir = process.cwd();
+    const contextPath = path.resolve(rootDir, "CONTEXT.md");
+    const adrPath = path.resolve(rootDir, "docs/adr/0008-isometric-monogram-favicon.md");
+
+    contextMdExists = fs.existsSync(contextPath);
+    if (contextMdExists) {
+      contextMdContent = fs.readFileSync(contextPath, "utf-8") as string;
+    }
+
+    adrExists = fs.existsSync(adrPath);
+    if (adrExists) {
+      adrContent = fs.readFileSync(adrPath, "utf-8") as string;
+    }
+  });
+
+  describe("Domain Glossary (CONTEXT.md)", () => {
+    it("ensures CONTEXT.md exists and is non-empty", () => {
+      expect(contextMdExists).toBe(true);
+      expect(contextMdContent.trim().length).toBeGreaterThan(0);
+    });
+
+    it("registers the canonical Isometric Monogram Favicon domain concept", () => {
+      expect(contextMdContent).toContain("**Isometric Monogram Favicon**");
+    });
+
+    it("documents the squircle badge geometry, 3-tone planar lighting, and 16px legibility", () => {
+      const entry = contextMdContent.slice(
+        contextMdContent.indexOf("**Isometric Monogram Favicon**")
+      );
+      expect(entry).toMatch(/obsidian/i);
+      expect(entry).toContain("#050811");
+      expect(entry).toContain('rx="14"');
+      expect(entry).toMatch(/3-tone planar/i);
+      expect(entry).toContain("#22d3ee");
+      expect(entry).toContain("#38bdf8");
+      expect(entry).toContain("#0284c7");
+      expect(entry).toMatch(/16×16|16x16/);
+    });
+  });
+
+  describe("Architectural Decision Record (docs/adr/0008-isometric-monogram-favicon.md)", () => {
+    it("ensures docs/adr/0008-isometric-monogram-favicon.md exists and is non-empty", () => {
+      expect(adrExists).toBe(true);
+      expect(adrContent.trim().length).toBeGreaterThan(0);
+    });
+
+    it("documents standard architectural decision sections (Context, Decision Drivers, Decision, Consequences)", () => {
+      expect(adrContent).toMatch(/^#\s+0008[\s.:]/m);
+      expect(adrContent).toMatch(/##\s+Context/i);
+      expect(adrContent).toMatch(/##\s+Decision Drivers/i);
+      expect(adrContent).toMatch(/##\s+Decision/i);
+      expect(adrContent).toMatch(/##\s+Consequences/i);
+    });
+
+    it("articulates key decision drivers: 16px tab legibility, planar lighting, and solid badge vs. transparent", () => {
+      expect(adrContent).toMatch(/16px\s+(?:tab\s+)?legibility/i);
+      expect(adrContent).toMatch(/planar\s+lighting/i);
+      expect(adrContent).toMatch(/solid\s+badge\s+vs\.?\s+transparent/i);
+    });
+
+    it("details the 3-tone color hierarchy (#22d3ee, #38bdf8, #0284c7) and obsidian squircle contrast guarantee", () => {
+      expect(adrContent).toContain("#22d3ee");
+      expect(adrContent).toContain("#38bdf8");
+      expect(adrContent).toContain("#0284c7");
+      expect(adrContent).toContain("#050811");
+    });
+  });
+});
+
