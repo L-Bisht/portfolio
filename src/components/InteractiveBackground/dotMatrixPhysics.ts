@@ -11,14 +11,35 @@
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+// See ADR 0009
+export {
+  MID_DENSITY_BREAKPOINT,
+  CUBE_PROX_R,
+  CUBE_PROX_R2,
+  CUBE_PROX_R_MID,
+  CUBE_PROX_R2_MID,
+  CUBE_PROX_R_MID_TIER,
+  CUBE_PROX_R2_MID_TIER,
+  SPOTLIGHT_R,
+  SPOTLIGHT_R_MID,
+  SPOTLIGHT_R_MID_TIER,
+} from "./isometricLattice";
+
 export const DOT_SPACING = 26; // px between dot centres in resting grid (desktop >= 768px)
 export const DOT_SPACING_MOBILE = 38; // px between dot centres in resting grid (mobile < 768px)
+// See ADR 0009
+export const DOT_SPACING_MID = 32; // px between dot centres in mid-density grid (1024-1366px)
+export const DOT_SPACING_MID_TIER = DOT_SPACING_MID;
 export const MOBILE_BREAKPOINT = 768; // px mobile viewport breakpoint
 export const DOT_BASE_R = 1.4; // px resting dot radius
 export const DOT_APEX_SCALE = 2.4; // peak scale multiplier at dome apex (1.4 * 2.4 = 3.36px)
 export const DOT_MAX_DISPLACEMENT = 16; // px max radial outward shift
-export const DOT_PROX_R = 180; // px proximity influence radius
+export const DOT_PROX_R = 180; // px proximity influence radius (desktop >= 1367px)
 export const DOT_PROX_R2 = DOT_PROX_R * DOT_PROX_R; // 32400 px^2
+export const DOT_PROX_R_MID = 130; // px proximity influence radius for mid-density tier (1024-1366px)
+export const DOT_PROX_R2_MID = DOT_PROX_R_MID * DOT_PROX_R_MID; // 16900 px^2
+export const DOT_PROX_R_MID_TIER = DOT_PROX_R_MID;
+export const DOT_PROX_R2_MID_TIER = DOT_PROX_R2_MID;
 
 // Spring physics constants: underdamped harmonic oscillator (m = 1)
 export const SPRING_K = 280; // stiffness coefficient (rad^2/s^2)
@@ -33,9 +54,10 @@ export const RIPPLE_WAVE_W = 55; // px wavefront ring thickness
 export const RIPPLE_PUSH_MAX = 8; // px max outward displacement from kinetic wavefront
 
 // Idle sleep loop constants
-export const POINTER_IDLE_MS = 150; // ms threshold of stationary pointer before sleep
+export const POINTER_IDLE_MS = 80; // ms threshold of stationary pointer before sleep (tightened from 150ms, ADR 0009)
 export const SCROLL_DEBOUNCE_MS = 150; // ms debounce upon scroll cessation before wake-and-settle
 export const COLOR_LERP_TOLERANCE = 0.5; // RGB channel convergence tolerance
+export const COLOR_LERP_FACTOR = 0.08; // per-frame section accent color interpolation factor (bumped from 0.05, ADR 0009)
 
 /**
  * Returns the dot grid spacing based on viewport width (< 768px mobile -> 38px, desktop -> 26px)
@@ -264,6 +286,54 @@ export function evaluateIdleSettle(state: IdleSettleState): IdleSettleResult {
 }
 
 /**
+ * Ripple wavefront proximity function.
+ * Evaluates whether a 2D offset (dx, dy) or coordinate point is within the expanding ripple wavefront ring.
+ * Uses an algebraic squared-distance formulation:
+ * - Upper bound: d^2 - r^2 < W * (2r + W)
+ * - Lower bound: d^2 - r^2 > -W * (2r - W) (when r > W, else -r^2)
+ *
+ * This completely avoids Math.sqrt and Math.hypot in the per-element inner loop
+ * while matching the exact geometric condition |d - r| < W.
+ */
+export function isNearWavefront(
+  dxOrPx: number,
+  dyOrPy: number,
+  radiusOrRipX: number,
+  waveWidthOrRipY?: number,
+  radius?: number,
+  waveWidth?: number
+): boolean {
+  let dx: number;
+  let dy: number;
+  let r: number;
+  let w: number;
+
+  if (typeof radius === "number") {
+    // Called as (px, py, ripX, ripY, radius, waveWidth)
+    dx = dxOrPx - radiusOrRipX;
+    dy = dyOrPy - (waveWidthOrRipY ?? 0);
+    r = radius;
+    w = waveWidth ?? RIPPLE_WAVE_W;
+  } else {
+    // Called as (dx, dy, radius, waveWidth)
+    dx = dxOrPx;
+    dy = dyOrPy;
+    r = radiusOrRipX;
+    w = waveWidthOrRipY ?? RIPPLE_WAVE_W;
+  }
+
+  const d2 = dx * dx + dy * dy;
+  const r2 = r * r;
+  const maxDiff = w * (2 * r + w);
+  const minDiff = r > w ? -w * (2 * r - w) : -r2;
+  const diff = d2 - r2;
+  return diff > minDiff && diff < maxDiff;
+}
+
+export const isPointNearWavefront = isNearWavefront;
+export const isNearWavefrontApprox = isNearWavefront;
+
+/**
  * Partitions grid intersection dots into resting dots and dynamic dots using a 2D spatial bounding box.
  * - Resting dots: outside cursor proximity bounding box (|dx| >= R or |dy| >= R) and outside active ripple wavefronts.
  * - Dynamic dots: inside cursor proximity bounding box (|dx| < R and |dy| < R) or within active ripple wavefront zones.
@@ -296,8 +366,7 @@ export function partitionDots(
     } else if (numRipples > 0) {
       for (let j = 0; j < numRipples; j++) {
         const rip = activeRipples[j];
-        const d = Math.hypot(p.x - rip.x, p.y - rip.y);
-        if (Math.abs(d - rip.radius) < waveWidth) {
+        if (isNearWavefront(p.x - rip.x, p.y - rip.y, rip.radius, waveWidth)) {
           isDynamic = true;
           break;
         }

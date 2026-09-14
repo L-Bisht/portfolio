@@ -24,7 +24,22 @@ import {
   calculateDotRadius,
   evaluateIdleSettle,
   partitionDots,
+  MID_DENSITY_BREAKPOINT,
+  DOT_SPACING_MID,
+  DOT_PROX_R_MID,
+  CUBE_PROX_R_MID,
+  SPOTLIGHT_R_MID,
+  SPOTLIGHT_R,
+  COLOR_LERP_FACTOR,
+  isNearWavefront,
 } from "./dotMatrixPhysics";
+import {
+  MID_DENSITY_BREAKPOINT as GEOMETRY_MID_DENSITY_BREAKPOINT,
+  CUBE_PROX_R as GEOMETRY_CUBE_PROX_R,
+  CUBE_PROX_R_MID as GEOMETRY_CUBE_PROX_R_MID,
+  SPOTLIGHT_R as GEOMETRY_SPOTLIGHT_R,
+  SPOTLIGHT_R_MID as GEOMETRY_SPOTLIGHT_R_MID,
+} from "./isometricLattice";
 
 describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () => {
   describe("Hemispherical Elevation Geometry Contract", () => {
@@ -272,8 +287,8 @@ describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () =
       targetColor: { r: 14, g: 165, b: 233 },
     };
 
-    it("verifies idle sleep constants (POINTER_IDLE_MS = 150, COLOR_LERP_TOLERANCE = 0.5)", () => {
-      expect(POINTER_IDLE_MS).toBe(150);
+    it("verifies idle sleep constants (POINTER_IDLE_MS = 80, COLOR_LERP_TOLERANCE = 0.5)", () => {
+      expect(POINTER_IDLE_MS).toBe(80);
       expect(COLOR_LERP_TOLERANCE).toBe(0.5);
     });
 
@@ -297,35 +312,35 @@ describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () =
       expect(result.shouldSleep).toBe(true);
     });
 
-    it("evaluates pointer settled based on 150ms stationary threshold when on-screen", () => {
-      // Active movement (elapsed 80ms < 150ms)
+    it("evaluates pointer settled based on 80ms stationary threshold when on-screen", () => {
+      // Active movement (elapsed 40ms < 80ms)
       const moving = evaluateIdleSettle({
+        ...baseState,
+        pointerX: 400,
+        pointerY: 300,
+        now: 1040,
+        lastPointerMoveTime: 1000,
+      });
+      expect(moving.isPointerSettled).toBe(false);
+      expect(moving.shouldSleep).toBe(false);
+
+      // Settled stationary (elapsed 80ms)
+      const settledThreshold = evaluateIdleSettle({
         ...baseState,
         pointerX: 400,
         pointerY: 300,
         now: 1080,
         lastPointerMoveTime: 1000,
       });
-      expect(moving.isPointerSettled).toBe(false);
-      expect(moving.shouldSleep).toBe(false);
-
-      // Settled stationary (elapsed 150ms)
-      const settledThreshold = evaluateIdleSettle({
-        ...baseState,
-        pointerX: 400,
-        pointerY: 300,
-        now: 1150,
-        lastPointerMoveTime: 1000,
-      });
       expect(settledThreshold.isPointerSettled).toBe(true);
       expect(settledThreshold.shouldSleep).toBe(true);
 
-      // Settled stationary (elapsed 300ms > 150ms)
+      // Settled stationary (elapsed 200ms > 80ms)
       const settled = evaluateIdleSettle({
         ...baseState,
         pointerX: 400,
         pointerY: 300,
-        now: 1300,
+        now: 1200,
         lastPointerMoveTime: 1000,
       });
       expect(settled.isPointerSettled).toBe(true);
@@ -541,5 +556,69 @@ describe("Dot Matrix 3D Hemispherical Projection & Kinetic Spring Physics", () =
       expect(defaultResult.shouldSleep).toBe(true);
     });
   });
+
+  describe("Mid-Density Canvas Tier & Ripple Optimization Contract (ADR 0009)", () => {
+    it("exports MID_DENSITY_BREAKPOINT = 1366 from geometry and physics modules", () => {
+      expect(GEOMETRY_MID_DENSITY_BREAKPOINT).toBe(1366);
+      expect(MID_DENSITY_BREAKPOINT).toBe(1366);
+    });
+
+    it("defines and exports mid-tier variants alongside desktop counterparts", () => {
+      // Dot grid spacing: desktop 26px, mid-tier 32px
+      expect(DOT_SPACING).toBe(26);
+      expect(DOT_SPACING_MID).toBe(32);
+
+      // Dot proximity radius: desktop 180px, mid-tier 130px
+      expect(DOT_PROX_R).toBe(180);
+      expect(DOT_PROX_R_MID).toBe(130);
+
+      // Cube proximity radius: desktop 190px, mid-tier 140px
+      expect(GEOMETRY_CUBE_PROX_R).toBe(190);
+      expect(CUBE_PROX_R_MID).toBe(140);
+      expect(GEOMETRY_CUBE_PROX_R_MID).toBe(140);
+
+      // Spotlight radius: desktop 380px, mid-tier 260px
+      expect(SPOTLIGHT_R).toBe(380);
+      expect(GEOMETRY_SPOTLIGHT_R).toBe(380);
+      expect(SPOTLIGHT_R_MID).toBe(260);
+      expect(GEOMETRY_SPOTLIGHT_R_MID).toBe(260);
+
+      // Colour lerp factor: updated to 0.08
+      expect(COLOR_LERP_FACTOR).toBe(0.08);
+    });
+
+    it("squared-distance wavefront approximation agrees with exact Math.hypot path for representative near-boundary inputs", () => {
+      const radius = 150;
+      const waveWidth = 55;
+
+      const exactCheck = (dx: number, dy: number) => {
+        const d = Math.hypot(dx, dy);
+        return Math.abs(d - radius) < waveWidth;
+      };
+
+      const testCases = [
+        { dx: 150, dy: 0, desc: "on wavefront ring (d = r)" },
+        { dx: 0, dy: 150, desc: "on wavefront ring vertical (d = r)" },
+        { dx: 150 * Math.SQRT1_2, dy: 150 * Math.SQRT1_2, desc: "on wavefront ring diagonal (d = r)" },
+        { dx: 125, dy: 0, desc: "inside wavefront ring (d = r - 25)" },
+        { dx: 175, dy: 0, desc: "inside wavefront ring (d = r + 25)" },
+        { dx: 100, dy: 0, desc: "inside near inner boundary (d = r - 50)" },
+        { dx: 200, dy: 0, desc: "inside near outer boundary (d = r + 50)" },
+        { dx: 205, dy: 0, desc: "at outer boundary (d = r + W)" },
+        { dx: 210, dy: 0, desc: "outside outer boundary (d = r + W + 5)" },
+        { dx: 95, dy: 0, desc: "at inner boundary (d = r - W)" },
+        { dx: 90, dy: 0, desc: "outside inner boundary (d = r - W - 5)" },
+        { dx: 300, dy: 0, desc: "far outside wavefront ring" },
+        { dx: 10, dy: 0, desc: "far inside near origin" },
+      ];
+
+      for (const tc of testCases) {
+        const approx = isNearWavefront(tc.dx, tc.dy, radius, waveWidth);
+        const exact = exactCheck(tc.dx, tc.dy);
+        expect(approx).toBe(exact);
+      }
+    });
+  });
 });
+
 

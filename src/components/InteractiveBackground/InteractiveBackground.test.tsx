@@ -221,7 +221,7 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       expect(componentSource).toContain("evaluateIdleSettle");
       expect(componentSource).toContain("partitionDots");
       expect(componentSource).toContain("COLOR_LERP_TOLERANCE");
-      expect(POINTER_IDLE_MS).toBe(150);
+      expect(POINTER_IDLE_MS).toBe(80);
       expect(COLOR_LERP_TOLERANCE).toBe(0.5);
       expect(SPRING_SETTLE_MS).toBe(550);
     });
@@ -795,7 +795,7 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
     it("verifies dynamic handoff state transitions across simulated viewport resize", () => {
       let pointerAttached = false;
       let activeRaf = 0;
-      let ripples: any[] = [{ x: 100, y: 100 }];
+      let ripples: Array<{ x: number; y: number; startTime?: number }> = [{ x: 100, y: 100 }];
 
       const attachPointerListeners = () => { pointerAttached = true; };
       const detachPointerListeners = () => { pointerAttached = false; };

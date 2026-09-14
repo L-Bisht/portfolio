@@ -23,6 +23,7 @@ import {
   RIPPLE_WAVE_W as DOT_RIPPLE_WAVE_W,
   RIPPLE_PUSH_MAX,
   COLOR_LERP_TOLERANCE,
+  COLOR_LERP_FACTOR,
   SCROLL_DEBOUNCE_MS,
   calculateSpringFactor,
   calculateDotRadius,
@@ -47,7 +48,8 @@ interface ClickRipple {
 }
 
 // ─── section accent colors ────────────────────────────────────────────────────
-
+ 
+// eslint-disable-next-line react-refresh/only-export-components
 export const THEME_COLORS: Record<string, RGB> = {
   home:       { r: 14,  g: 165, b: 233 }, // sky-500
   about:      { r: 20,  g: 184, b: 166 }, // teal-500 / cyan
@@ -57,6 +59,7 @@ export const THEME_COLORS: Record<string, RGB> = {
   contact:    { r: 14,  g: 165, b: 233 }, // sky-500
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_COLOR: RGB = THEME_COLORS.home;
 
 // ─── geometry & wave constants ────────────────────────────────────────────────
@@ -224,9 +227,9 @@ export default function InteractiveBackground({
           col.g = target.g;
           col.b = target.b;
         } else {
-          col.r = lerpChannel(col.r, target.r, 0.05);
-          col.g = lerpChannel(col.g, target.g, 0.05);
-          col.b = lerpChannel(col.b, target.b, 0.05);
+          col.r = lerpChannel(col.r, target.r, COLOR_LERP_FACTOR);
+          col.g = lerpChannel(col.g, target.g, COLOR_LERP_FACTOR);
+          col.b = lerpChannel(col.b, target.b, COLOR_LERP_FACTOR);
         }
       }
       const cr = Math.round(col.r);

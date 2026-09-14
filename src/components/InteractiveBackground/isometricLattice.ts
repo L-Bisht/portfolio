@@ -28,8 +28,20 @@ export const CUBE_EDGE = 38; // px length of each isometric cube wireframe edge 
 export const CUBE_EDGE_MOBILE = 48; // px length of each isometric cube wireframe edge (mobile < 768px)
 export const MOBILE_BREAKPOINT = 768; // px mobile viewport breakpoint for cube edge density
 export const DESKTOP_BREAKPOINT = 1024; // px macro layout and canvas engine breakpoint (< 1024px mobile, >= 1024px desktop)
+
+// See ADR 0009
+export const MID_DENSITY_BREAKPOINT = 1366; // px mid-density canvas tier upper bound (1024-1366px)
+
 export const CUBE_PROX_R = 190; // px proximity influence radius (desktop cursor)
 export const CUBE_PROX_R2 = CUBE_PROX_R * CUBE_PROX_R;
+export const CUBE_PROX_R_MID = 140; // px proximity influence radius for mid-density tier (1024-1366px)
+export const CUBE_PROX_R2_MID = CUBE_PROX_R_MID * CUBE_PROX_R_MID;
+export const CUBE_PROX_R_MID_TIER = CUBE_PROX_R_MID;
+export const CUBE_PROX_R2_MID_TIER = CUBE_PROX_R2_MID;
+
+export const SPOTLIGHT_R = 380; // px radius of the soft ambient cursor spotlight (desktop >= 1367px)
+export const SPOTLIGHT_R_MID = 260; // px radius of ambient spotlight for mid-density tier (1024-1366px)
+export const SPOTLIGHT_R_MID_TIER = SPOTLIGHT_R_MID;
 
 // ── Mobile Fixed Illumination Anchor Specification (ADR 0007) ────────────────
 export const MOBILE_ANCHOR_X_RATIO = 0.65; // x: 65% of viewport width
