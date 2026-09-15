@@ -1,4 +1,4 @@
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type React from "react";
 
@@ -26,54 +26,16 @@ export interface SectionScaffoldProps {
   children?: React.ReactNode;
   /** Extra classes forwarded to the outer <section> */
   className?: string;
+  /** Optional override for reduced motion preference (defaults to system / media query) */
+  reducedMotion?: boolean;
 }
 
-// ─── Animation variants ────────────────────────────────────────────────────
-
-/** Staggered wrapper that drives all child word reveals */
-const headlineContainerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.09,
-      delayChildren: 0.15,
-    },
-  },
-};
-
-/**
- * Each word rises from beneath its overflow mask.
- * The mask uses `pb-3 -mb-3 pt-1 -mt-1` to give descenders (`g j p y`)
- * breathing room so they are never visually clipped.
- */
-const wordVariants: Variants = {
-  hidden: { y: "115%", opacity: 0 },
-  visible: {
-    y: "0%",
-    opacity: 1,
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-/** Fade + slide up for the eyebrow badge */
-const eyebrowVariants: Variants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-/** Fade + slide up for the subtitle */
-const subtitleVariants: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
-  },
-};
+import {
+  getSectionHeadlineContainerVariants,
+  getSectionWordVariants,
+  getSectionEyebrowVariants,
+  getSectionSubtitleVariants,
+} from "./sectionScaffoldVariants";
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
@@ -85,6 +47,7 @@ const SectionScaffold = ({
   subtitle,
   children,
   className = "",
+  reducedMotion,
 }: SectionScaffoldProps) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -92,12 +55,25 @@ const SectionScaffold = ({
     rootMargin: "-10% 0px -10% 0px",
   });
 
+  const systemReducedMotion = useReducedMotion();
+  const isReducedMotion =
+    reducedMotion ??
+    (Boolean(systemReducedMotion) ||
+      (typeof window !== "undefined" &&
+        Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches)));
+
+  const headlineContainerVariants = getSectionHeadlineContainerVariants(isReducedMotion);
+  const wordVariants = getSectionWordVariants(isReducedMotion);
+  const eyebrowVariants = getSectionEyebrowVariants(isReducedMotion);
+  const subtitleVariants = getSectionSubtitleVariants(isReducedMotion);
+
   const words = headline.split(" ");
 
   return (
     <section
       id={id}
       ref={ref}
+      data-reduced-motion={isReducedMotion ? "true" : "false"}
       className={`relative py-28 overflow-hidden ${className}`}
     >
       {/* ── Inner constrained container with responsive gutters ─────── */}
@@ -106,7 +82,7 @@ const SectionScaffold = ({
         <motion.div
           id={`${id}-eyebrow`}
           variants={eyebrowVariants}
-          initial="hidden"
+          initial={isReducedMotion ? false : "hidden"}
           animate={inView ? "visible" : "hidden"}
           className="flex items-center gap-3 mb-8"
         >
@@ -125,7 +101,7 @@ const SectionScaffold = ({
         {/* ── Commanding headline ───────────────────────────────────── */}
         <motion.h2
           variants={headlineContainerVariants}
-          initial="hidden"
+          initial={isReducedMotion ? false : "hidden"}
           animate={inView ? "visible" : "hidden"}
           aria-label={headline}
           className="
@@ -177,7 +153,7 @@ const SectionScaffold = ({
           <motion.p
             data-testid="scaffold-subtitle"
             variants={subtitleVariants}
-            initial="hidden"
+            initial={isReducedMotion ? false : "hidden"}
             animate={inView ? "visible" : "hidden"}
             className="
               max-w-2xl text-lg leading-relaxed

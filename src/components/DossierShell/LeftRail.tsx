@@ -4,6 +4,7 @@ import { Sun, Moon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { NavData, NavItem } from "../../data/nav";
 import { navSocialProfiles } from "../../data/social";
 import { useTheme } from "../../context/ThemeContext";
+import { RAIL_SPRING } from "./leftRailConstants";
 
 
 // ─── Icon map (reused from FloatingDock) ─────────────────────────────────────
@@ -212,8 +213,7 @@ interface LeftRailProps {
   onToggleExpanded?: () => void;
 }
 
-// Framer Motion spring for the width animation
-const RAIL_SPRING = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.8 };
+// LeftRail component
 
 export default function LeftRail({
   data,

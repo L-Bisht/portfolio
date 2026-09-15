@@ -312,7 +312,7 @@ function CaseStudyRow({
           bg-white/[0.03] dark:bg-white/[0.02]
           border border-slate-200/80 dark:border-white/[0.07]
           backdrop-blur-sm
-          transition-all duration-500
+          transition-[opacity,box-shadow,border-color,background-color] duration-500
           ${index > 0 ? "mt-6" : ""}
         `}
         style={{

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderToString } from "react-dom/server";
 import LeftRail, { SocialLinks } from "./LeftRail";
+import { RAIL_SPRING } from "./leftRailConstants";
 import { navData } from "../../data/nav";
 import { socialRegistry } from "../../data/social";
 import { ThemeProvider } from "../../context/ThemeContext";
@@ -121,6 +122,15 @@ describe("LeftRail Component", () => {
 
       // "Available for work" pill must NOT be present
       expect(html).not.toContain("Available for work");
+    });
+  });
+
+  describe("Rail Spring Configuration (ADR 0009)", () => {
+    it("configures spring physics with damping of 40 to eliminate oscillation cycles", () => {
+      expect(RAIL_SPRING.type).toBe("spring");
+      expect(RAIL_SPRING.damping).toBe(40);
+      expect(RAIL_SPRING.stiffness).toBe(320);
+      expect(RAIL_SPRING.mass).toBe(0.8);
     });
   });
 });

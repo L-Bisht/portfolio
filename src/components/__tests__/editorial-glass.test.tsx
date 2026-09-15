@@ -50,6 +50,21 @@ describe("Dual-Mode Editorial Glass Strata Architecture (ADR 0005 & Issue 04)", 
       expect(cssContent).toMatch(/background-color:\s*rgba\(255,\s*255,\s*255,\s*0\.2\)/);
       expect(cssContent).toMatch(/background-color:\s*rgba\(15,\s*23,\s*42,\s*0\.4\)/);
     });
+
+    it("declares mid-density media query (1024px-1366px) with 12px blur ordered after >= 1024px block (ADR 0009)", () => {
+      const desktopQueryIndex = cssContent.indexOf("@media (min-width: 1024px) {");
+      const midDensityQueryIndex = cssContent.indexOf(
+        "@media (min-width: 1024px) and (max-width: 1366px)"
+      );
+
+      expect(desktopQueryIndex).toBeGreaterThan(-1);
+      expect(midDensityQueryIndex).toBeGreaterThan(desktopQueryIndex);
+
+      // Verify blur(12px) is declared within this block
+      const midDensitySlice = cssContent.slice(midDensityQueryIndex);
+      expect(midDensitySlice).toMatch(/backdrop-filter:\s*blur\(12px\)/);
+      expect(midDensitySlice).toMatch(/-webkit-backdrop-filter:\s*blur\(12px\)/);
+    });
   });
 
   describe("About Component Glass Strata & Motifs", () => {

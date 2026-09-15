@@ -78,6 +78,7 @@ const RIPPLE_DURATION = 1100; // ms duration of click ripple propagation
 
 
 /** Build a flat array of (x, y) grid intersection points for the dot matrix renderer */
+// eslint-disable-next-line react-refresh/only-export-components
 export function buildGrid(w: number, h: number, spacing: number): GridPoint[] {
   const pts: GridPoint[] = [];
   const cols = Math.ceil(w / spacing) + 1;

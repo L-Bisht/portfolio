@@ -8,6 +8,8 @@ interface GlowCardProps {
   style?: CSSProperties;
   /** aria-label forwarded to the wrapper */
   "aria-label"?: string;
+  /** Optional override for hover capability (defaults to window.matchMedia("(hover: hover)").matches) */
+  canHover?: boolean;
 }
 
 /**
@@ -38,6 +40,7 @@ function GlowLayer({
 
   return (
     <motion.div
+      data-testid="glow-layer"
       aria-hidden="true"
       className="pointer-events-none absolute inset-[-1px] rounded-2xl"
       style={{ background, opacity: glowOpacity }}
@@ -50,15 +53,28 @@ const GlowCard = ({
   className = "",
   style,
   "aria-label": ariaLabel,
+  canHover: canHoverProp,
 }: GlowCardProps) => {
   const ref = useRef<HTMLDivElement>(null);
+
+  // Read window.matchMedia("(hover: hover)").matches once into a ref at mount.
+  // When false (touch-primary devices), <GlowLayer> and whileHover are omitted.
+  const canHoverRef = useRef<boolean>(
+    canHoverProp !== undefined
+      ? canHoverProp
+      : typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(hover: hover)").matches
+        : true
+  );
+  const canHover = canHoverRef.current;
 
   // Raw mouse position (0–1 relative to card dimensions)
   const rawX = useMotionValue(0.5);
   const rawY = useMotionValue(0.5);
   const isHoveringMV = useMotionValue(0);
 
-  // Spring-smooth position so the glow trails slightly
+  // Spring-smooth position so the glow trails slightly.
+  // Hooks must initialise unconditionally, but produce no DOM writes when canHover is false.
   const springConfig = { stiffness: 180, damping: 25, mass: 0.5 };
   const mx = useSpring(rawX, springConfig);
   const my = useSpring(rawY, springConfig);
@@ -69,6 +85,7 @@ const GlowCard = ({
   const myPct = useTransform(my, (v) => `${v * 100}%`);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!canHover) return;
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
     rawX.set((e.clientX - rect.left) / rect.width);
@@ -76,10 +93,12 @@ const GlowCard = ({
   };
 
   const handleMouseEnter = () => {
+    if (!canHover) return;
     isHoveringMV.set(1);
   };
 
   const handleMouseLeave = () => {
+    if (!canHover) return;
     isHoveringMV.set(0);
     // Return glow to centre so it exits gracefully on re-enter
     rawX.set(0.5);
@@ -92,14 +111,16 @@ const GlowCard = ({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      whileHover={{ y: -5 }}
+      whileHover={canHover ? { y: -5 } : undefined}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={`relative h-full ${className}`}
       style={style}
       aria-label={ariaLabel}
     >
-      {/* Dynamic glow border — sits just behind the card surface */}
-      <GlowLayer mxPct={mxPct} myPct={myPct} glowOpacity={glowOpacity} />
+      {/* Dynamic glow border — sits just behind the card surface (omitted on touch-primary devices) */}
+      {canHover && (
+        <GlowLayer mxPct={mxPct} myPct={myPct} glowOpacity={glowOpacity} />
+      )}
 
       {/* Foreground card surface */}
       <div
