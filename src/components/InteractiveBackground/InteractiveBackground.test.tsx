@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 import componentSource from "./InteractiveBackground.tsx?raw";
-import InteractiveBackground, { THEME_COLORS, DEFAULT_COLOR } from "./InteractiveBackground";
+import InteractiveBackground, { THEME_COLORS, DEFAULT_COLOR, buildGrid } from "./InteractiveBackground";
 import {
   buildIsometricLattice,
   CUBE_EDGE,
@@ -14,9 +14,14 @@ import {
   MOBILE_ANCHOR_PROX_R2,
   getMobileAnchorCoordinates,
   isMobileViewport,
+  MID_DENSITY_BREAKPOINT,
+  CUBE_PROX_R_MID,
+  SPOTLIGHT_R_MID,
 } from "./isometricLattice";
 import {
   DOT_PROX_R,
+  DOT_PROX_R_MID,
+  DOT_SPACING_MID,
   DOT_BASE_R,
   DOT_APEX_SCALE,
   DOT_MAX_DISPLACEMENT,
@@ -301,19 +306,20 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
 
   describe("Two-Pass Dot Matrix Batching & Specular Preservation Contract (Issue 02)", () => {
 
-    it("partitions dots into resting and dynamic sets using partitionDots in Dot mode", () => {
-      expect(componentSource).toMatch(/const\s*\{\s*resting,\s*dynamic\s*\}\s*=\s*partitionDots\s*\(\s*dots,\s*mx,\s*my,\s*activeRippleData\s*\);/);
+    it("partitions dots into pre-allocated resting and dynamic arrays in-place in Dot mode (ADR 0009)", () => {
+      expect(componentSource).toMatch(/restingDots\[restingCount\+\+\]\s*=\s*p;/);
+      expect(componentSource).toMatch(/dynamicDots\[dynamicCount\+\+\]\s*=\s*p;/);
     });
 
     it("batches resting dots in Pass 1 into a single continuous path and fill call", () => {
       // Must set resting fillStyle, beginPath, iterate resting with moveTo + arc, and execute single fill()
       expect(componentSource).toMatch(/ctx\.fillStyle\s*=\s*`rgba\(\$\{restR\},\$\{restG\},\$\{restB\},\$\{baseAlpha\}\)`;/);
-      expect(componentSource).toMatch(/ctx\.beginPath\(\);\s*for\s*\(\s*let\s+i\s*=\s*0;\s*i\s*<\s*resting\.length;\s*i\+\+\s*\)\s*\{[^}]*ctx\.moveTo\(p\.x\s*\+\s*baseR,\s*p\.y\);\s*ctx\.arc\(p\.x,\s*p\.y,\s*baseR,\s*0,\s*Math\.PI\s*\*\s*2\);[^}]*\}\s*ctx\.fill\(\);/);
+      expect(componentSource).toMatch(/ctx\.beginPath\(\);\s*for\s*\(\s*let\s+i\s*=\s*0;\s*i\s*<\s*restingCount;\s*i\+\+\s*\)\s*\{[^}]*ctx\.moveTo\(p\.x\s*\+\s*baseR,\s*p\.y\);\s*ctx\.arc\(p\.x,\s*p\.y,\s*baseR,\s*0,\s*Math\.PI\s*\*\s*2\);[^}]*\}\s*ctx\.fill\(\);/);
     });
 
     it("retains mathematical dome projection, core taper, and specular glints in Pass 2", () => {
       // Elevation and displacement
-      expect(componentSource).toContain("Math.sqrt(DOT_PROX_R2 - d2)");
+      expect(componentSource).toMatch(/Math\.sqrt\((?:DOT_PROX_R2|dotProxR2)\s*-\s*d2\)/);
       expect(componentSource).toContain("Math.min(1, d / 36)");
       expect(componentSource).toContain("DOT_MAX_DISPLACEMENT");
 
@@ -590,14 +596,14 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       );
       // Ambient spotlight rendered at focal point
       expect(componentSource).toMatch(
-        /const\s+spotlight\s*=\s*ctx\.createRadialGradient\(focalX,\s*focalY,\s*0,\s*focalX,\s*focalY,\s*SPOTLIGHT_R\);/
+        /const\s+spotlight\s*=\s*ctx\.createRadialGradient\(focalX,\s*focalY,\s*0,\s*focalX,\s*focalY,\s*(?:SPOTLIGHT_R|spotlightR)\);/
       );
       // Proximity check uses MOBILE_ANCHOR_PROX_R on mobile
       expect(componentSource).toMatch(
-        /const\s+proxR\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R\s*:\s*CUBE_PROX_R;/
+        /const\s+proxR\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R\s*:\s*(?:isMidDensity\s*\?\s*CUBE_PROX_R_MID\s*:\s*CUBE_PROX_R|CUBE_PROX_R);/
       );
       expect(componentSource).toMatch(
-        /const\s+proxR2\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R2\s*:\s*CUBE_PROX_R2;/
+        /const\s+proxR2\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R2\s*:\s*(?:isMidDensity\s*\?\s*CUBE_PROX_R2_MID\s*:\s*CUBE_PROX_R2|CUBE_PROX_R2);/
       );
     });
 
@@ -788,7 +794,7 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
 
       // 2. Rebuilds lattice geometry with responsive density
       expect(componentSource).toMatch(
-        /const\s+cubeEdge\s*=\s*getCubeEdge\(window\.innerWidth\);[\s\S]*?const\s+dotSpacing\s*=\s*getDotSpacing\(window\.innerWidth\);/
+        /const\s+cubeEdge\s*=\s*getCubeEdge\(window\.innerWidth\);[\s\S]*?const\s+dotSpacing\s*=\s*(?:isMidDensity\s*\?\s*DOT_SPACING_MID\s*:\s*)?getDotSpacing\(window\.innerWidth\);/
       );
     });
 
@@ -853,6 +859,92 @@ describe("InteractiveBackground Component & Isometric Lattice Engine", () => {
       expect(html).toContain('id="bg-switcher-cubes"');
       expect(html).toContain('id="bg-switcher-dots"');
       expect(html).toContain("hidden lg:flex");
+    });
+  });
+
+  describe("DOM Caching, GC Reduction & Mid-Tier Canvas Tier Contract (ADR 0009 / Issue 02)", () => {
+    it("reads isDark from isDarkRef, not from document.documentElement.classList in the draw loop", () => {
+      const drawBody = componentSource.slice(
+        componentSource.indexOf("const draw = () => {"),
+        componentSource.indexOf("const motionQuery =")
+      );
+      // isDarkRef declared and updated in MutationObserver
+      expect(componentSource).toContain("isDarkRef = useRef");
+      expect(drawBody).toMatch(/const\s+isDark\s*=\s*isDarkRef\.current;/);
+      expect(drawBody).not.toContain("document.documentElement");
+    });
+
+    it("reads isMobile from isMobileRef, not from window.innerWidth in the draw loop", () => {
+      const drawBody = componentSource.slice(
+        componentSource.indexOf("const draw = () => {"),
+        componentSource.indexOf("const motionQuery =")
+      );
+      expect(componentSource).toContain("isMobileRef = useRef");
+      expect(drawBody).toMatch(/const\s+isMobile\s*=\s*isMobileRef\.current;/);
+      expect(drawBody).not.toContain("window.innerWidth");
+    });
+
+    it("caches isMidDensity in a ref updated in resize() using MID_DENSITY_BREAKPOINT", () => {
+      expect(componentSource).toContain("isMidDensityRef = useRef");
+      expect(componentSource).toContain("MID_DENSITY_BREAKPOINT");
+      expect(componentSource).toMatch(
+        /const\s+isMidDensity\s*=\s*!isMobile\s*&&\s*window\.innerWidth\s*<=\s*MID_DENSITY_BREAKPOINT;/
+      );
+      expect(componentSource).toMatch(/isMidDensityRef\.current\s*=\s*isMidDensity;/);
+    });
+
+    it("pre-allocates partition arrays in useEffect closure and fills in-place with index counters", () => {
+      expect(componentSource).toMatch(/const\s+restingDots:\s*GridPoint\[\]\s*=\s*new\s+Array\(/);
+      expect(componentSource).toMatch(/const\s+dynamicDots:\s*GridPoint\[\]\s*=\s*new\s+Array\(/);
+      expect(componentSource).toMatch(/let\s+restingCount\s*=\s*0;/);
+      expect(componentSource).toMatch(/let\s+dynamicCount\s*=\s*0;/);
+      expect(componentSource).toMatch(/restingDots\[restingCount\+\+\]\s*=\s*p;/);
+      expect(componentSource).toMatch(/dynamicDots\[dynamicCount\+\+\]\s*=\s*p;/);
+    });
+
+    it("applies will-change: transform to canvas element inline style for compositor layer promotion", () => {
+      const html = renderToString(<InteractiveBackground activeSectionId="home" />);
+      expect(html).toContain("will-change:transform");
+    });
+
+    it("branches draw loop on isMidDensity to use mid-tier constants", () => {
+      expect(SPOTLIGHT_R_MID).toBe(260);
+      expect(CUBE_PROX_R_MID).toBe(140);
+      expect(DOT_PROX_R_MID).toBe(130);
+
+      expect(componentSource).toMatch(
+        /const\s+spotlightR\s*=\s*isMidDensity\s*\?\s*SPOTLIGHT_R_MID\s*:\s*SPOTLIGHT_R;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+proxR\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R\s*:\s*isMidDensity\s*\?\s*CUBE_PROX_R_MID\s*:\s*CUBE_PROX_R;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+proxR2\s*=\s*isMobile\s*\?\s*MOBILE_ANCHOR_PROX_R2\s*:\s*isMidDensity\s*\?\s*CUBE_PROX_R2_MID\s*:\s*CUBE_PROX_R2;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+dotProxR\s*=\s*isMidDensity\s*\?\s*DOT_PROX_R_MID\s*:\s*DOT_PROX_R;/
+      );
+      expect(componentSource).toMatch(
+        /const\s+dotProxR2\s*=\s*isMidDensity\s*\?\s*DOT_PROX_R2_MID\s*:\s*DOT_PROX_R2;/
+      );
+    });
+
+    it("uses 32px spacing at 1366px (mid-density) and 26px spacing at 1367px (full desktop)", () => {
+      const spacing1366 = 1366 <= MID_DENSITY_BREAKPOINT ? DOT_SPACING_MID : 26;
+      const spacing1367 = 1367 <= MID_DENSITY_BREAKPOINT ? DOT_SPACING_MID : 26;
+
+      expect(spacing1366).toBe(32);
+      expect(spacing1367).toBe(26);
+
+      const grid1366 = buildGrid(1366, 768, spacing1366);
+      const grid1367 = buildGrid(1367, 768, spacing1367);
+      expect(grid1366.length).toBeLessThan(grid1367.length);
+    });
+
+    it("uses squared-distance ripple approximation in cubes edge proximity loop", () => {
+      expect(componentSource).toMatch(
+        /isNearWavefront\(\s*ripDx,\s*ripDy,\s*rip\.radius,\s*RIPPLE_WAVE_W\s*\)/
+      );
     });
   });
 });

@@ -6,6 +6,11 @@ import {
   buildIsometricLattice,
   CUBE_PROX_R,
   CUBE_PROX_R2,
+  CUBE_PROX_R_MID,
+  CUBE_PROX_R2_MID,
+  SPOTLIGHT_R,
+  SPOTLIGHT_R_MID,
+  MID_DENSITY_BREAKPOINT,
   getCubeEdge,
   isMobileViewport,
   getMobileAnchorCoordinates,
@@ -15,11 +20,14 @@ import {
 } from "./isometricLattice";
 import {
   getDotSpacing,
+  DOT_SPACING_MID,
   DOT_BASE_R,
   DOT_APEX_SCALE,
   DOT_MAX_DISPLACEMENT,
   DOT_PROX_R,
   DOT_PROX_R2,
+  DOT_PROX_R_MID,
+  DOT_PROX_R2_MID,
   RIPPLE_WAVE_W as DOT_RIPPLE_WAVE_W,
   RIPPLE_PUSH_MAX,
   COLOR_LERP_TOLERANCE,
@@ -28,7 +36,8 @@ import {
   calculateSpringFactor,
   calculateDotRadius,
   evaluateIdleSettle,
-  partitionDots,
+  isNearWavefront,
+  // Note: partitionDots from dotMatrixPhysics is superseded by pre-allocated restingDots/dynamicDots in useEffect (ADR 0009 / Issue 02)
   type GridPoint,
   type ActiveRippleData,
 } from "./dotMatrixPhysics";
@@ -64,13 +73,12 @@ export const DEFAULT_COLOR: RGB = THEME_COLORS.home;
 
 // ─── geometry & wave constants ────────────────────────────────────────────────
 
-const SPOTLIGHT_R     = 380;  // px radius of the soft ambient cursor spotlight
 const RIPPLE_WAVE_W   = 65;   // px thickness of the expanding ripple wavefront ring
 const RIPPLE_DURATION = 1100; // ms duration of click ripple propagation
 
 
 /** Build a flat array of (x, y) grid intersection points for the dot matrix renderer */
-function buildGrid(w: number, h: number, spacing: number): GridPoint[] {
+export function buildGrid(w: number, h: number, spacing: number): GridPoint[] {
   const pts: GridPoint[] = [];
   const cols = Math.ceil(w / spacing) + 1;
   const rows = Math.ceil(h / spacing) + 1;
@@ -106,6 +114,20 @@ export default function InteractiveBackground({
   const mouseRef  = useRef({ x: -9999, y: -9999 });
   const rafRef    = useRef<number>(0);
   const pausedRef = useRef(false);
+
+  // Responsive viewport and theme caching refs (eliminates DOM/window reads in draw loop)
+  const isDarkRef = useRef(
+    typeof document !== "undefined" ? document.documentElement.classList.contains("dark") : false
+  );
+  const isMobileRef = useRef(
+    typeof window !== "undefined" ? isMobileViewport(window.innerWidth) : false
+  );
+  // See ADR 0009
+  const isMidDensityRef = useRef(
+    typeof window !== "undefined"
+      ? !isMobileViewport(window.innerWidth) && window.innerWidth <= MID_DENSITY_BREAKPOINT
+      : false
+  );
 
   // Idle sleep lifecycle refs
   const isSleepingRef        = useRef(false);
@@ -173,6 +195,11 @@ export default function InteractiveBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Pre-allocated partition arrays to eliminate per-frame GC allocations
+    const MAX_PARTITION_DOTS = 16384;
+    const restingDots: GridPoint[] = new Array(MAX_PARTITION_DOTS);
+    const dynamicDots: GridPoint[] = new Array(MAX_PARTITION_DOTS);
+
     // ── animation loop ───────────────────────────────────────────────────────
     const draw = () => {
       if (pausedRef.current || isScrollingRef.current) {
@@ -184,10 +211,11 @@ export default function InteractiveBackground({
       const isReduced = reducedMotionRef.current;
       const w     = canvas.width;
       const h     = canvas.height;
-      const isMobile = typeof window !== "undefined" && isMobileViewport(window.innerWidth);
+      const isMobile = isMobileRef.current;
+      const isMidDensity = isMidDensityRef.current;
       const effectiveMode = isMobile ? "cubes" : modeRef.current;
       const mouse = isReduced || isMobile ? { x: -9999, y: -9999 } : mouseRef.current;
-      const isDark = document.documentElement.classList.contains("dark");
+      const isDark = isDarkRef.current;
       const currentMode = effectiveMode;
       const now = performance.now();
 
@@ -244,12 +272,13 @@ export default function InteractiveBackground({
       const mobileAnchor = isMobile ? getMobileAnchorCoordinates(w, h) : null;
       const focalX = isMobile ? mobileAnchor!.x : mx;
       const focalY = isMobile ? mobileAnchor!.y : my;
-      const proxR  = isMobile ? MOBILE_ANCHOR_PROX_R : CUBE_PROX_R;
-      const proxR2 = isMobile ? MOBILE_ANCHOR_PROX_R2 : CUBE_PROX_R2;
+      const spotlightR = isMidDensity ? SPOTLIGHT_R_MID : SPOTLIGHT_R;
+      const proxR  = isMobile ? MOBILE_ANCHOR_PROX_R : isMidDensity ? CUBE_PROX_R_MID : CUBE_PROX_R;
+      const proxR2 = isMobile ? MOBILE_ANCHOR_PROX_R2 : isMidDensity ? CUBE_PROX_R2_MID : CUBE_PROX_R2;
       const hasFocal = isMobile ? true : focalX > -1000;
 
       if (hasFocal) {
-        const spotlight = ctx.createRadialGradient(focalX, focalY, 0, focalX, focalY, SPOTLIGHT_R);
+        const spotlight = ctx.createRadialGradient(focalX, focalY, 0, focalX, focalY, spotlightR);
         if (isDark) {
           spotlight.addColorStop(0,    `rgba(${cr},${cg},${cb},0.06)`);
           spotlight.addColorStop(0.45, `rgba(${cr},${cg},${cb},0.02)`);
@@ -346,9 +375,11 @@ export default function InteractiveBackground({
             if (hasRipples) {
               for (let j = 0; j < activeRippleData.length; j++) {
                 const rip = activeRippleData[j];
-                const dRip = Math.hypot(e.midX - rip.x, e.midY - rip.y);
-                const delta = Math.abs(dRip - rip.radius);
-                if (delta < RIPPLE_WAVE_W) {
+                const ripDx = e.midX - rip.x;
+                const ripDy = e.midY - rip.y;
+                if (isNearWavefront(ripDx, ripDy, rip.radius, RIPPLE_WAVE_W)) {
+                  const dRip = Math.hypot(ripDx, ripDy);
+                  const delta = Math.abs(dRip - rip.radius);
                   const wNorm = 1 - delta / RIPPLE_WAVE_W;
                   const wFactor = wNorm * wNorm * (3 - 2 * wNorm) * rip.fade;
                   if (wFactor > rippleFactor) {
@@ -398,9 +429,11 @@ export default function InteractiveBackground({
             if (hasRipples) {
               for (let j = 0; j < activeRippleData.length; j++) {
                 const rip = activeRippleData[j];
-                const dRip = Math.hypot(v.x - rip.x, v.y - rip.y);
-                const delta = Math.abs(dRip - rip.radius);
-                if (delta < RIPPLE_WAVE_W) {
+                const ripDx = v.x - rip.x;
+                const ripDy = v.y - rip.y;
+                if (isNearWavefront(ripDx, ripDy, rip.radius, RIPPLE_WAVE_W)) {
+                  const dRip = Math.hypot(ripDx, ripDy);
+                  const delta = Math.abs(dRip - rip.radius);
                   const wNorm = 1 - delta / RIPPLE_WAVE_W;
                   const wFactor = wNorm * wNorm * (3 - 2 * wNorm) * rip.fade;
                   if (wFactor > rippleFactor) {
@@ -452,6 +485,8 @@ export default function InteractiveBackground({
         const baseAlpha = isDark ? 0.15 : 0.20;
         const peakAlpha = isDark ? 0.88 : 0.82;
         const baseR = DOT_BASE_R;
+        const dotProxR = isMidDensity ? DOT_PROX_R_MID : DOT_PROX_R;
+        const dotProxR2 = isMidDensity ? DOT_PROX_R2_MID : DOT_PROX_R2;
 
         // Balanced resting tone: crisp and clearly visible, but slightly deeper than active hover
         const restR = isDark ? cr : Math.round(cr * 0.65);
@@ -468,7 +503,7 @@ export default function InteractiveBackground({
 
         // 0. Volumetric 3D Spherical Dome Ambient Under-Glow
         if (mx > -1000) {
-          const glowR = DOT_PROX_R * Math.max(0.2, springFactor);
+          const glowR = dotProxR * Math.max(0.2, springFactor);
           const domeGlow = ctx.createRadialGradient(
             mx - 18,
             my - 18,
@@ -492,24 +527,54 @@ export default function InteractiveBackground({
           ctx.fill();
         }
 
-        // ── TWO-PASS SPATIAL BATCHING ──────────────────────────────────────
+        // ── TWO-PASS SPATIAL BATCHING (Pre-allocated in-place GC reduction) ───
         // Pass 1: Batch all resting dots outside proximity and ripple zones into a single GPU fill call
         // Pass 2: Dynamically calculate 3D projection, displacement, and glints for proximate/ripple dots
-        const { resting, dynamic } = partitionDots(dots, mx, my, activeRippleData);
+        let restingCount = 0;
+        let dynamicCount = 0;
+        const hasMouse = mx > -1000;
+
+        for (let i = 0; i < dots.length; i++) {
+          const p = dots[i];
+          let isDynamic = false;
+
+          // Bounding box test around cursor: |dx| < dotProxR and |dy| < dotProxR
+          if (
+            hasMouse &&
+            Math.abs(p.x - mx) < dotProxR &&
+            Math.abs(p.y - my) < dotProxR
+          ) {
+            isDynamic = true;
+          } else if (numRipples > 0) {
+            for (let j = 0; j < numRipples; j++) {
+              const rip = activeRippleData[j];
+              if (isNearWavefront(p.x - rip.x, p.y - rip.y, rip.radius, DOT_RIPPLE_WAVE_W)) {
+                isDynamic = true;
+                break;
+              }
+            }
+          }
+
+          if (isDynamic) {
+            dynamicDots[dynamicCount++] = p;
+          } else {
+            restingDots[restingCount++] = p;
+          }
+        }
 
         // 1. Base resting dots pass (single-batch fill call)
         ctx.fillStyle = `rgba(${restR},${restG},${restB},${baseAlpha})`;
         ctx.beginPath();
-        for (let i = 0; i < resting.length; i++) {
-          const p = resting[i];
+        for (let i = 0; i < restingCount; i++) {
+          const p = restingDots[i];
           ctx.moveTo(p.x + baseR, p.y);
           ctx.arc(p.x, p.y, baseR, 0, Math.PI * 2);
         }
         ctx.fill();
 
         // 2. Dynamic proximate dome & ripple-energized dots pass
-        for (let i = 0; i < dynamic.length; i++) {
-          const p = dynamic[i];
+        for (let i = 0; i < dynamicCount; i++) {
+          const p = dynamicDots[i];
           let domeDx = 0;
           let domeDy = 0;
           let elevationRatio = 0;
@@ -519,26 +584,26 @@ export default function InteractiveBackground({
           if (mx > -1000) {
             const dx = p.x - mx;
             const dy = p.y - my;
-            // Bounding box test for proximity radius R = 180px
-            if (Math.abs(dx) < DOT_PROX_R && Math.abs(dy) < DOT_PROX_R) {
+            // Bounding box test for proximity radius
+            if (Math.abs(dx) < dotProxR && Math.abs(dy) < dotProxR) {
               const d2 = dx * dx + dy * dy;
-              if (d2 < DOT_PROX_R2) {
-                const z = Math.sqrt(DOT_PROX_R2 - d2);
+              if (d2 < dotProxR2) {
+                const z = Math.sqrt(dotProxR2 - d2);
                 const zEff = z * springFactor;
-                elevationRatio = zEff / DOT_PROX_R;
+                elevationRatio = zEff / dotProxR;
 
                 const d = Math.sqrt(d2);
                 if (d > 0.0001) {
                   // Smooth core taper: prevents apex hollowing, maintaining convex dome integrity
                   const coreTaper = Math.min(1, d / 36);
-                  const disp = (zEff / DOT_PROX_R) * coreTaper * DOT_MAX_DISPLACEMENT;
+                  const disp = (zEff / dotProxR) * coreTaper * DOT_MAX_DISPLACEMENT;
                   domeDx = (dx / d) * disp;
                   domeDy = (dy / d) * disp;
                 }
 
                 // 3D Spherical surface normal lighting: key light from top-left (-0.38, -0.48, 0.79)
-                const nx = dx / DOT_PROX_R;
-                const ny = dy / DOT_PROX_R;
+                const nx = dx / dotProxR;
+                const ny = dy / dotProxR;
                 const nz = Math.min(1, elevationRatio);
                 const dotH = Math.max(0, -0.20 * nx - 0.25 * ny + 0.95 * nz);
                 spec = Math.pow(dotH, 6);
@@ -556,10 +621,9 @@ export default function InteractiveBackground({
               const rip = activeRippleData[j];
               const ripDx = p.x - rip.x;
               const ripDy = p.y - rip.y;
-              const dRip = Math.hypot(ripDx, ripDy);
-              const delta = Math.abs(dRip - rip.radius);
-
-              if (delta < DOT_RIPPLE_WAVE_W) {
+              if (isNearWavefront(ripDx, ripDy, rip.radius, DOT_RIPPLE_WAVE_W)) {
+                const dRip = Math.hypot(ripDx, ripDy);
+                const delta = Math.abs(dRip - rip.radius);
                 const wNorm = 1 - delta / DOT_RIPPLE_WAVE_W;
                 const wFactor = wNorm * wNorm * (3 - 2 * wNorm) * rip.fade;
                 if (wFactor > rippleFactor) {
@@ -809,11 +873,16 @@ export default function InteractiveBackground({
       pointerListenersAttached = false;
     };
 
-    // ── resize: size canvas + rebuild geometry (adaptive mobile density) ─────
+    // ── resize: size canvas + rebuild geometry (adaptive mobile & mid-tier density) ─────
     const resize = () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
       const isMobile = isMobileViewport(window.innerWidth);
+      isMobileRef.current = isMobile;
+      // See ADR 0009
+      const isMidDensity = !isMobile && window.innerWidth <= MID_DENSITY_BREAKPOINT;
+      isMidDensityRef.current = isMidDensity;
+
       if (isMobile) {
         detachPointerListeners();
         if (rafRef.current) {
@@ -832,7 +901,7 @@ export default function InteractiveBackground({
         attachPointerListeners();
       }
       const cubeEdge   = getCubeEdge(window.innerWidth);
-      const dotSpacing = getDotSpacing(window.innerWidth);
+      const dotSpacing = isMidDensity ? DOT_SPACING_MID : getDotSpacing(window.innerWidth);
       cubeLatticeRef.current = buildIsometricLattice(canvas.width, canvas.height, cubeEdge);
       dotPointsRef.current   = buildGrid(canvas.width, canvas.height, dotSpacing);
       wake();
@@ -849,6 +918,8 @@ export default function InteractiveBackground({
         for (let i = 0; i < mutations.length; i++) {
           const m = mutations[i];
           if (m.type === "attributes" && m.attributeName === "class") {
+            const isDark = document.documentElement.classList.contains("dark");
+            isDarkRef.current = isDark;
             wake();
             break;
           }
@@ -962,6 +1033,7 @@ export default function InteractiveBackground({
           height:        "100%",
           pointerEvents: "none",
           zIndex:        0,
+          willChange:    "transform",
         }}
       />
 
