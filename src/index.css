@@ -135,7 +135,8 @@
     }
   }
 
-  /* Mid-density canvas tier (1024px - 1366px): balanced 12px blur to prevent convolution bottlenecks. See ADR 0009. */
+  /* See ADR 0009 */
+  /* Mid-density canvas tier (1024px - 1366px): balanced 12px blur to prevent convolution bottlenecks. */
   @media (min-width: 1024px) and (max-width: 1366px) {
     .editorial-glass {
       backdrop-filter: blur(12px);

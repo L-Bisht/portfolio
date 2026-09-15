@@ -34,12 +34,14 @@ export const MID_DENSITY_BREAKPOINT = 1366; // px mid-density canvas tier upper 
 
 export const CUBE_PROX_R = 190; // px proximity influence radius (desktop cursor)
 export const CUBE_PROX_R2 = CUBE_PROX_R * CUBE_PROX_R;
+// See ADR 0009
 export const CUBE_PROX_R_MID = 140; // px proximity influence radius for mid-density tier (1024-1366px)
 export const CUBE_PROX_R2_MID = CUBE_PROX_R_MID * CUBE_PROX_R_MID;
 export const CUBE_PROX_R_MID_TIER = CUBE_PROX_R_MID;
 export const CUBE_PROX_R2_MID_TIER = CUBE_PROX_R2_MID;
 
 export const SPOTLIGHT_R = 380; // px radius of the soft ambient cursor spotlight (desktop >= 1367px)
+// See ADR 0009
 export const SPOTLIGHT_R_MID = 260; // px radius of ambient spotlight for mid-density tier (1024-1366px)
 export const SPOTLIGHT_R_MID_TIER = SPOTLIGHT_R_MID;
 

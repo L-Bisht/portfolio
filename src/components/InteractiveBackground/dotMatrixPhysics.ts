@@ -36,6 +36,7 @@ export const DOT_APEX_SCALE = 2.4; // peak scale multiplier at dome apex (1.4 * 
 export const DOT_MAX_DISPLACEMENT = 16; // px max radial outward shift
 export const DOT_PROX_R = 180; // px proximity influence radius (desktop >= 1367px)
 export const DOT_PROX_R2 = DOT_PROX_R * DOT_PROX_R; // 32400 px^2
+// See ADR 0009
 export const DOT_PROX_R_MID = 130; // px proximity influence radius for mid-density tier (1024-1366px)
 export const DOT_PROX_R2_MID = DOT_PROX_R_MID * DOT_PROX_R_MID; // 16900 px^2
 export const DOT_PROX_R_MID_TIER = DOT_PROX_R_MID;
